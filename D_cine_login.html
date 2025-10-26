@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-cine — Đăng nhập</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#050505;
+      --panel:#080808;
+      --accent:#E50914;
+      --accent-2:#C6101A;
+      --text:#FFFFFF;
+      --muted:#A0A0A0;
+      --muted-2:#999999;
+      --field:#0b0b0b;
+      --stroke:#8b8b8b;
+      --radius:12px;
+      --danger:#E50914;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+    .page{ min-height:100vh; display:grid; grid-template-columns:1.08fr 1fr; }
+
+    .hero{ position:relative; overflow:hidden; isolation:isolate; background:#000; }
+    .hero::before{
+      content:""; position:absolute; inset:0;
+      background:url('tanjiro_akaza_infinity_castle.jpg') center/cover no-repeat;
+      filter:saturate(1.08) contrast(1.05) brightness(1.08);
+      transform:scale(1.02);
+    }
+    .hero::after{
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 62%);
+      z-index: 1;
+    }
+    .back{ position:absolute; top:22px; left:22px; z-index:3; display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:999px; background:rgba(0,0,0,0.35); color:#fff; text-decoration:none;
+      border:1px solid rgba(255,255,255,0.08); backdrop-filter: blur(6px);
+      transition: background-color .2s ease, border-color .2s ease; }
+    .back:hover{background:rgba(0,0,0,0.55); border-color:rgba(255,255,255,0.18)}
+    .back svg{width:18px;height:18px;flex:none}
+    .back-text{font-weight:600; font-size:13px; letter-spacing:.2px}
+
+    .hero-copy{ position:absolute; left:36px; bottom:36px; z-index:2; max-width:560px; }
+    .hero-copy h2{ margin:0 0 8px; font-size:28px; font-weight:800; letter-spacing:.2px; text-shadow:0 2px 8px rgba(0,0,0,.7) }
+    .hero-copy p{ margin:0 0 10px; color:#f3f3f3; font-size:14px; line-height:1.6; text-shadow:0 2px 8px rgba(0,0,0,.7) }
+    .chips{ display:flex; flex-wrap:wrap; gap:8px }
+    .chip{ font-size:12px; color:#fff; background:rgba(229,9,20,.14); border:1px solid rgba(229,9,20,.45); padding:6px 10px; border-radius:999px; box-shadow:0 2px 10px rgba(0,0,0,.25) }
+
+    .panel{display:grid; place-items:center; background:var(--panel);}
+    .wrap{width:min(520px, 92vw); padding:26px 10px;}
+
+    .logo{font-weight:800; letter-spacing:0.2px; font-size:28px; display:inline-flex; align-items:baseline; gap:3px}
+    .logo .d{color:var(--accent); font-weight:900; font-size:38px}
+    .logo .cine{color:#fff}
+
+    .greet{margin:16px 0 6px; font-weight:800; font-size:26px; letter-spacing:.1px;}
+    .hint{margin:0 0 16px; color:#cfcfcf; font-weight:400; font-size:13px}
+
+    .only-desktop{display:inline}
+    @media (max-width: 768px){ .only-desktop{ display:none } }
+
+    .seg{display:inline-flex; border:1px solid #4d4d4d; background:#0a0a0a; border-radius:999px; padding:3px; gap:4px; margin-bottom:10px}
+    .seg button{appearance:none; border:0; border-radius:999px; padding:8px 14px; color:#d9d9d9; background:transparent; cursor:pointer; font-weight:700; font-size:12.5px; transition: background-color .2s ease, color .2s ease, transform .06s}
+    .seg button.active{ background:var(--accent); color:#fff; box-shadow:0 6px 20px rgba(229,9,20,.35); transform:translateY(-1px); }
+    .seg button:hover,.seg button:active{ transform:translateY(-1px) }
+
+    form{display:grid; gap:16px}
+    .field{display:grid; gap:6px}
+    label{font-size:12.5px; color:#fff; font-weight:600}
+
+    .input{ position:relative; display:flex; align-items:center; background:var(--field); border:1px solid var(--stroke);
+      color:#fff; border-radius:var(--radius); padding:0 12px; height:48px;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .06s;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);}
+    .input:hover{
+      border-color:#252525;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    .input:has(input:focus-visible){ border-color:var(--accent); box-shadow:0 0 0 3px rgba(229,9,20,0.18); }
+    .input input{ flex:1; background:transparent; border:0; outline:0; color:#fff; font-size:15px; caret-color:var(--accent); height:100% ;}
+    .input input::placeholder{ color:var(--muted-2); }
+
+    .prefix{ color:#d0d0d0; margin-right:10px; display:inline-flex }
+    .suffix{ color:#cfcfcf; margin-left:8px; display:inline-flex }
+    .input.error{ border-color:var(--danger); box-shadow:0 0 0 3px rgba(229,9,20,0.18); animation:shakeInput .3s ease-out; }
+    .err{ color:var(--danger); font-size:12px; line-height:1.2; margin-top:-2px; min-height:1.2em }
+    .hintline{ color:#bdbdbd; font-size:12px; margin-top:-2px; }
+    .caps{ color:#cfcfcf; font-size:12px; display:none; }
+
+    .icon-btn{ background:transparent; border:0; color:#CFCFCF; cursor:pointer; padding:6px; border-radius:10px; transition: background-color .2s ease }
+    .icon-btn:hover{ background:#141414 }
+    .icon{ width:20px; height:20px; display:block }
+
+    .row{display:flex; align-items:center; justify-content:space-between; gap:16px; font-size:12.5px}
+    .row a{color:#ddd; text-decoration:none; transition: color .2s ease}
+    .row a:hover{ color:#fff }
+
+    .remember{ display:inline-flex; align-items:center; gap:8px; color:#ddd; cursor:pointer }
+    .remember input{appearance:none; width:16px; height:16px; border-radius:4px; border:1px solid var(--stroke); background:#0a0a0a; display:grid; place-content:center; transition:all .2s ease}
+    .remember input:checked{ border-color:var(--accent); background:var(--accent) }
+    .remember input:checked::after{ content:""; width:9px; height:9px; background:white; border-radius:2px }
+
+    .btn{ position:relative; overflow:hidden; display:inline-flex; justify-content:center; align-items:center; gap:10px;
+      height:48px; width:100%; border-radius:12px; border:0; cursor:pointer;
+      background:linear-gradient(180deg, #F01A25, var(--accent-2)); color:#fff; font-weight:800; letter-spacing:.3px;
+      box-shadow:0 8px 20px rgba(229,9,20,.20); transition: all .2s ease; }
+    .btn:hover{ background:linear-gradient(180deg, #C6101A, #A10D15); box-shadow:0 10px 25px rgba(229,9,20,.30); transform: translateY(-1px); }
+    .btn:active{ transform: scale(0.98); box-shadow:0 4px 15px rgba(229,9,20,.25); }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; box-shadow:none; background:#555; }
+
+    .btn-label{pointer-events:none; transition: opacity .2s ease}
+    .spinner{ display:none; width:18px; height:18px; border:2px solid rgba(255,255,255,.25); border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite; position:absolute }
+    .btn.loading .spinner{ display:inline-block }
+    .btn.loading .btn-label{ opacity:0 }
+
+    .btn-ghost{ background:transparent; border:1px solid #7a7a7a; color:#eee; box-shadow:none }
+    .btn-ghost:hover{ background:#0f0f0f }
+
+    .ripple{ position:absolute; border-radius:999px; transform:translate(-50%, -50%); pointer-events:none; background:rgba(255,255,255,.22); animation:ripple .6s ease-out forwards }
+
+    .form-error{ color:var(--danger); font-weight:600; font-size:13px; display:none; margin:6px 0 12px }
+    .form-success{ color:#35c28b; font-weight:600; font-size:13px; display:none; margin:6px 0 12px }
+
+    .shake{ animation:shakeWrap .36s cubic-bezier(.36,.07,.19,.97) both }
+    .page{
+      height:100vh;          
+      min-height:unset;
+    }
+    body{ overflow:hidden; }  
+    .panel{
+      height:100vh;
+      overflow-y:auto;        
+      -webkit-overflow-scrolling: touch;
+      scrollbar-gutter: stable both-edges;
+    }
+    .hero{
+      position:sticky;        
+      top:0;
+      height:100vh;
+    }
+    .hero-copy{ bottom:clamp(24px, 6vh, 52px); }
+
+    @media (max-width:1024px){
+      body{ overflow:auto; }
+      .page{ height:auto; }
+      .panel{ height:auto; overflow:visible; }
+    }
+    @keyframes shakeWrap{ 10%,90%{transform:translateX(-1px)} 20%,80%{transform:translateX(2px)} 30%,50%,70%{transform:translateX(-4px)} 40%,60%{transform:translateX(4px)} }
+    @keyframes shakeInput{ 10%,90%{transform:translateX(-1px)} 20%,80%{transform:translateX(2px)} 30%,50%,70%{transform:translateX(-3px)} 40%,60%{transform:translateX(3px)} }
+
+    @keyframes spin{ to{ transform:rotate(360deg) } }
+    @keyframes ripple{ from{ width:0; height:0; opacity:.6 } to{ width:420px; height:420px; opacity:0 } }
+
+    @media (max-width: 1024px){ .page{ grid-template-columns:1fr; } .hero{ display:none; } .wrap{ width:min(560px, 92vw); } }
+    @media (max-width: 1366px){ .chips{ gap:10px } }
+  </style>
+</head>
+<body>
+  <main class="page" role="main">
+    <section class="hero" aria-label="Cinematic preview">
+      <a class="back" href="#" aria-label="Quay lại">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="back-text">Quay lại</span>
+      </a>
+
+      <div class="hero-copy">
+        <h2>Đắm chìm cùng <span style="color:var(--accent)">D-cine</span></h2>
+        <p>Đặt vé nhanh • Chọn ghế trực quan • Nhận QR tức thì. Hỗ trợ <b>IMAX</b>, <b>3D</b>, phụ đề/ lồng tiếng đa dạng.</p>
+        <div class="chips">
+          <span class="chip">Suất tối nay gần bạn</span>
+          <span class="chip">Ưu đãi thành viên</span>
+          <span class="chip">2.000+ suất/tuần</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Sign in form">
+      <div class="wrap" id="formWrap">
+        <header>
+          <div class="logo" aria-label="D-cine logo">
+            <span class="d">D</span><span class="cine">-cine</span>
+          </div>
+        </header>
+
+        <h1 class="greet">Đăng nhập</h1>
+        <p class="hint">
+          Chọn cách đăng nhập và điền thông tin để tiếp tục.
+        </p>
+
+        <div class="seg" role="tablist" aria-label="Hình thức đăng nhập">
+          <button id="segEmail" role="tab" aria-selected="true" class="active" type="button">Email</button>
+          <button id="segPhone" role="tab" aria-selected="false" type="button">Số điện thoại</button>
+          <button id="segUser" role="tab" aria-selected="false" type="button">Tên đăng nhập</button>
+        </div>
+
+        <div id="formError" class="form-error" role="alert" aria-live="assertive"></div>
+        <div id="formSuccess" class="form-success" role="status" aria-live="polite"></div>
+
+        <form id="loginForm" action="#" method="post" novalidate>
+          <div class="field">
+            <label for="ident"><span id="ident-label">Email</span></label>
+            <div class="input" id="identBox">
+              <span class="prefix" aria-hidden="true"></span>
+              <input id="ident" name="ident" type="email" placeholder="yourname@example.com" autocomplete="username" aria-describedby="err-ident hint-ident" required />
+              <span class="suffix" aria-hidden="true"></span>
+            </div>
+            <p class="hintline" id="hint-ident" style="display:none"></p>
+            <p class="err" id="err-ident" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="password">Mật khẩu</label>
+            <div class="input" id="passwordBox">
+              <span class="prefix" aria-hidden="true">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V8a5 5 0 1110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" aria-describedby="err-password caps-hint" required />
+              <button class="icon-btn suffix" id="togglePw" type="button" aria-label="Hiện/ẩn mật khẩu" aria-pressed="false">
+                <svg id="eyeOff" class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M10.58 10.58A3 3 0 0012 15a3 3 0 001.42-.38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M17.94 17.94C15.9 19.22 13.54 20 12 20 6 20 3 12 3 12a17.9 17.9 0 013.06-4.95" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M10.73 5.08A9.84 9.84 0 0112 4c6 0 9 8 9 8a17.83 17.83 0 01-2.5 4.15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <svg id="eyeOn" class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+                  <path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <p class="caps" id="caps-hint">Đang bật Caps Lock</p>
+            <p class="err" id="err-password" aria-live="polite"></p>
+          </div>
+
+          <div class="row">
+            <label class="remember">
+              <input id="remember" name="remember" type="checkbox" />
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
+            <a href="D_cine_forgot.html" id="forgot">Quên mật khẩu?</a>
+          </div>
+
+          <button class="btn" id="signInBtn" type="submit" disabled>
+            <span class="btn-label">Đăng nhập</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+
+          <button class="btn btn-ghost" id="guestBtn" type="button">Tiếp tục mà không đăng nhập</button>
+
+          <p class="signup" style="text-align:center; color:var(--muted); font-size:13px;">
+            Chưa có tài khoản? 
+            <a class="alt" href="D_cine_signup.html" style="color:var(--text); font-weight:600;">Đăng ký</a>
+          </p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const API = 'http://localhost:8080';
+    const segEmail = $('#segEmail');
+    const segPhone = $('#segPhone');
+    const segUser  = $('#segUser');
+
+    const ident = $('#ident');
+    const identBox = $('#identBox');
+    const identLabel = $('#ident-label');
+    const hintIdent = $('#hint-ident');
+    const errIdent = $('#err-ident');
+
+    const password = $('#password');
+    const passwordBox = $('#passwordBox');
+    const errPassword = $('#err-password');
+    const capsHint = $('#caps-hint');
+
+    const form = $('#loginForm');
+    const formWrap = $('#formWrap');
+    const formError = $('#formError');
+    const formSuccess = $('#formSuccess');
+    const signInBtn = $('#signInBtn');
+    const guestBtn = $('#guestBtn');
+
+    let touchedIdent = false;
+    let touchedPassword = false;
+
+    const iconMail = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm0 0l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const iconPhone = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v2a2 2 0 01-2.18 2A19.8 19.8 0 013 5.18 2 2 0 015 3h2a2 2 0 012 1.72c.12.9.36 1.77.7 2.58a2 2 0 01-.45 2.11L8.1 10.9a16 16 0 006 6l1.5-1.15a2 2 0 012.11-.45c.81.34 1.68.58 2.58.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const iconUser = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>`;
+
+    let mode = 'email';
+    function setMode(next){
+      mode = next;
+      segEmail.classList.toggle('active', mode==='email'); segEmail.setAttribute('aria-selected', String(mode==='email'));
+      segPhone.classList.toggle('active', mode==='phone'); segPhone.setAttribute('aria-selected', String(mode==='phone'));
+      segUser.classList.toggle('active',  mode==='username'); segUser.setAttribute('aria-selected', String(mode==='username'));
+
+      if(mode === 'email'){
+        ident.type='email'; ident.placeholder='yourname@example.com'; identLabel.textContent='Email';
+        hintIdent.style.display='none';
+        identBox.querySelector('.prefix').innerHTML = iconMail;
+      } else if(mode === 'phone'){
+        ident.type='tel'; ident.placeholder='0xxxxxxxxx hoặc +84xxxxxxxxx'; identLabel.textContent='Số điện thoại';
+        hintIdent.textContent='Bắt đầu bằng 0 hoặc +84, tổng 10–11 chữ số.'; hintIdent.style.display='block';
+        identBox.querySelector('.prefix').innerHTML = iconPhone;
+      } else {
+        ident.type='text'; ident.placeholder='ten_dang_nhap'; identLabel.textContent='Tên đăng nhập';
+        hintIdent.textContent='4–20 ký tự: chữ, số, _ hoặc .'; hintIdent.style.display='block';
+        identBox.querySelector('.prefix').innerHTML = iconUser;
+      }
+
+      touchedIdent = false;
+      touchedPassword = false;
+      clearFieldError(identBox, errIdent);
+      clearFieldError(passwordBox, errPassword);
+      checkFormValid();   
+      ident.focus();
+    }
+    segEmail.addEventListener('click', ()=> setMode('email'));
+    segPhone.addEventListener('click', ()=> setMode('phone'));
+    segUser .addEventListener('click', ()=> setMode('username'));
+
+    const toggle = document.getElementById('togglePw');
+    const eyeOn = document.getElementById('eyeOn');
+    const eyeOff = document.getElementById('eyeOff');
+    function setPwVisible(v){ password.type = v ? 'text' : 'password'; eyeOn.style.display = v ? 'block' : 'none'; eyeOff.style.display = v ? 'none' : 'block'; toggle.setAttribute('aria-pressed', String(v)); }
+    toggle.addEventListener('click', () => setPwVisible(password.type === 'password'));
+    toggle.addEventListener('pointerdown', ()=> setPwVisible(true));
+    toggle.addEventListener('pointerup',   ()=> setPwVisible(false));
+    toggle.addEventListener('pointerleave',()=> setPwVisible(false));
+
+    ['keyup','keydown'].forEach(evt => {
+      password.addEventListener(evt, (e)=>{ const on = e.getModifierState && e.getModifierState('CapsLock'); capsHint.style.display = on ? 'block' : 'none'; });
+    });
+
+    const isValidEmail = (v) => {
+      const at = v.indexOf('@'); if(at <= 0) return {ok:false, reason:"Thiếu ký tự '@'"};
+      const domain = v.slice(at+1); if(!domain.includes('.')) return {ok:false, reason:"Tên miền chưa hợp lệ (thiếu dấu chấm)"};
+      if(domain.split('.').pop().length < 2) return {ok:false, reason:"Đuôi miền quá ngắn"};
+      return {ok:true};
+    };
+    const isValidPhone = (v) => {
+      const s = v.replace(/\s|-/g,'');
+      if(!(/(^\+?84|^0)/.test(s))) return {ok:false, reason:"Phải bắt đầu bằng 0 hoặc +84"};
+      if(!(/^\+?\d+$/.test(s))) return {ok:false, reason:"Chỉ gồm chữ số"};
+      const digits = s.replace(/^\+/, '').replace(/^84/, '0');
+      if(digits.length<10 || digits.length>11) return {ok:false, reason:"Độ dài 10–11 số"};
+      return {ok:true};
+    };
+    const isValidUsername = (v) => {
+      if(v.length<4||v.length>20) return {ok:false, reason:"Độ dài 4–20 ký tự"};
+      if(!(/^[a-zA-Z0-9_.]+$/.test(v))) return {ok:false, reason:"Chỉ chữ, số, '_' hoặc '.'"};
+      return {ok:true};
+    };
+
+    function showFieldError(box, errEl, msg){
+      box.classList.add('error');
+      errEl.textContent = msg || '';
+      const inputEl = box.querySelector('input');
+      if(inputEl) inputEl.setAttribute('aria-invalid','true');
+    }
+    function clearFieldError(box, errEl){
+      box.classList.remove('error');
+      errEl.textContent = '';
+      const inputEl = box.querySelector('input');
+      if(inputEl) inputEl.removeAttribute('aria-invalid');
+    }
+
+    function validateIdent(show = true){
+      const v = ident.value.trim();
+      if(!v){
+        if(show) showFieldError(identBox, errIdent, (mode==='email'?'Email':mode==='phone'?'Số điện thoại':'Tên đăng nhập')+' không được để trống.');
+        else clearFieldError(identBox, errIdent);
+        return false;
+      }
+      let res={ok:true};
+      if(mode==='email') res = isValidEmail(v);
+      else if(mode==='phone') res = isValidPhone(v);
+      else res = isValidUsername(v);
+
+      if(!res.ok){
+        if(show) showFieldError(identBox, errIdent, (mode==='email'?'Email':'Số/Tên')+' không hợp lệ: '+res.reason+'.');
+        else clearFieldError(identBox, errIdent);
+        return false;
+      }
+      clearFieldError(identBox, errIdent);
+      return true;
+    }
+
+    function validatePassword(show = true){
+      const v = password.value;
+      if(!v){
+        if(show) showFieldError(passwordBox, errPassword, 'Mật khẩu không được để trống.');
+        else clearFieldError(passwordBox, errPassword);
+        return false;
+      }
+      clearFieldError(passwordBox, errPassword);
+      return true;
+    }
+
+
+    function checkFormValid(){
+      const okIdent = touchedIdent ? validateIdent(true) : validateIdent(false);
+      const okPass  = touchedPassword ? validatePassword(true) : validatePassword(false);
+      const ok = okIdent && okPass;
+      signInBtn.disabled = !ok;
+      return ok;
+    }
+
+    ident.addEventListener('blur', ()=>{ touchedIdent = true; validateIdent(true); checkFormValid(); });
+    password.addEventListener('blur', ()=>{ touchedPassword = true; validatePassword(true); checkFormValid(); });
+
+    ident.addEventListener('input', ()=>{
+      touchedIdent = true;      
+      validateIdent(true);
+      checkFormValid();
+    });
+    password.addEventListener('input', ()=>{
+      touchedPassword = true;  
+      validatePassword(true);
+      checkFormValid();
+    });
+
+    signInBtn.addEventListener('click', (e)=>{
+      const rect = signInBtn.getBoundingClientRect();
+      const ripple = document.createElement('span'); ripple.className = 'ripple';
+      ripple.style.left = (e.clientX - rect.left) + 'px'; ripple.style.top  = (e.clientY - rect.top)  + 'px';
+      signInBtn.appendChild(ripple); ripple.addEventListener('animationend', ()=> ripple.remove());
+    });
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      formError.style.display = 'none';
+      formSuccess.style.display = 'none';
+
+      touchedIdent = true;
+      touchedPassword = true;
+
+      const ok = checkFormValid();
+      if(!ok){
+        formWrap.classList.remove('shake'); void formWrap.offsetWidth; formWrap.classList.add('shake');
+        (!validateIdent(true)?ident:password).focus();
+        return;
+      }
+
+      signInBtn.classList.add('loading');
+      signInBtn.setAttribute('disabled','true');
+      const idRaw = ident.value.trim();
+      const idVal = (mode==='phone') ? idRaw.replace(/\s|-/g,'') : idRaw;
+
+      try{
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          credentials: 'include', // ✅ nếu bạn dùng HttpSession
+          body: JSON.stringify({
+            loginType: mode.toUpperCase(),  // "EMAIL" | "PHONE" | "USERNAME"
+            identifier: idVal,              // giá trị nhập vào 
+            password: password.value
+          })
+        });
+        const json = await res.json(); 
+        if(!res.ok || !json.ok){
+          throw new Error(json?.error || json?.message || 'Đăng nhập thất bại');
+        }
+        const token = json?.data?.accessToken || '';
+        if (token) localStorage.setItem('accessToken', token);
+        formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…';
+        formSuccess.style.display = 'block';
+        window.location.href = 'D_cine_home.html';
+      }catch(err){
+        formError.textContent = err.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.';
+        formError.style.display = 'block';
+
+        clearFieldError(passwordBox, errPassword);
+        clearFieldError(identBox, errIdent);
+
+        if (/mật khẩu|password/i.test(formError.textContent)){
+          showFieldError(passwordBox, errPassword, err.message);
+          password.focus();
+        } else {
+          showFieldError(identBox, errIdent, err.message);
+          ident.focus();
+        }
+
+        formWrap.classList.remove('shake'); void formWrap.offsetWidth; formWrap.classList.add('shake');
+      }finally{
+        signInBtn.classList.remove('loading');
+        signInBtn.removeAttribute('disabled');
+      }
+    });
+
+    guestBtn.addEventListener('click', ()=>{ window.location.href = 'D_cine_home.html?guest=1'; });
+    setMode('email');
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Home</title></head>
+<body>
+<h2>Trang chủ</h2>
+<h2>
+    <span th:if="${#authorization.expression('isAuthenticated()')}"
+          th:text="'Xin chào ' + ${#authentication.name}">Xin chào!</span>
+    <span th:unless="${#authorization.expression('isAuthenticated()')}">Chưa đăng nhập</span>
+</h2>
+<a th:href="@{/logout}">Đăng xuất</a>
+</body>
+</html>
