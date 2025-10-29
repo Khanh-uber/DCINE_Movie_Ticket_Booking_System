@@ -37,44 +37,92 @@
 
 | Thành phần | Mô tả | Công nghệ |
 |-------------|--------|-----------|
-| **Front-end** | Giao diện người dùng, hiển thị phim, chọn ghế, thanh toán. | HTML, CSS, JavaScript, ReactJS (hoặc JSP nếu Java Web) |
-| **Back-end** | Xử lý logic nghiệp vụ, giao tiếp DB, xác thực người dùng, API thanh toán. | Java Spring Boot *(hoặc Node.js Express)* |
+| **Front-end** | Giao diện người dùng, hiển thị phim, chọn ghế, thanh toán. | HTML, CSS, JavaScript, ReactJS |
+| **Back-end** | Xử lý logic nghiệp vụ, giao tiếp DB, xác thực người dùng, API thanh toán. | Java Spring Boot |
 | **Database** | Lưu thông tin phim, rạp, ghế, vé, người dùng, thanh toán. | MySQL |
-| **Tools** | Quản lý mã nguồn & môi trường phát triển. | GitHub, IntelliJ / VS Code, Postman |
+| **Tools** | Quản lý mã nguồn & môi trường phát triển. | GitHub, VS Code, Postman |
 
 ---
 
-## 📁 Cấu trúc thư mục (đề xuất)
+## 📁 Cấu trúc thư mục
 ```
-DCINE_Web_Booking_System/
+DCINE_Movie_Ticket_Booking_System/
 │
-├── backend/                 # Code xử lý logic & API (Java Spring Boot)
-│   ├── src/main/java/com/dcine/
-│   └── pom.xml
-│
-├── frontend/                # Code giao diện web (ReactJS / HTML-CSS-JS)
+├── frontend/
 │   ├── public/
+│   │   ├── index.html
+│   │   └── images/
+│   │       ├── movies/                     # Toàn bộ ảnh & trailer phim
+│   │       │   ├── cuc_cung_cua_ngoai/
+│   │       │   │   ├── banner.jpg
+│   │       │   │   ├── poster_ngang.jpg
+│   │       │   │   ├── poster_doc.jpg
+│   │       │   │   ├── cast/
+│   │       │   │   │   ├── viet_huong.jpg
+│   │       │   │   │   └── hong_dao.jpg
+│   │       │   │   └── trailer_links.xlsx
+│   │       │   └── ...
+│   │       ├── combos/
+│   │       ├── qrcodes/                   
+│   │       └── favicon.ico
+│   │
 │   ├── src/
-│   └── package.json
+│   │   ├── assets/                       # CSS, fonts, icon riêng
+│   │   ├── components/                   # Component tái sử dụng (Navbar, Footer, Button, Card,…)
+│   │   ├── pages/                        # Trang chức năng
+│   │   │   ├── Home.jsx                 
+│   │   │   ├── MovieDetail.jsx           
+│   │   │   ├── Booking.jsx               
+│   │   │   ├── Payment.jsx               
+│   │   │   ├── Login.jsx / Register.jsx  
+│   │   │   └── TicketSuccess.jsx         
+│   │   ├── services/                     # Gọi API tới backend (fetch)
+│   │   │   ├── api.js                    # Cấu hình baseURL
+│   │   │   └── movieService.js           # Ví dụ: gọi GET /api/movies
+│   │   ├── App.js                        # Routing toàn trang
+│   │   ├── index.js                      # Điểm khởi chạy ứng dụng
+│   │   └── styles/                       # File CSS hoặc SCSS chung
+│   │
+│   ├── package.json                      # Khai báo thư viện frontend
+│   └── README.md                         # Hướng dẫn cài đặt frontend
 │
-├── database/
-│   ├── dcine_schema.sql
-│   └── sample_data.sql
+├── backend/                           # Xử lý logic và dữ liệu
+│   ├── src/
+│   │   ├── main/java/com/dcine/          # Mã nguồn chính (Spring Boot)
+│   │   │   ├── controller/               # Các API Endpoint (MovieController,…)
+│   │   │   ├── service/                  # Xử lý nghiệp vụ (MovieService,…)
+│   │   │   ├── model/                    # Entity (Movie.java, Ticket.java,…)
+│   │   │   ├── repository/               # Repository kết nối DB
+│   │   │   └── config/                   # Cấu hình CORS, Security, Swagger
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       └── static/                     # Nếu muốn backend phục vụ ảnh trực tiếp
+│   │           └── movies/
+|   |
+│   ├── database/
+│   │   ├── dcine_schema.sql        # Cấu trúc bảng (CREATE TABLE,…)
+│   │   ├── dcine_data.sql          # Dữ liệu mẫu (INSERT INTO,…)
+│   │   └── README.md               # Hướng dẫn import DB
+|   |
+│   ├── pom.xml
+│   ├── Dockerfile                        # (tuỳ chọn) file build docker backend
+│   └── README.md                         # Hướng dẫn chạy backend
 │
-├── docs/
-│   ├── UseCaseDiagram.png
-│   ├── ERD.png
-│   ├── SprintPlan.md
-│   └── Report.docx
+├── testing/                           # Kiểm thử (Testing & QA)
+│   ├── selenium/                         # Script kiểm thử giao diện (UI test)
+│   ├── postman/                          # Collection test API
+│   ├── mock_data/                        # Dữ liệu mẫu (movies.json,…)
+│   ├── test_cases.xlsx                   # Test case Excel (login, đặt vé, thanh toán,…)
+│   └── README.md                         # Mô tả kế hoạch test & công cụ dùng
 │
-├── README.md
-└── LICENSE
+└── README.md                             # Giới thiệu tổng quan dự án
+
 ```
 ---
 
 ## ⚙️ Cách chạy dự án
 
-### 🔧 Cách 1 – Chạy với Spring Boot + ReactJS
+### Chạy với Spring Boot + ReactJS
 
 **Yêu cầu:**  
 - JDK 17 trở lên  
@@ -128,6 +176,37 @@ Không sử dụng cho mục đích thương mại.
 📧 [minhkhanh2005py@gmail.com](mailto:minhkhanh2005py@gmail.com)
 
 ---
+
+## Hướng phát triển trong tương lai
+
+Hệ thống hiện tại tập trung vào **luồng đặt vé cho khách hàng**, tuy nhiên vẫn còn nhiều tiềm năng mở rộng. Trong tương lai, nhóm dự kiến phát triển thêm các tính năng sau:
+
+### 🔹 1. Mở rộng chức năng quản trị
+- Xây dựng **dashboard cho quản lý rạp**, thống kê doanh thu, suất chiếu và lượng khách đặt vé.  
+- Cho phép **quản lý phim, phòng chiếu, giá vé và nhân viên** thông qua giao diện riêng.
+
+### 🔹 2. Nâng cao trải nghiệm người dùng
+- Tích hợp **đăng nhập bằng mạng xã hội** (Google, Facebook).  
+- Thêm tính năng **gợi ý phim theo sở thích cá nhân**, dựa trên lịch sử đặt vé.  
+- Cải thiện tốc độ tải trang và tối ưu trải nghiệm trên thiết bị di động (Mobile-first).
+
+### 🔹 3. Tích hợp công nghệ mới
+- Hỗ trợ **thanh toán bằng ví điện tử nâng cao** (Apple Pay, Samsung Pay).  
+- Áp dụng **AI Chatbot** để tư vấn phim, suất chiếu và khuyến mãi.  
+- Sử dụng **Cloud Storage** (Firebase, AWS S3) để lưu trữ poster và video trailer.  
+
+### 🔹 4. Mở rộng hệ sinh thái
+- Phát triển **ứng dụng di động (Mobile App)** cho Android/iOS. 
+- Cho phép người dùng **đánh giá phim, bình luận và chia sẻ trải nghiệm**.
+
+## Tóm tắt
+> Dự án hiện tại là **phiên bản nền tảng** của hệ thống đặt vé xem phim, hoàn thiện đầy đủ quy trình đặt vé cho khách hàng.  
+> Trong tương lai, nhóm mong muốn biến nó thành **một hệ sinh thái quản lý rạp chiếu phim thông minh**, hỗ trợ đầy đủ cho cả khách hàng và nhân viên quản lý, đồng thời tích hợp công nghệ mới nhằm nâng cao trải nghiệm người dùng.
+
+---
+
+📅 *Cập nhật lần cuối: 29/10/2025*  
+✍️ *Nhóm 3KT PTIT – Movie Ticket Booking System*
 
 > *“Delivering great cinema experience — one click at a time.”* 🎥
 
