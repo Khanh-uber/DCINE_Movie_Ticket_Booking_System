@@ -48,74 +48,84 @@
 ```
 DCINE_Movie_Ticket_Booking_System/
 │
-├── frontend/
-│   ├── public/
-│   │   ├── index.html
-│   │   └── images/
-│   │       ├── movies/                     # Toàn bộ ảnh & trailer phim
-│   │       │   ├── cuc_cung_cua_ngoai/
-│   │       │   │   ├── banner.jpg
-│   │       │   │   ├── poster_ngang.jpg
-│   │       │   │   ├── poster_doc.jpg
-│   │       │   │   ├── cast/
-│   │       │   │   │   ├── viet_huong.jpg
-│   │       │   │   │   └── hong_dao.jpg
-│   │       │   │   └── trailer_links.xlsx
-│   │       │   └── ...
-│   │       ├── combos/
-│   │       ├── qrcodes/                   
-│   │       └── favicon.ico
+├── frontend/                              # Giao diện người dùng
 │   │
-│   ├── src/
-│   │   ├── assets/                       # CSS, fonts, icon riêng
-│   │   ├── components/                   # Component tái sử dụng (Navbar, Footer, Button, Card,…)
-│   │   ├── pages/                        # Trang chức năng
-│   │   │   ├── Home.jsx                 
-│   │   │   ├── MovieDetail.jsx           
-│   │   │   ├── Booking.jsx               
-│   │   │   ├── Payment.jsx               
-│   │   │   ├── Login.jsx / Register.jsx  
-│   │   │   └── TicketSuccess.jsx         
-│   │   ├── services/                     # Gọi API tới backend (fetch)
-│   │   │   ├── api.js                    # Cấu hình baseURL
-│   │   │   └── movieService.js           # Ví dụ: gọi GET /api/movies
-│   │   ├── App.js                        # Routing toàn trang
-│   │   ├── index.js                      # Điểm khởi chạy ứng dụng
-│   │   └── styles/                       # File CSS hoặc SCSS chung
+│   ├── components/                        # Thành phần giao diện dùng chung
+│   │   ├── header.html                    # Thanh điều hướng trên (Navbar)
+│   │   └── footer.html                    # Chân trang
 │   │
-│   ├── package.json                      # Khai báo thư viện frontend
-│   └── README.md                         # Hướng dẫn cài đặt frontend
+│   ├── pages/                             # Các trang chức năng của hệ thống
+│   │   ├── index.html                     
+│   │   ├── D_cine_login.html              
+│   │   ├── D_cine_signup.html            
+│   │   ├── D_cine_forgot.html            
+|   |   ├── ...
+│   │   |
+|   │   └── assets/                            # Tài nguyên tĩnh
+|   │       ├── css/
+|   │       │   ├── main.css                   # CSS chung toàn site
+|   │       │   ├── login.css                  # CSS riêng cho login
+|   │       │   ├── signup.css                 # CSS riêng cho signup
+|   │       │   ├── forgot.css                 # CSS riêng cho forgot
+|   │       │   └── ...
+|   │       │
+|   │       ├── js/
+|   │       │   ├── main.js                    # Script chung (load header, footer)
+|   │       │   ├── login.js                   # Xử lý đăng nhập
+|   │       │   ├── signup.js                  # Xử lý đăng ký
+|   │       │   └── ...
+|   │       │
+|   │       └── images/
+|   │           ├── icons/                     # Logo, favicon, biểu tượng nhỏ
+|   │           │   ├── logo.png
+|   │           │   ├── menu_icon.svg
+|   │           │   └── favicon.ico
+|   │           │
+|   │           ├── movies/                    # Ảnh banner, poster, cast phim
+|   │           │   ├── avatar_3_lua_va_tro_tan/
+|   │           │   │   ├── banner.jpg
+|   │           │   │   ├── poster_doc.jpg
+|   │           │   │   ├── poster_ngang.jpg
+|   │           │   │   ├── cast/
+|   │           │   │   │   ├── nguyen_van_a.jpg
+|   │           │   │   │   └── tran_thi_b.jpg
+|   │           │   ├── ...
+|   |           |   |
+|   |           |   └── trailer_links.xlsx
+|   │           │
+|   │           └── ui/                        # Ảnh nền giao diện login/signup/forgot
+│   │
+│   └── README.md                          # Hướng dẫn cấu trúc & chạy frontend
 │
-├── backend/                           # Xử lý logic và dữ liệu
+├── backend/                               # Xử lý logic, API và cơ sở dữ liệu
 │   ├── src/
-│   │   ├── main/java/com/dcine/          # Mã nguồn chính (Spring Boot)
-│   │   │   ├── controller/               # Các API Endpoint (MovieController,…)
-│   │   │   ├── service/                  # Xử lý nghiệp vụ (MovieService,…)
-│   │   │   ├── model/                    # Entity (Movie.java, Ticket.java,…)
-│   │   │   ├── repository/               # Repository kết nối DB
-│   │   │   └── config/                   # Cấu hình CORS, Security, Swagger
+│   │   ├── main/java/com/dcine/           # Mã nguồn Java (Spring Boot)
+│   │   │   ├── controller/
+│   │   │   ├── service/
+│   │   │   ├── model/
+│   │   │   ├── repository/
+│   │   │   └── config/
 │   │   └── resources/
-│   │       ├── application.properties
-│   │       └── static/                     # Nếu muốn backend phục vụ ảnh trực tiếp
-│   │           └── movies/
-|   |
+│   │       ├── application.properties     # Cấu hình DB, port, API
+│   │       └── static/
+│   │           └── movies/                # Ảnh tĩnh nếu backend phục vụ trực tiếp
+│   │
 │   ├── database/
-│   │   ├── dcine_schema.sql        # Cấu trúc bảng (CREATE TABLE,…)
-│   │   ├── dcine_data.sql          # Dữ liệu mẫu (INSERT INTO,…)
-│   │   └── README.md               # Hướng dẫn import DB
-|   |
+│   │   ├── dcine_schema.sql               # Cấu trúc bảng
+│   │   ├── dcine_data.sql                 # Dữ liệu mẫu
+│   │   └── README.md
+│   │
 │   ├── pom.xml
-│   ├── Dockerfile                        # (tuỳ chọn) file build docker backend
-│   └── README.md                         # Hướng dẫn chạy backend
+│   └── README.md
 │
-├── testing/                           # Kiểm thử (Testing & QA)
-│   ├── selenium/                         # Script kiểm thử giao diện (UI test)
-│   ├── postman/                          # Collection test API
-│   ├── mock_data/                        # Dữ liệu mẫu (movies.json,…)
-│   ├── test_cases.xlsx                   # Test case Excel (login, đặt vé, thanh toán,…)
-│   └── README.md                         # Mô tả kế hoạch test & công cụ dùng
+├── testing/                               # Kiểm thử
+│   ├── selenium/                        
+│   ├── postman/                         
+│   ├── mock_data/                        
+│   ├── test_cases.xlsx                  
+│   └── README.md                         
 │
-└── README.md                             # Giới thiệu tổng quan dự án
+└── README.md                              # Giới thiệu tổng quan dự án
 
 ```
 ---
@@ -205,7 +215,7 @@ Hệ thống hiện tại tập trung vào **luồng đặt vé cho khách hàng
 
 ---
 
-📅 *Cập nhật lần cuối: 29/10/2025*  
+📅 *Cập nhật lần cuối: 30/10/2025*  
 ✍️ *Nhóm 3KT PTIT – Movie Ticket Booking System*
 
 > *“Delivering great cinema experience — one click at a time.”* 🎥

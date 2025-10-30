@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D-cine — Quên / Đặt lại mật khẩu</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --hero:url('assets/images/ui/fire_force.jpeg');  /* <— Đổi ảnh nền tại đây */
+  --bg:#050505; --text:#fff; --muted:#cfcfcf; --muted-2:#909090;
+  --accent:#E50914; --accent-2:#C6101A; --danger:#E50914;
+  --stroke:#7c7c7c; --radius:14px;
+}
+
+/* ===== Background (ảnh mờ + gradient) ===== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; color:var(--text); background:var(--bg);
+  font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2;
+  background:var(--hero) center/cover no-repeat;
+  filter:saturate(1.05) contrast(1.05) brightness(.95) blur(2px);
+  transform:scale(1.02);
+}
+body::after{
+  content:""; position:fixed; inset:0; z-index:-1;
+  background:
+    radial-gradient(circle farthest-corner at 10% 90%, rgba(0,0,0,0.95), transparent 90%),
+    radial-gradient(circle farthest-corner at 90% 90%, rgba(0,0,0,0.95), transparent 90%),
+    linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.2) 40%, rgba(0,0,0,.35) 70%, rgba(0,0,0,.6) 100%);
+}
+
+/* ===== Center container ===== */
+.stage{
+  min-height:100svh; display:grid; place-items:center; padding:32px 16px;
+}
+
+/* Glass card */
+.card{
+  width:min(640px, 94vw);
+  backdrop-filter:saturate(130%) blur(16px);
+  background:linear-gradient(180deg, rgba(12,12,12,.56), rgba(10,10,10,.38));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:24px;
+  box-shadow:0 22px 60px rgba(0,0,0,.35);
+  padding:26px clamp(18px,3.8vw,32px) 28px;
+}
+
+/* Header */
+.topbar{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.back{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:8px 12px; border-radius:999px; background:rgba(0,0,0,.35);
+  color:#fff; text-decoration:none; border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(6px);
+  transition:background-color .2s, border-color .2s;
+}
+.back:hover{background:rgba(0,0,0,.55); border-color:rgba(255,255,255,.2)}
+.back svg{width:18px;height:18px}
+.back-text{font-weight:600; font-size:13px; letter-spacing:.2px}
+.brand{font-weight:900; font-size:32px; display:flex; align-items:center; gap:8px; letter-spacing:.2px}
+.brand .d{color:var(--accent); font-size:40px; line-height:1}
+
+/* Titles */
+.h1{font-size:26px; font-weight:800; letter-spacing:.1px; margin:10px 0 6px}
+.sub{color:#dcdcdc; font-size:13px; margin:0 0 16px}
+
+/* Form atoms */
+form{display:grid; gap:16px}
+.field{display:grid; gap:6px}
+label{font-size:12.5px; font-weight:600}
+.input{
+  position:relative; display:flex; align-items:center; gap:10px;
+  background:rgba(12,12,12,.55); border:1px solid var(--stroke);
+  height:48px; padding:0 12px; border-radius:var(--radius); color:#fff;
+  transition:border-color .2s, box-shadow .2s, background-color .2s;
+}
+.input:has(input:focus-visible){border-color:var(--accent); box-shadow:0 0 0 3px rgba(229,9,20,.18)}
+.input input{flex:1; background:transparent; border:0; outline:0; color:#fff; height:100%; font-size:15px; caret-color:var(--accent)}
+.input input::placeholder{color:var(--muted-2)}
+.prefix{color:#d0d0d0; display:inline-flex}
+.suffix{color:#cfcfcf; display:inline-flex}
+.input.error{border-color:var(--danger); box-shadow:0 0 0 3px rgba(229,9,20,.18)}
+.err{color:var(--danger); font-size:12px; margin:2px 0 8px}
+.hint{color:#bdbdbd; font-size:12px; margin-top:-2px}
+
+/* OTP */
+.otp-wrap{display:grid; gap:10px}
+.otp-row{display:flex; gap:10px; justify-content:center}
+.otp{
+  width:52px; height:56px; text-align:center; font-size:20px; font-weight:700; letter-spacing:.2px;
+  background:rgba(12,12,12,.55); border:1px solid #1a1a1a; color:#fff; border-radius:12px; outline:none;
+}
+.otp:focus-visible{border-color:var(--accent); box-shadow:0 0 0 3px rgba(229,9,20,.18)}
+
+/* Buttons */
+.btn{
+  position:relative; overflow:hidden; border:0; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  height:48px; width:100%; border-radius:12px; color:#fff; font-weight:800; letter-spacing:.3px;
+  background:linear-gradient(180deg,#F01A25,var(--accent-2)); box-shadow:0 10px 24px rgba(229,9,20,.25);
+  transition:transform .12s ease, box-shadow .2s ease, opacity .2s;
+}
+.btn:hover{transform:translateY(-1px); box-shadow:0 14px 30px rgba(229,9,20,.32)}
+.btn:active{transform:scale(.985)}
+.btn[disabled]{opacity:.6; cursor:not-allowed; box-shadow:none; background:#555}
+.btn-ghost{background:transparent; color:#eee; border:1px solid rgba(255,255,255,.12)}
+
+/* Meter */
+.pw-meter{height:8px; border-radius:6px; background:#131313; overflow:hidden}
+.pw-meter > span{display:block; height:100%; width:0%; background:linear-gradient(90deg,#ff4d4f,#ffec3d,#73d13d); transition:width .25s}
+
+/* Views (swap) */
+.view{opacity:1; transform:translateY(0); transition:opacity .25s, transform .25s}
+.view.hide{opacity:0; transform:translateY(8px); pointer-events:none; position:absolute; inset:0}
+.stack{position:relative; min-height:420px}
+
+/* Compact */
+:root{ --field-gap:14px; --sub-gap:4px }
+form{ gap:var(--field-gap) }
+.field{ gap:var(--sub-gap) }
+
+/* Responsive */
+@media (max-width:480px){ .otp{width:46px; height:50px} }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <section class="card" aria-label="Khôi phục mật khẩu">
+      <div class="topbar">
+        <a class="back" href="D_cine_login.html" aria-label="Quay lại đăng nhập">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="back-text">Quay lại</span>
+        </a>
+        <div class="brand"><span class="d">D</span><span>-cine</span></div>
+      </div>
+
+      <div class="stack">
+        <!-- View A: FORGOT / OTP -->
+        <div id="view-forgot" class="view">
+          <h1 class="h1">Quên mật khẩu</h1>
+          <p class="sub">Nhập <b>Email</b> hoặc <b>Số điện thoại</b> để nhận mã OTP. Sau khi xác thực, bạn sẽ đặt lại mật khẩu mới.</p>
+
+          <div id="forgotMsg" class="hint" style="display:none; color:#35c28b"></div>
+          <div id="forgotErr" class="err" style="display:none"></div>
+
+          <form id="forgotForm" novalidate>
+            <div class="field">
+              <label for="ident">Email hoặc Số điện thoại</label>
+              <div class="input" id="identBox">
+                <span class="prefix" id="identIcon" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm0 0l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <input id="ident" type="text" placeholder="yourname@example.com hoặc 0xxxxxxxxx" autocomplete="email" aria-describedby="err-ident">
+                <button class="icon-btn suffix" id="swapIdent" type="button" title="Đổi Email/SĐT">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h13l-3-3m3 3l-3 3M21 17H8l3 3m-3-3l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
+              <p class="err" id="err-ident"></p>
+            </div>
+
+            <button class="btn" id="sendOtpBtn" type="button">Gửi OTP</button>
+
+            <div class="otp-wrap">
+              <label for="otp1" style="font-size:12.5px; font-weight:600">Nhập mã OTP</label>
+              <div class="otp-row" id="otpRow" aria-describedby="otpHelp">
+                <input class="otp" id="otp1" inputmode="numeric" maxlength="1" pattern="[0-9]*" autocomplete="one-time-code">
+                <input class="otp" id="otp2" inputmode="numeric" maxlength="1" pattern="[0-9]*">
+                <input class="otp" id="otp3" inputmode="numeric" maxlength="1" pattern="[0-9]*">
+                <input class="otp" id="otp4" inputmode="numeric" maxlength="1" pattern="[0-9]*">
+                <input class="otp" id="otp5" inputmode="numeric" maxlength="1" pattern="[0-9]*">
+                <input class="otp" id="otp6" inputmode="numeric" maxlength="1" pattern="[0-9]*">
+              </div>
+              <p class="hint" id="otpHelp">OTP gồm 6 số. <span id="resendHint"></span></p>
+              <p class="err" id="err-otp"></p>
+            </div>
+
+            <button class="btn btn-ghost" id="verifyBtn" type="button">Xác nhận OTP</button>
+          </form>
+        </div>
+
+        <!-- View B: RESET -->
+        <div id="view-reset" class="view hide" aria-hidden="true">
+          <h1 class="h1">Tạo mật khẩu mới</h1>
+          <p class="sub">Đặt mật khẩu mạnh và dễ nhớ với bạn.</p>
+
+          <div id="resetMsg" class="hint" style="display:none; color:#35c28b"></div>
+          <div id="resetErr" class="err" style="display:none"></div>
+
+          <form id="resetForm" novalidate>
+            <div class="field">
+              <label for="newpass">Mật khẩu mới</label>
+              <div class="input" id="newBox">
+                <span class="prefix" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V8a5 5 0 1110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                <input id="newpass" type="password" placeholder="••••••••" autocomplete="new-password">
+                <button id="toggle1" class="icon-btn suffix" type="button" aria-pressed="false">
+                  <svg id="eyeOff1" class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A3 3 0 0012 15a3 3 0 001.42-.38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.94 17.94C15.9 19.22 13.54 20 12 20 6 20 3 12 3 12a17.9 17.9 0 013.06-4.95" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.73 5.08A9.84 9.84 0 0112 4c6 0 9 8 9 8a17.83 17.83 0 01-2.5 4.15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  <svg id="eyeOn1"  class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none"><path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                </button>
+              </div>
+              <div class="pw-meter" aria-hidden="true"><span id="pwBar"></span></div>
+              <p class="hint">Tối thiểu 8 ký tự, gồm chữ và số; có ký tự đặc biệt sẽ mạnh hơn.</p>
+              <p class="err" id="err-new"></p>
+            </div>
+
+            <div class="field">
+              <label for="conf">Xác nhận mật khẩu</label>
+              <div class="input" id="confBox">
+                <span class="prefix" aria-hidden="true">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V8a5 5 0 1110 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </span>
+                <input id="conf" type="password" placeholder="Nhập lại mật khẩu" autocomplete="new-password">
+                <button id="toggle2" class="icon-btn suffix" type="button" aria-pressed="false">
+                  <svg id="eyeOff2" class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A3 3 0 0012 15a3 3 0 001.42-.38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17.94 17.94C15.9 19.22 13.54 20 12 20 6 20 3 12 3 12a17.9 17.9 0 013.06-4.95" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  <svg id="eyeOn2"  class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none"><path d="M1 12s3-8 11-8 11 8 11 8-3 8-11 8S1 12 1 12z" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                </button>
+              </div>
+              <p class="err" id="err-conf"></p>
+            </div>
+
+            <button class="btn" id="resetBtn" type="submit" disabled>Đặt lại mật khẩu</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+/* ===== Helpers ===== */
+const $ = (s)=>document.querySelector(s);
+const mailIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm0 0l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const phoneIcon = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v2a2 2 0 01-2.18 2A19.8 19.8 0 013 5.18 2 2 0 015 3h2a2 2 0 012 1.72c.12.9.36 1.77.7 2.58a2 2 0 01-.45 2.11L8.1 10.9a16 16 0 006 6l1.5-1.15a2 2 0 012.11-.45c.81.34 1.68.58 2.58.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ===== Elements ===== */
+const viewForgot = $('#view-forgot');
+const viewReset  = $('#view-reset');
+
+const ident = $('#ident'), identBox = $('#identBox'), errIdent = $('#err-ident'), identIcon = $('#identIcon');
+const forgotMsg = $('#forgotMsg'), forgotErr = $('#forgotErr');
+const sendOtpBtn = $('#sendOtpBtn'), swapIdent = $('#swapIdent');
+const otpInputs = [...document.querySelectorAll('.otp')];
+const errOtp = $('#err-otp'), resendHint = $('#resendHint'), verifyBtn = $('#verifyBtn');
+
+const newpass = $('#newpass'), conf = $('#conf');
+const newBox = $('#newBox'), errNew = $('#err-new'), confBox = $('#confBox'), errConf = $('#err-conf');
+const pwBar = $('#pwBar');
+const resetMsg = $('#resetMsg'), resetErr = $('#resetErr');
+const resetForm = $('#resetForm'), resetBtn = $('#resetBtn');
+
+/* ===== State ===== */
+let mode='email';       // email | phone
+let otpSent=false, otpVerified=false;
+let touchedIdent=false;
+let cooldown=0, timer=null;
+
+/* ===== Validators ===== */
+const isValidEmail = (v)=>{ const at=v.indexOf('@'); if(at<=0) return {ok:false,reason:"Thiếu ký tự '@'"}; const d=v.slice(at+1); if(!d.includes('.')) return {ok:false,reason:"Tên miền thiếu dấu chấm"}; if(d.split('.').pop().length<2) return {ok:false,reason:"Đuôi miền quá ngắn"}; return {ok:true}; };
+const isValidPhone = (v)=>{ const s=v.replace(/\s|-/g,''); if(!(/(^\+?84|^0)/.test(s))) return {ok:false,reason:"Bắt đầu bằng 0 hoặc +84"}; if(!(/^\+?\d+$/.test(s))) return {ok:false,reason:"Chỉ gồm chữ số"}; const digits=s.replace(/^\+/, '').replace(/^84/,'0'); if(digits.length<10||digits.length>11) return {ok:false,reason:"Độ dài 10–11 số"}; return {ok:true}; };
+function showFieldError(box,errEl,msg){ box.classList.add('error'); errEl.textContent=msg||''; errEl.style.display='block'; const i=box.querySelector('input'); if(i) i.setAttribute('aria-invalid','true'); }
+function clearFieldError(box,errEl){ box.classList.remove('error'); errEl.textContent=''; errEl.style.display=''; const i=box.querySelector('input'); if(i) i.removeAttribute('aria-invalid'); }
+
+/* ===== Email/Phone auto-detect ===== */
+ident.addEventListener('input', ()=>{
+  const v=ident.value.trim();
+  if(/^\+?\d/.test(v)){ mode='phone'; identIcon.innerHTML=phoneIcon; ident.setAttribute('autocomplete','tel-national'); }
+  else { mode='email'; identIcon.innerHTML=mailIcon; ident.setAttribute('autocomplete','email'); }
+  if(touchedIdent || errIdent.textContent) validateIdent(true);
+  updateSendState();
+});
+ident.addEventListener('blur', ()=>{ touchedIdent=true; validateIdent(true); });
+
+function validateIdent(show=true){
+  const v=ident.value.trim();
+  if(!v){ if(show) showFieldError(identBox, errIdent, 'Không được để trống.'); else clearFieldError(identBox, errIdent); return false; }
+  const r=(mode==='email')?isValidEmail(v):isValidPhone(v);
+  if(!r.ok){ if(show) showFieldError(identBox, errIdent, r.reason+'.'); else clearFieldError(identBox, errIdent); return false; }
+  clearFieldError(identBox, errIdent); return true;
+}
+
+/* ===== Swap email/phone ===== */
+swapIdent.addEventListener('click', ()=>{
+  if(mode==='email'){ mode='phone'; identIcon.innerHTML=phoneIcon; ident.placeholder='0xxxxxxxxx hoặc +84xxxxxxxxx'; }
+  else { mode='email'; identIcon.innerHTML=mailIcon; ident.placeholder='yourname@example.com'; }
+  validateIdent(false); updateSendState(); ident.focus();
+});
+
+/* ===== OTP send / cooldown ===== */
+function startCooldown(sec=60){
+  cooldown=sec; resendHint.textContent=`Có thể gửi lại sau ${cooldown}s.`; sendOtpBtn.disabled=true;
+  if(timer) clearInterval(timer);
+  timer=setInterval(()=>{
+    cooldown--;
+    resendHint.textContent = cooldown>0 ? `Có thể gửi lại sau ${cooldown}s.` : 'Bạn có thể gửi lại OTP.';
+    if(cooldown<=0){ clearInterval(timer); sendOtpBtn.disabled=false; }
+  },1000);
+}
+function updateSendState(){ sendOtpBtn.disabled = !validateIdent(false) || cooldown>0; }
+
+sendOtpBtn.addEventListener('click', ()=>{
+  forgotErr.style.display='none'; forgotMsg.style.display='none';
+  touchedIdent=true;
+  if(!validateIdent(true)){ ident.focus(); return; }
+  otpSent=true; otpVerified=false;
+  forgotMsg.textContent='Đã gửi OTP. Vui lòng kiểm tra tin nhắn/email.'; forgotMsg.style.display='block';
+  startCooldown(60);
+  otpInputs.forEach(i=>i.value=''); document.getElementById('otp1').focus();
+});
+
+/* ===== OTP behaviour ===== */
+otpInputs.forEach((input,idx)=>{
+  input.addEventListener('input', (e)=>{
+    e.target.value=e.target.value.replace(/\D/g,'').slice(0,1);
+    if(e.target.value && idx<otpInputs.length-1) otpInputs[idx+1].focus();
+    errOtp.textContent='';
+  });
+  input.addEventListener('keydown', (e)=>{
+    if(e.key==='Backspace' && !e.target.value && idx>0) otpInputs[idx-1].focus();
+    if(e.key==='ArrowLeft' && idx>0) otpInputs[idx-1].focus();
+    if(e.key==='ArrowRight' && idx<otpInputs.length-1) otpInputs[idx+1].focus();
+    if(e.key==='Enter'){ verifyBtn.click(); }
+  });
+});
+
+verifyBtn.addEventListener('click', ()=>{
+  if(!otpSent){ errOtp.textContent='Bạn cần gửi OTP trước.'; return; }
+  const code = otpInputs.map(i=>i.value).join('');
+  if(code.length<6){ errOtp.textContent='Mã OTP chưa đủ 6 số.'; return; }
+  // DEMO: accept any 6-digit OTP
+  otpVerified = true;
+  forgotMsg.textContent='OTP hợp lệ. Hãy đặt mật khẩu mới.';
+  forgotMsg.style.display='block';
+
+  // Swap view: Forgot -> Reset
+  viewForgot.classList.add('hide');
+  viewReset.classList.remove('hide');
+  viewReset.setAttribute('aria-hidden','false');
+  setTimeout(()=> document.getElementById('newpass').focus(), 60);
+});
+
+/* ===== Reset side ===== */
+const t1=$('#toggle1'), t2=$('#toggle2'), eyeOn1=$('#eyeOn1'), eyeOff1=$('#eyeOff1'), eyeOn2=$('#eyeOn2'), eyeOff2=$('#eyeOff2');
+function setPw(btn,input,on,off,v){ input.type=v?'text':'password'; on.style.display=v?'block':'none'; off.style.display=v?'none':'block'; btn.setAttribute('aria-pressed',String(v)); }
+t1?.addEventListener('click', ()=> setPw(t1,newpass,eyeOn1,eyeOff1, newpass.type==='password'));
+t2?.addEventListener('click', ()=> setPw(t2,conf,   eyeOn2,eyeOff2, conf.type==='password'));
+
+function scorePassword(v){ let s=0; if(v.length>=8)s++; if(/[A-Z]/.test(v)&&/[a-z]/.test(v))s++; if(/\d/.test(v))s++; if(/[^\w\s]/.test(v))s++; return s; }
+function validateNew(show=true){
+  const v=newpass.value;
+  if(!v){ if(show) showFieldError(newBox, errNew, 'Không được để trống.'); else clearFieldError(newBox, errNew); pwBar.style.width='0%'; return false; }
+  if(!(v.length>=8 && /[A-Za-z]/.test(v) && /\d/.test(v))){ if(show) showFieldError(newBox, errNew, 'Tối thiểu 8 ký tự, gồm chữ và số.'); else clearFieldError(newBox, errNew); }
+  else clearFieldError(newBox, errNew);
+  const sc=scorePassword(v), pct=[0,25,50,75,100][sc]; pwBar.style.width=pct+'%';
+  return sc>=3;
+}
+function validateConf(show=true){
+  const v=conf.value;
+  if(v!==newpass.value){ if(show) showFieldError(confBox, errConf, 'Chưa khớp mật khẩu.'); else clearFieldError(confBox, errConf); return false; }
+  clearFieldError(confBox, errConf); return true;
+}
+function updateResetState(){ resetBtn.disabled = !(validateNew(false) && validateConf(false)); }
+newpass?.addEventListener('input', ()=>{ validateNew(true); validateConf(true); updateResetState(); });
+conf?.addEventListener('input',    ()=>{ validateConf(true); updateResetState(); });
+
+resetForm?.addEventListener('submit', async (e)=>{
+  e.preventDefault(); resetErr.style.display='none'; resetMsg.style.display='none';
+  if(!(validateNew(true)&&validateConf(true))) return;
+  resetBtn.classList.add('loading'); resetBtn.setAttribute('disabled','true');
+  await new Promise(r=>setTimeout(r,800));
+  resetMsg.textContent='Đặt lại mật khẩu thành công. Đang chuyển về đăng nhập…';
+  resetMsg.style.display='block';
+  setTimeout(()=>{ window.location.href='D_cine_login.html'; }, 900);
+});
+
+/* ===== Init ===== */
+(function init(){
+  resendHint.textContent='Chưa nhận được mã? Bấm Gửi OTP.';
+  updateSendState();
+})();
+</script>
+</body>
+</html>

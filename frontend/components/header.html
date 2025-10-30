@@ -1,0 +1,52 @@
+<!-- header.html -->
+<header th:fragment="header" id="site-header" class="header">
+  <div class="hdr-wrap">
+    <a href="/" class="logo" aria-label="D-cine"><span class="d">D</span><span class="cine">-cine</span></a>
+    <nav class="main-nav" aria-label="Chính">
+      <a href="/"           class="nav-link" th:classappend="${#httpServletRequest.requestURI=='/'} ? ' active'">Trang chủ</a>
+      <a href="/movies"     class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/movies')} ? ' active'">Phim</a>
+      <a href="/theaters"   class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/theaters')} ? ' active'">Rạp</a>
+      <a href="/promotions" class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/promotions')} ? ' active'">Khuyến mãi</a>
+      <a href="/profile"    class="nav-link" th:classappend="${#httpServletRequest.requestURI.startsWith('/profile')} ? ' active'">Hồ sơ</a>
+    </nav>
+
+    <div class="hdr-tools">
+      <form action="movies.html" class="search" role="search">
+        <span class="icon" aria-hidden="true">
+          <!-- search (Heroicons style) -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+            <path d="M20 20L17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <input type="text" name="q" placeholder="Tìm kiếm phim..." aria-label="Tìm kiếm phim"/>
+      </form>
+
+      <a class="icon-btn" href="cart.html" aria-label="Giỏ hàng">
+        <!-- cart -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 3h2l2.4 12.3a2 2 0 0 0 2 1.7h7.8a2 2 0 0 0 1.9-1.4l1.7-6.1H7"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="10" cy="20" r="1.5" fill="currentColor"/><circle cx="17" cy="20" r="1.5" fill="currentColor"/>
+        </svg>
+      </a>
+
+      <button class="icon-btn" aria-label="Thông báo">
+        <!-- bell -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M15 17h5l-1.5-2.5A7 7 0 0 1 17 6V5a5 5 0 0 0-10 0v1a7 7 0 0 1-1.5 8.5L4 17h5"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 17a3 3 0 0 0 6 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <a class="icon-btn" href="login.html" aria-label="Tài khoản">
+        <!-- user -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M6 21a6 6 0 0 1 12 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</header>

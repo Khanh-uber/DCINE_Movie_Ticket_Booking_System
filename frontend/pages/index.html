@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>D-cine — Trang chủ</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===== THEME: Cinematic Black–Red ===== */
+    :root{
+      --bg:#050505; --panel:#0b0b0d; --panel-2:#0f0f12;
+      --text:#fff; --muted:#b9b9b9;
+      --cine:#E50914; --cine-d:#b20710;
+      --stroke:#2a2a2a; --radius:14px;
+      --shadow:0 10px 30px rgba(0,0,0,.45);
+      --shadow-red:0 10px 30px rgba(229,9,20,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1240px;margin:auto;padding:0 18px}
+
+    /* ===== HEADER (áp dụng cho header.html) ===== */
+    .header{position:fixed;inset:0 0 auto;z-index:1000;
+      background:linear-gradient(180deg,rgba(5,5,5,.95),rgba(5,5,5,.75));
+      backdrop-filter:saturate(140%) blur(6px); border-bottom:1px solid var(--stroke)}
+    .hdr-wrap{max-width:1240px;margin:auto;padding:10px 18px;display:flex;align-items:center;gap:18px}
+    .logo{font-weight:800;letter-spacing:.2px}
+    .logo .d{color:var(--cine);font-size:28px;margin-right:2px}
+    .main-nav{display:flex;gap:14px;margin-left:8px}
+    .nav-link{padding:8px 10px;border-radius:10px;color:#e8e8e8}
+    .nav-link.active,.nav-link:hover{color:#fff;background:rgba(229,9,20,.08)}
+    .hdr-tools{margin-left:auto;display:flex;align-items:center;gap:10px}
+    .search{display:flex;align-items:center;background:var(--panel-2);border:1px solid var(--stroke);border-radius:999px;padding:6px 10px;width:min(360px,45vw)}
+    .search .icon{opacity:.8;margin-right:6px}
+    .search input{flex:1;background:transparent;border:0;color:var(--text);outline:none;font-size:14px}
+    .icon-btn{background:transparent;border:0;font-size:18px;cursor:pointer;opacity:.85}
+    .icon-btn:hover{opacity:1;filter:drop-shadow(0 2px 8px rgba(255,255,255,.12))}
+
+    /* ===== LAYOUT ===== */
+    main{padding-top:66px}
+
+    /* ===== SKELETON ===== */
+    .skeleton{position:relative;overflow:hidden;background:#121212}
+    .skeleton::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+      transform:translateX(-100%);animation:shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{100%{transform:translateX(100%)}}
+
+    /* ===== HERO ===== */
+    .hero{position:relative;min-height:62vh;border-radius:20px;margin:16px 0 24px;overflow:hidden;background:#0a0a0a}
+    .hero::before{content:'';position:absolute;inset:0;
+      background:
+        radial-gradient(120% 70% at 70% 30%, rgba(229,9,20,.18), transparent 40%),
+        linear-gradient(180deg, rgba(5,5,5,.15), rgba(5,5,5,.85) 70%, rgba(5,5,5,1))}
+    .hero .backdrop{position:absolute;inset:0;background-size:cover;background-position:center;filter:contrast(1.02) saturate(1.03);opacity:.92}
+    .hero-inner{position:relative;z-index:1;max-width:760px;padding:72px 18px 90px}
+    .h-eyebrow{font-size:12px;letter-spacing:.18em;color:#ffb3b8;text-transform:uppercase;opacity:.9;margin-bottom:8px}
+    .hero h1{font-weight:800;font-size:clamp(28px,5vw,56px);line-height:1.05;margin:0 0 10px;text-shadow:0 8px 40px rgba(0,0,0,.5)}
+    .hero p{color:#e9e9e9;max-width:58ch;opacity:.92;margin:0 0 18px}
+    .cta{display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;
+      background:linear-gradient(180deg,var(--cine),var(--cine-d));box-shadow:var(--shadow-red);font-weight:700}
+
+    /* ===== SECTION ===== */
+    .section{padding:34px 0}
+    .section h2{font-size:22px;font-weight:800;margin:0 0 16px}
+
+    /* ===== CAROUSEL: NOW SHOWING ===== */
+    .carousel{position:relative;overflow:hidden;border-radius:16px;padding:12px 0}
+    .rail{display:flex;gap:14px;overflow:auto;scroll-snap-type:x mandatory;padding:0 4px 8px}
+    .poster{flex:0 0 260px;position:relative;border-radius:16px;overflow:hidden;scroll-snap-align:center;background:#0a0a0a;box-shadow:var(--shadow)}
+    .poster img{width:100%;height:360px;object-fit:cover;display:block}
+    .poster .badge{position:absolute;left:10px;bottom:10px;background:rgba(0,0,0,.64);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:12px;padding:6px 10px;border-radius:999px}
+    .arrow{position:absolute;top:42%;transform:translateY(-50%);width:42px;height:42px;border-radius:999px;display:grid;place-items:center;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14);color:#fff;cursor:pointer}
+    .arrow.left{left:8px} .arrow.right{right:8px}
+    .carousel.coverflow{ perspective:1200px; padding-bottom:28px }
+    .carousel.coverflow .rail{ scroll-snap-type: none; }
+    .carousel.coverflow .poster:hover{ transform: none !important; }
+    .rail.dragging{ cursor:grabbing; scroll-snap-type:none }
+    .poster{ transform-origin:center bottom;
+      transition: transform .35s cubic-bezier(.22,.61,.36,1),
+                  filter .35s ease, opacity .35s ease, box-shadow .35s ease; }
+    .poster::after{
+      content:""; position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.0), rgba(0,0,0,.55) 65%);
+      opacity:.6; transition:opacity .3s ease;
+    }
+    .poster.is-center{ box-shadow:var(--shadow-red); }
+    .poster.is-center::after{ opacity:.15 }
+    /* Dots */
+    .dots{ display:flex; justify-content:center; gap:8px; margin-top:10px }
+    .dot{ width:8px; height:8px; border-radius:999px; background:#6b6b6b; opacity:.85;
+      border:1px solid rgba(255,255,255,.15); transform:scale(1); transition:transform .2s ease, background .2s ease }
+    .dot.active{ background:#fff; transform:scale(1.35) }
+
+
+    /* ===== COMING SOON (3 cards) ===== */
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .card{background:#0b0b0b;border:1px solid #1e1e1e;border-radius:16px;overflow:hidden;display:grid;box-shadow:var(--shadow)}
+    .card img{width:100%;height:320px;object-fit:cover}
+    .card .pad{padding:12px;display:grid;gap:8px}
+    .subbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{display:inline-flex;align-items:center;gap:10px;justify-content:center;height:44px;padding:0 14px;border-radius:12px;border:0;cursor:pointer;font-weight:800;letter-spacing:.2px;color:#fff;background:linear-gradient(180deg,#F01A25,var(--cine-d));box-shadow:0 10px 24px rgba(229,9,20,.28)}
+    .btn.outline{background:transparent;border:1px solid #6b6b6b;color:#eee;box-shadow:none}
+
+    /* ===== MEMBERSHIP ===== */
+    .member{background:linear-gradient(180deg,#0a0a0a,#09090b);border-top:1px solid var(--stroke);border-bottom:1px solid var(--stroke)}
+    .member-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center}
+    .member .shot{border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+    .member .lead{font-size:26px;font-weight:800;margin:0 0 10px}
+    .btn-outline{display:inline-block;margin-top:10px;padding:10px 16px;border-radius:12px;border:1px solid var(--cine);font-weight:700}
+
+    /* ===== DEALS ===== */
+    .deals{position:relative;border-radius:16px;overflow:hidden;background:#0b0b0b;display:grid;min-height:320px}
+    .deals .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.4}
+    .deals .grad{position:absolute;inset:0;background:radial-gradient(100% 80% at 12% 60%, rgba(229,9,20,.3), rgba(0,0,0,.0) 40%) , linear-gradient(90deg, rgba(0,0,0,.85), transparent 50%)}
+    .deals .copy{position:relative;z-index:1;align-self:center;padding:20px}
+    .deals .panel{width:min(520px, 90%);border-radius:16px;background:rgba(0,0,0,.64);border:1px solid rgba(255,255,255,.1);padding:18px 18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    .deals p{color:#e9e9e9;font-size:13px;line-height:1.7;margin:0 0 10px}
+
+    /* ===== FOOTER (áp dụng footer.html) ===== */
+    .footer{margin-top:36px;background:#0a0a0a;border-top:1px solid var(--stroke)}
+    .ft-top{max-width:1240px;margin:auto;padding:24px 18px;display:grid;grid-template-columns:1.4fr 2fr;gap:24px}
+    .brand .logo .d{color:var(--cine)}
+    .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .col a{display:block;font-size:13px;color:#e6e6e6;opacity:.9;margin:6px 0}
+    .newsletter .row{display:flex;gap:10px}
+    .newsletter input{flex:1;height:42px;border-radius:12px;border:1px solid #2a2a2a;background:#0f0f0f;color:#fff;padding:0 12px}
+
+    /* ===== Responsive ===== */
+    @media (max-width:1024px){ .cards{grid-template-columns:1fr 1fr}.member-wrap{grid-template-columns:1fr} }
+    @media (max-width:720px){ .main-nav{display:none}.cards{grid-template-columns:1fr}.search{display:none}.hero{min-height:58vh;border-radius:12px} }
+
+    /* ===== Page fade-in ===== */
+    body{opacity:0;transition:opacity .6s ease}
+    body.ready{opacity:1}
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none!important;transition:none!important}
+    }
+
+    /* ===== Reveal on scroll ===== */
+    .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease, transform .6s ease}
+    .reveal.is-visible{opacity:1;transform:translateY(0)}
+
+    /* ===== Hover upgrades ===== */
+    .poster,.card{transition:transform .25s ease, box-shadow .25s ease}
+    .poster:hover{transform:translateY(-2px) scale(1.03);box-shadow:var(--shadow-red)}
+    .card:hover{transform:translateY(-2px) scale(1.02);box-shadow:var(--shadow-red)}
+    .btn:hover,.cta:hover{transform:translateY(-2px);filter:saturate(115%) brightness(1.06)}
+
+    /* ===== Focus-visible ring ===== */
+    :where(a,button,input,select,textarea,[tabindex]):focus{outline:none}
+    :where(a,button,input,select,textarea,[tabindex]):focus-visible{
+      outline:2px solid var(--cine);
+      outline-offset:2px;
+      box-shadow:0 0 0 4px rgba(229,9,20,.18);
+    }
+    .search:focus-within{border-color:var(--cine);box-shadow:0 0 0 3px rgba(229,9,20,.15)}
+
+    /* ===== Carousel polish ===== */
+    .rail{-ms-overflow-style:none;scrollbar-width:none}
+    .rail::-webkit-scrollbar{width:0;height:0;display:none}
+    .carousel .arrow{opacity:0;pointer-events:none;transition:opacity .25s ease, background .2s ease, transform .2s ease}
+    .carousel:hover .arrow,
+    .carousel .arrow:focus-visible{opacity:1;pointer-events:auto}
+    .carousel .arrow:hover{transform:scale(1.05)}
+
+    /* ===== "Xem thêm" link ===== */
+    .more-link{color:var(--muted);font-weight:700;letter-spacing:.2px;position:relative}
+    .more-link::after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:2px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
+    .more-link:hover{color:var(--cine)}
+    .more-link:hover::after{transform:scaleX(1)}
+  </style>
+</head>
+<body>
+  <!-- Includes -->
+  <div id="hdr-include"></div>
+
+  <main>
+    <div class="container">
+      <!-- HERO (DB-driven) -->
+      <section class="hero">
+        <div class="backdrop skeleton" id="heroBackdrop"></div>
+        <div class="hero-inner">
+          <div class="h-eyebrow" id="heroEyebrow">Now streaming</div>
+          <h1 id="heroTitle" class="skeleton" style="display:inline-block;padding:10px 14px;border-radius:10px"></h1>
+          <p id="heroDesc" class="skeleton" style="height:48px;border-radius:10px"></p>
+          <a class="cta" id="heroCta" href="#">Mua vé ngay</a>
+        </div>
+      </section>
+
+      <!-- ON THE BIG SCREEN (carousel DB-driven) -->
+      <section class="section reveal">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2>ON THE BIG SCREEN</h2>
+          <a class="more-link" href="movies.html?status=now">Xem thêm</a>
+        </div>
+
+        <div class="carousel coverflow">
+          <button class="arrow left" aria-label="Trước">&#8249;</button>
+          <button class="arrow right" aria-label="Sau">&#8250;</button>
+
+          <div class="rail" id="railNow">
+            <article class="poster skeleton" style="height:360px;border-radius:16px;flex:0 0 260px"></article>
+            <article class="poster skeleton" style="height:360px;border-radius:16px;flex:0 0 260px"></article>
+            <article class="poster skeleton" style="height:360px;border-radius:16px;flex:0 0 260px"></article>
+          </div>
+
+          <div class="dots" id="nowDots" aria-label="Chỉ báo slide"></div>
+        </div>
+      </section>
+
+      <!-- COMING SOON (DB-driven top 3) -->
+      <section class="section reveal">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h2>COMING SOON</h2><a class="more-link" href="movies.html?status=soon">Xem thêm</a>
+        </div>
+        <div class="cards" id="cardsSoon">
+          <!-- skeleton cards -->
+          <article class="card"><div class="skeleton" style="height:320px"></div><div class="pad"><div class="subbtns"><button class="btn outline" disabled>Loading…</button><button class="btn outline" disabled>Loading…</button></div></div></article>
+          <article class="card"><div class="skeleton" style="height:320px"></div><div class="pad"><div class="subbtns"><button class="btn outline" disabled>Loading…</button><button class="btn outline" disabled>Loading…</button></div></div></article>
+          <article class="card"><div class="skeleton" style="height:320px"></div><div class="pad"><div class="subbtns"><button class="btn outline" disabled>Loading…</button><button class="btn outline" disabled>Loading…</button></div></div></article>
+        </div>
+      </section>
+
+      <!-- MEMBERSHIP -->
+      <section class="section member reveal">
+        <div class="member-wrap">
+          <img class="shot" src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=1200&auto=format&fit=crop" alt="D-cine Elite">
+          <div>
+            <h2 class="lead">Trở thành thành viên D-cine Elite</h2>
+            <p>Nhận ưu đãi đặc biệt, tích điểm đổi quà, vé giảm giá và đặc quyền phòng chờ VIP.</p>
+            <a class="btn-outline" href="register.html">Đăng ký ngay</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEALS & EXCLUSIVES -->
+      <section class="section reveal">
+        <h2>DEALS &amp; EXCLUSIVES</h2>
+        <article class="deals">
+          <div class="bg" id="dealsBg"></div><div class="grad"></div>
+          <div class="copy">
+            <div class="panel">
+              <p id="dealsCopy">Ưu đãi hấp dẫn: early-bird, đặt nhóm, sinh viên, combo bắp nước…</p>
+              <a class="btn" id="dealsBtn" href="promotions.html">VIEW MORE</a>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <div id="ftr-include"></div>
+
+<script>
+  // include partials (HTML header/footer)
+  async function include(id, url){
+    try { const n=document.getElementById(id); if(n) n.innerHTML = await (await fetch(url)).text(); } catch {}
+  }
+  include('hdr-include','header.html');
+  include('ftr-include','footer.html');
+
+  // Cho main.js đọc được API_BASE (tránh trùng const $/el)
+  window.API_BASE = '/api';
+
+  // HERO
+  async function loadHero(){
+    try{
+      const res = await fetch(window.API_BASE + '/home/hero');
+      const d   = await res.json(); // { title, description, imageUrl, ctaHref, label }
+      const t   = document.getElementById('heroTitle');
+      const de  = document.getElementById('heroDesc');
+      const lb  = document.getElementById('heroEyebrow');
+      const bg  = document.getElementById('heroBackdrop');
+      const cta = document.getElementById('heroCta');
+
+      if(t){ t.textContent = d.title || '—'; t.classList.remove('skeleton'); }
+      if(de){ de.textContent = d.description || ''; de.classList.remove('skeleton'); }
+      if(lb){ lb.textContent = d.label || 'Now streaming'; }
+      if(bg){ bg.style.backgroundImage = d.imageUrl ? `url('${d.imageUrl}')` : 'none'; bg.classList.remove('skeleton'); }
+      if(cta && d.ctaHref){ cta.href = d.ctaHref; }
+    }catch{}
+  }
+
+  // DEALS
+  async function loadDeals(){
+    try{
+      const res = await fetch(window.API_BASE + '/promotions/featured');
+      const p   = await res.json(); // {imageUrl, copy, href}
+      const bg  = document.getElementById('dealsBg');
+      const cp  = document.getElementById('dealsCopy');
+      const btn = document.getElementById('dealsBtn');
+      if(p.imageUrl && bg) bg.style.backgroundImage = `url('${p.imageUrl}')`;
+      if(p.copy && cp) cp.textContent = p.copy;
+      if(p.href && btn) btn.href = p.href;
+    }catch{}
+  }
+
+  // Boot — KHÔNG gọi loadNow() ở đây (đã chuyển qua js/main.js)
+  loadHero();
+  loadDeals();
+</script>
+
+<!-- Hiệu ứng + NOW SHOWING coverflow nằm trong file này -->
+<script src="js/main.js"></script>
+
+</body>
+</html>
