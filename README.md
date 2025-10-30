@@ -86,9 +86,10 @@ DCINE_Movie_Ticket_Booking_System/
 |   │           │   │   ├── banner.jpg
 |   │           │   │   ├── poster_doc.jpg
 |   │           │   │   ├── poster_ngang.jpg
-|   │           │   │   ├── cast/
-|   │           │   │   │   ├── nguyen_van_a.jpg
-|   │           │   │   │   └── tran_thi_b.jpg
+|   │           │   │   └── cast/
+|   │           │   │       ├── nguyen_van_a.jpg
+|   │           │   │       ├── tran_thi_b.jpg
+|   |           |   |       └── ...
 |   │           │   ├── ...
 |   |           |   |
 |   |           |   └── trailer_links.xlsx
