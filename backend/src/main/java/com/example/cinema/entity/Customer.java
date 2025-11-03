@@ -21,19 +21,17 @@ public class Customer {
     @Column(name="dob")
     private LocalDate dob;
     
-    // Lien ket 1-1 voi account
-    @OneToOne
-    @JoinColumn(name = "account_id", unique = true)
+    
+    @OneToOne(mappedBy = "customer")
     private Account account;
 
     public Customer(){}
 
-    public Customer(Long customerId, String fn, String phone, LocalDate dob, Account account){
+    public Customer(Long customerId, String fn, String phone, LocalDate dob){
         this.customerId = customerId;
         this.fullName = fn;
         this.phone = phone;
         this.dob = dob;
-        this.account = account;
     }
     // getter and setter
       // --- Getters & Setters ---
@@ -67,24 +65,5 @@ public class Customer {
 
     public void setDob(LocalDate dob) {
         this.dob = dob;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-    // --- toString ---
-    @Override
-    public String toString() {
-        return "Customer{" +
-                "customerId=" + customerId +
-                ", fullName='" + fullName + '\'' +
-                ", phone='" + phone + '\'' +
-                ", dob=" + dob +
-                ", account=" + (account != null ? account.getUsername() : "null") +
-                '}';
     }
 }

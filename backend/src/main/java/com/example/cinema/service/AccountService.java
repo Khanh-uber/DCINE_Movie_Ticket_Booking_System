@@ -79,7 +79,15 @@ public class AccountService {
         String hashedPassword = pE.encode(req.getPassword());
 
 
-        // Luu vao database qw
+        // Luu vao database 
+        Customer c = new Customer();
+        c.setFullName(req.getFullName());
+        c.setPhone(req.getPhone());
+        // c.setDob(req.getDob());
+        c.setPhone(type.equals("PHONE") ?  phone : null);
+        customerRepo.save(c);
+
+
         Account acc = new Account();
         acc.setUsername(id);
         acc.setEmail(type.equals("EMAIL") ? email : null);
@@ -87,15 +95,11 @@ public class AccountService {
         acc.setPassword(hashedPassword);
         acc.setRole(Account.Role.CUSTOMER);
         acc.setActive(Account.Status.ACTIVE);
+
+        acc.setCustomer(c);
         repo.save(acc);
 
-        Customer c = new Customer();
-        c.setFullName(req.getFullName());
-        c.setPhone(req.getPhone());
-        // c.setDob(req.getDob());
-        c.setPhone(type.equals("PHONE") ?  phone : null);
-        c.setAccount(acc);
-        customerRepo.save(c);
+       
         return acc;
     }
 

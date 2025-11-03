@@ -10,6 +10,11 @@ public class Account {
     @Column(name = "account_id")
     private Long accountId;
     
+    @Column(name="membership_tier_id")
+    private Long memberShipId;
+
+    @Column(name = "loyalty_points")
+    private int loyaltyPoints ;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -17,7 +22,7 @@ public class Account {
     @Column(name="password_hash", nullable = false)
     private String password;
 
-    @Column(name="email", nullable = false)
+    @Column(name="email", nullable = false, unique = true)
     private String email;
 
     @Enumerated(EnumType.STRING)
@@ -29,7 +34,8 @@ public class Account {
     @Column(name="phone", unique = true)
     private String phone;
 
-    @OneToOne(mappedBy = "account")
+    @OneToOne
+    @JoinColumn(name = "customer_id", referencedColumnName = "customer_id", unique = true)
     private Customer customer;
 
     @Enumerated(EnumType.STRING)
@@ -112,14 +118,10 @@ public class Account {
     public void setPhone(String phone){
         this.phone = phone;
     }
-    // --- toString ---
-    @Override
-    public String toString() {
-        return "Account{" +
-                "accountId=" + accountId +
-                ", username='" + username + '\'' +
-                ", systemRole=" + role +
-                ", isActive=" + status +
-                '}';
+    public Customer getCustomer(){
+        return customer;
+    }
+    public void setCustomer(Customer customer){
+        this.customer = customer;
     }
 }
