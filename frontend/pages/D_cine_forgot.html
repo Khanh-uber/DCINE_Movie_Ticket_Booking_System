@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --hero:url('assets/images/ui/fire_force.jpeg');  /* <— Đổi ảnh nền tại đây */
+  --hero:url('fire_force.jpeg');  /* <— Đổi ảnh nền tại đây */
   --bg:#050505; --text:#fff; --muted:#cfcfcf; --muted-2:#909090;
   --accent:#E50914; --accent-2:#C6101A; --danger:#E50914;
   --stroke:#7c7c7c; --radius:14px;
@@ -259,6 +259,26 @@ let otpSent=false, otpVerified=false;
 let touchedIdent=false;
 let cooldown=0, timer=null;
 
+/* ===== Backend Config ===== */
+const API = 'http://localhost:8080'; 
+const ENDPOINTS = {
+  sendOtp  : '/api/auth/forgot/send-otp',
+  verifyOtp: '/api/auth/forgot/verify-otp',
+  reset    : '/api/auth/forgot/reset',
+};
+let recoveryId = null;
+
+function getIdentPayload(){
+  const raw = ident.value.trim();
+  const identifier = (mode === 'phone')
+    ? raw.replace(/\s|-/g,'').replace(/^\+84/, '0')
+    : raw;
+  return {
+    channelType: mode.toUpperCase(),
+    identifier
+  };
+}
+
 /* ===== Validators ===== */
 const isValidEmail = (v)=>{ const at=v.indexOf('@'); if(at<=0) return {ok:false,reason:"Thiếu ký tự '@'"}; const d=v.slice(at+1); if(!d.includes('.')) return {ok:false,reason:"Tên miền thiếu dấu chấm"}; if(d.split('.').pop().length<2) return {ok:false,reason:"Đuôi miền quá ngắn"}; return {ok:true}; };
 const isValidPhone = (v)=>{ const s=v.replace(/\s|-/g,''); if(!(/(^\+?84|^0)/.test(s))) return {ok:false,reason:"Bắt đầu bằng 0 hoặc +84"}; if(!(/^\+?\d+$/.test(s))) return {ok:false,reason:"Chỉ gồm chữ số"}; const digits=s.replace(/^\+/, '').replace(/^84/,'0'); if(digits.length<10||digits.length>11) return {ok:false,reason:"Độ dài 10–11 số"}; return {ok:true}; };
@@ -302,14 +322,44 @@ function startCooldown(sec=60){
 }
 function updateSendState(){ sendOtpBtn.disabled = !validateIdent(false) || cooldown>0; }
 
-sendOtpBtn.addEventListener('click', ()=>{
+/* ====== SEND OTP (Backend) ====== */
+sendOtpBtn.addEventListener('click', async ()=>{
   forgotErr.style.display='none'; forgotMsg.style.display='none';
   touchedIdent=true;
   if(!validateIdent(true)){ ident.focus(); return; }
-  otpSent=true; otpVerified=false;
-  forgotMsg.textContent='Đã gửi OTP. Vui lòng kiểm tra tin nhắn/email.'; forgotMsg.style.display='block';
-  startCooldown(60);
-  otpInputs.forEach(i=>i.value=''); document.getElementById('otp1').focus();
+
+  sendOtpBtn.classList.add('loading');
+  sendOtpBtn.setAttribute('disabled','true');
+
+  try{
+    const res = await fetch(`${API}${ENDPOINTS.sendOtp}`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(getIdentPayload())
+    });
+    const json = await res.json().catch(()=>({ ok:false, message:'Phản hồi không hợp lệ' }));
+    if(!res.ok || !json?.ok){
+      throw new Error(json?.error || json?.message || 'Gửi OTP thất bại');
+    }
+
+    recoveryId = json?.data?.requestId || json?.data?.recoveryToken || json?.data?.token || null;
+
+    otpSent = true; otpVerified = false;
+    forgotMsg.textContent='Đã gửi OTP. Vui lòng kiểm tra tin nhắn/email.';
+    forgotMsg.style.display='block';
+    startCooldown(60);
+    otpInputs.forEach(i=>i.value='');
+    document.getElementById('otp1')?.focus();
+
+  }catch(err){
+    forgotErr.textContent = err?.message || 'Không thể kết nối máy chủ.';
+    forgotErr.style.display='block';
+    showFieldError(identBox, errIdent, forgotErr.textContent);
+  }finally{
+    sendOtpBtn.classList.remove('loading');
+    updateSendState();
+  }
 });
 
 /* ===== OTP behaviour ===== */
@@ -327,20 +377,47 @@ otpInputs.forEach((input,idx)=>{
   });
 });
 
-verifyBtn.addEventListener('click', ()=>{
+/* ====== VERIFY OTP (Backend) ====== */
+verifyBtn.addEventListener('click', async ()=>{
+  errOtp.textContent='';
   if(!otpSent){ errOtp.textContent='Bạn cần gửi OTP trước.'; return; }
+
   const code = otpInputs.map(i=>i.value).join('');
   if(code.length<6){ errOtp.textContent='Mã OTP chưa đủ 6 số.'; return; }
-  // DEMO: accept any 6-digit OTP
-  otpVerified = true;
-  forgotMsg.textContent='OTP hợp lệ. Hãy đặt mật khẩu mới.';
-  forgotMsg.style.display='block';
 
-  // Swap view: Forgot -> Reset
-  viewForgot.classList.add('hide');
-  viewReset.classList.remove('hide');
-  viewReset.setAttribute('aria-hidden','false');
-  setTimeout(()=> document.getElementById('newpass').focus(), 60);
+  verifyBtn.classList.add('loading');
+  verifyBtn.setAttribute('disabled','true');
+
+  try{
+    const payload = { ...getIdentPayload(), code, requestId: recoveryId, token: recoveryId };
+    const res = await fetch(`${API}${ENDPOINTS.verifyOtp}`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(()=>({ ok:false, message:'Phản hồi không hợp lệ' }));
+    if(!res.ok || !json?.ok){
+      throw new Error(json?.error || json?.message );
+    }
+
+    recoveryId = json?.data?.requestId || json?.data?.recoveryToken || recoveryId;
+
+    otpVerified = true;
+    forgotMsg.textContent='OTP hợp lệ. Hãy đặt mật khẩu mới.';
+    forgotMsg.style.display='block';
+
+    viewForgot.classList.add('hide');
+    viewReset.classList.remove('hide');
+    viewReset.setAttribute('aria-hidden','false');
+    setTimeout(()=> newpass?.focus(), 60);
+
+  }catch(err){
+    errOtp.textContent = err?.message || 'OTP không đúng hoặc đã hết hạn.';
+  }finally{
+    verifyBtn.classList.remove('loading');
+    verifyBtn.removeAttribute('disabled');
+  }
 });
 
 /* ===== Reset side ===== */
@@ -368,13 +445,45 @@ newpass?.addEventListener('input', ()=>{ validateNew(true); validateConf(true); 
 conf?.addEventListener('input',    ()=>{ validateConf(true); updateResetState(); });
 
 resetForm?.addEventListener('submit', async (e)=>{
-  e.preventDefault(); resetErr.style.display='none'; resetMsg.style.display='none';
+  e.preventDefault();
+  resetErr.style.display='none';
+  resetMsg.style.display='none';
+
   if(!(validateNew(true)&&validateConf(true))) return;
-  resetBtn.classList.add('loading'); resetBtn.setAttribute('disabled','true');
-  await new Promise(r=>setTimeout(r,800));
-  resetMsg.textContent='Đặt lại mật khẩu thành công. Đang chuyển về đăng nhập…';
-  resetMsg.style.display='block';
-  setTimeout(()=>{ window.location.href='D_cine_login.html'; }, 900);
+
+  resetBtn.classList.add('loading');
+  resetBtn.setAttribute('disabled','true');
+
+  try{
+    const payload = {
+      ...getIdentPayload(),
+      newPassword: newpass.value,
+      confirmPassword: conf.value,
+      requestId: recoveryId,
+      token: recoveryId
+    };
+    const res = await fetch(`${API}${ENDPOINTS.reset}`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(()=>({ ok:false, message:'Phản hồi không hợp lệ' }));
+    if(!res.ok || !json?.ok){
+      throw new Error(json?.error || json?.message || 'Đặt lại mật khẩu thất bại');
+    }
+
+    resetMsg.textContent='Đặt lại mật khẩu thành công. Đang chuyển về đăng nhập…';
+    resetMsg.style.display='block';
+    setTimeout(()=>{ window.location.href='D_cine_login.html'; }, 900);
+
+  }catch(err){
+    resetErr.textContent = err?.message || 'Không thể kết nối máy chủ.';
+    resetErr.style.display='block';
+  }finally{
+    resetBtn.classList.remove('loading');
+    resetBtn.removeAttribute('disabled');
+  }
 });
 
 /* ===== Init ===== */

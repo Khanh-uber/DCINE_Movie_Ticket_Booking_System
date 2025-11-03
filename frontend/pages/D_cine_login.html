@@ -35,7 +35,7 @@
     .hero{ position:relative; overflow:hidden; isolation:isolate; background:#000; }
     .hero::before{
       content:""; position:absolute; inset:0;
-      background:url('assets/images/ui/tanjiro_akaza_infinity_castle.jpg') center/cover no-repeat;
+      background:url('tanjiro_akaza_infinity_castle.jpg') center/cover no-repeat;
       filter:saturate(1.08) contrast(1.05) brightness(1.08);
       transform:scale(1.02);
     }
@@ -271,6 +271,7 @@
   </main>
 
   <script>
+    const SERVER_ERROR_UI = 'banner';
     const $ = (sel) => document.querySelector(sel);
     const API = 'http://localhost:8080';
     const segEmail = $('#segEmail');
@@ -456,51 +457,45 @@
         (!validateIdent(true)?ident:password).focus();
         return;
       }
-
+      const payload = {
+        loginType: mode.toUpperCase(),
+        identifier: document.getElementById('ident').value.trim(),
+        password: document.getElementById('password').value
+      };
       signInBtn.classList.add('loading');
       signInBtn.setAttribute('disabled','true');
       const idRaw = ident.value.trim();
-      const idVal = (mode==='phone') ? idRaw.replace(/\s|-/g,'') : idRaw;
+      const idVal = (mode==='phone')
+      ? idRaw.replace(/\s|-/g,'').replace(/^\+84/, '0')
+      : idRaw;
 
       try{
         const res = await fetch(`${API}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type':'application/json' },
-          credentials: 'include', // ✅ nếu bạn dùng HttpSession
-          body: JSON.stringify({
-            loginType: mode.toUpperCase(),  // "EMAIL" | "PHONE" | "USERNAME"
-            identifier: idVal,              // giá trị nhập vào 
-            password: password.value
-          })
+          credentials: 'include', 
+          body: JSON.stringify(payload)
         });
-        const json = await res.json(); 
+
+        const json = await res.json().catch(()=>({ ok:false, message:'Phản hồi không hợp lệ' }));
+
         if(!res.ok || !json.ok){
-          throw new Error(json?.error || json?.message || 'Đăng nhập thất bại');
+          const msg = json?.error || json?.message || 'Đăng ký thất bại';
+          formError.textContent = msg;
+          formError.style.display = 'block';
+          formWrap.classList.remove('shake'); void formWrap.offsetWidth; formWrap.classList.add('shake');
+          return;
         }
-        const token = json?.data?.accessToken || '';
-        if (token) localStorage.setItem('accessToken', token);
-        formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…';
+        formSuccess.textContent = 'Tạo tài khoản thành công. Đang chuyển đến đăng nhập…';
         formSuccess.style.display = 'block';
-        window.location.href = 'D_cine_home.html';
-      }catch(err){
-        formError.textContent = err.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.';
+        setTimeout(()=>{ window.location.href = 'D_cine_login.html'; }, 900); // đồng bộ timing với forgot
+      } catch (err){
+        formError.textContent = err?.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.';
         formError.style.display = 'block';
-
-        clearFieldError(passwordBox, errPassword);
-        clearFieldError(identBox, errIdent);
-
-        if (/mật khẩu|password/i.test(formError.textContent)){
-          showFieldError(passwordBox, errPassword, err.message);
-          password.focus();
-        } else {
-          showFieldError(identBox, errIdent, err.message);
-          ident.focus();
-        }
-
         formWrap.classList.remove('shake'); void formWrap.offsetWidth; formWrap.classList.add('shake');
-      }finally{
-        signInBtn.classList.remove('loading');
-        signInBtn.removeAttribute('disabled');
+      } finally {
+        signUpBtn.classList.remove('loading');
+        signUpBtn.removeAttribute('disabled');
       }
     });
 
