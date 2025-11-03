@@ -141,8 +141,8 @@ public class AccountService {
 
     // Quen mat khau
     public Account resetPassword(ForgotPasswordRequest fpr){
-        String input = fpr.getUsernameOrEmail();
-        Account acc = repo.findByUsername(input);
+        String input = fpr.getIdentifier();
+        Account acc = repo.findByPhone(input);
         if (acc == null){
             acc = repo.findByEmail(input);
         }
@@ -155,10 +155,16 @@ public class AccountService {
         if (newPw.length() < 6)
             throw new RuntimeException("Mật khẩu mới phải có ít nhất 6 ký tự");
         
-        String cfn = fpr.getConfirmNewPassword();
+        String cfn = fpr.getConfirmPassword();
         if (cfn == null || !cfn.equals(newPw))
             throw new RuntimeException("Mật khẩu xác thực không đúng với mật khẩu mới");
-        acc.setPassword(newPw);
+        acc.setPassword(pE.encode(newPw));
         return repo.save(acc);
+    }
+    public Account findByChannelType(String input){
+        Account acc = repo.findByUsername(input);
+        if (acc == null)
+            acc = repo.findByEmail(input);
+        return acc;
     }
 }

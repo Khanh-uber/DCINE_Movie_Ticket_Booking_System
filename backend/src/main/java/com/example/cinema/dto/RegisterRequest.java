@@ -12,7 +12,7 @@ public class RegisterRequest {
     private String phone;
     private String email;
     private boolean agreeTerm;
-    //private LocalDate dob;
+    
     
     public RegisterRequest() {}
 
@@ -91,6 +91,7 @@ public class RegisterRequest {
     }
     public void setRegisterType(String rt){
         this.registerType = rt;
-   }
+    }
+    
 }
 

@@ -1,11 +1,16 @@
 package com.example.cinema.controller;
 import com.example.cinema.entity.Account;
+import com.example.cinema.entity.OtpRecord;
 import com.example.cinema.service.AccountService;
+import com.example.cinema.service.OtpService;
+
 import jakarta.servlet.http.HttpSession;
 
 import com.example.cinema.dto.ForgotPasswordRequest;
 import com.example.cinema.dto.LoginRequest;
 import com.example.cinema.dto.RegisterRequest;
+import com.example.cinema.dto.VerifyOtpRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -17,8 +22,11 @@ import java.util.Map;
 
 public class AuthController {
     private final AccountService accountService;
-    public AuthController(AccountService accountService){
+
+    private final OtpService otpService;
+    public AuthController(AccountService accountService, OtpService otpService){
         this.accountService = accountService;
+        this.otpService = otpService;
     }
     
      // === Đăng ký ===
@@ -82,18 +90,53 @@ public class AuthController {
             "message", "Đã đăng xuất thành công"
     ));
     }
-
+    // === Gui OTP ===
+    @PostMapping("forgot/send-otp")
+    public ResponseEntity<?> sendOtp(@RequestBody VerifyOtpRequest req){
+        try {
+            String identifier = req.getIdentifier();
+            if (identifier==null || identifier.isBlank())
+                throw new RuntimeException("Thêm email hoặc số điện thoại");
+            Account acc = accountService.findByChannelType(identifier);
+            if (acc == null)
+                throw new RuntimeException("Không tìm thấy tài khoản");
+            
+            Map<String, Object> data = otpService.sendOtp(identifier);
+            
+            return ResponseEntity.ok(Map.of("ok", true, 
+                                            "message", "Đã gửi OTP thành công", 
+                                            "data", data));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(Map.of("ok", false,"error", e.getMessage()));
+        }
+    }
+    // === Xac thuc OTP ===
+    @PostMapping("/forgot/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest req){
+        try {
+            String identifier = req.getIdentifier();
+            String code = req.getCode();
+            OtpRecord otp = otpService.verifyOtp(identifier, code);
+            return ResponseEntity.ok(Map.of("ok", true,
+                                            "message", "OTP hợp lệ",
+                                            "data", otp.getIdentifier()));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(Map.of("ok", false, "error", e.getMessage()));
+        }
+    }
     // === Quên mât khẩu===
-    @PostMapping("/reset-password")
+    @PostMapping("forgot/reset")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest req){
         try {
-            Account updated = accountService.resetPassword(req);
+            accountService.resetPassword(req);
             return ResponseEntity.ok(Map.of(
+                "ok", true, 
                 "message", "Doi mat khau thanh cong"
             ));
         }
         catch(Exception e){
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("ok", false, 
+                                                        "error", e.getMessage()));
         }
     }
 }
