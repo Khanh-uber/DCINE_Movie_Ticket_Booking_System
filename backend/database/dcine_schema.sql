@@ -1,3 +1,5 @@
+create database dcine_cinema;
+use dcine_schema;
 CREATE TABLE `account` (
   `account_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `customer_id` bigint NOT NULL,
