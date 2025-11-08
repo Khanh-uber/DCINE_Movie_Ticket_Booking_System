@@ -1,0 +1,59 @@
+[
+  {
+    "id": "d1",
+    "title": "Combo Bắp + Nước -50%",
+    "desc": "Áp dụng khi đặt vé online khung giờ vàng.",
+    "imageUrl": "https://picsum.photos/seed/deal1/1280/720",
+    "badge": "-50%",
+    "validUntil": "31/12/2025",
+    "href": "promotions.html#d1",
+    "ctaText": "Nhận ưu đãi",
+    "tag": "ƯU ĐÃI HOT"
+  },
+  {
+    "id": "d2",
+    "title": "Tặng 1 vé khi tích 5 vé",
+    "desc": "Áp dụng hạng Gold trở lên, tự động cộng vào ví.",
+    "imageUrl": "https://picsum.photos/seed/deal2/1280/720",
+    "href": "promotions.html#d2",
+    "ctaText": "Xem chi tiết",
+    "tag": "THÀNH VIÊN"
+  },
+  {
+    "id": "d3",
+    "title": "Ưu đãi Sinh viên -20%",
+    "desc": "Giảm 20% giá vé cho SV có thẻ còn hiệu lực (T2–T6).",
+    "imageUrl": "https://picsum.photos/seed/deal3/1280/720",
+    "href": "promotions.html#d3",
+    "ctaText": "Áp dụng ngay",
+    "tag": "SINH VIÊN",
+    "validUntil": "30/06/2026"
+  },
+  {
+    "id": "d4",
+    "title": "Crazy Tuesday",
+    "desc": "Thứ Ba đồng giá 70K (2D) tại tất cả rạp.",
+    "imageUrl": "https://picsum.photos/seed/deal4/1280/720",
+    "href": "promotions.html#d4",
+    "ctaText": "Đặt vé",
+    "tag": "HÀNG TUẦN"
+  },
+  {
+    "id": "d5",
+    "title": "IMAX Week",
+    "desc": "Giảm 30K/vé IMAX trong tuần lễ IMAX.",
+    "imageUrl": "https://picsum.photos/seed/deal5/1280/720",
+    "href": "promotions.html#d5",
+    "ctaText": "Săn vé IMAX",
+    "tag": "SỰ KIỆN"
+  },
+  {
+    "id": "d6",
+    "title": "Happy Hour",
+    "desc": "Mua combo trước 17:00 giảm thêm 10K.",
+    "imageUrl": "https://picsum.photos/seed/deal6/1280/720",
+    "href": "promotions.html#d6",
+    "ctaText": "Mua ngay",
+    "tag": "FOOD & DRINK"
+  }
+]

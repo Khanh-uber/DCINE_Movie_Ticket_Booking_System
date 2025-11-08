@@ -1,0 +1,26 @@
+{
+  "currency": "VND",
+  "items": [
+    { "id": "st-dune2-2025-11-08-1900-nk3", "movieId": "mv-dune2", "theaterId": "th-nk-nguyenkim", "date": "2025-11-08", "time": "19:00", "format": "2D", "language": "EN | VietSub", "room": "Screen 3", "price": 95000, "seatsAvailable": 58 },
+    { "id": "st-dune2-2025-11-09-1600-bt1", "movieId": "mv-dune2", "theaterId": "th-bt-benthanh", "date": "2025-11-09", "time": "16:00", "format": "IMAX 2D", "language": "EN | VietSub", "room": "IMAX 1", "price": 135000, "seatsAvailable": 102 },
+    { "id": "st-dune2-2025-11-10-2100-hn1", "movieId": "mv-dune2", "theaterId": "th-hn-royalcity", "date": "2025-11-10", "time": "21:00", "format": "2D", "language": "EN | VietSub", "room": "Screen 1 Dolby", "price": 120000, "seatsAvailable": 75 },
+    { "id": "st-dune2-2025-11-11-1330-dnY", "movieId": "mv-dune2", "theaterId": "th-dn-helio", "date": "2025-11-11", "time": "13:30", "format": "4DX", "language": "EN | VietSub", "room": "Screen Y 4DX", "price": 160000, "seatsAvailable": 60 },
+
+    { "id": "st-io2-2025-11-08-1000-nk2", "movieId": "mv-insideout2", "theaterId": "th-nk-nguyenkim", "date": "2025-11-08", "time": "10:00", "format": "2D", "language": "VN Lồng tiếng", "room": "Screen 2", "price": 85000, "seatsAvailable": 70 },
+    { "id": "st-io2-2025-11-09-1400-bt4", "movieId": "mv-insideout2", "theaterId": "th-bt-benthanh", "date": "2025-11-09", "time": "14:00", "format": "2D", "language": "VN Lồng tiếng", "room": "Screen 4", "price": 90000, "seatsAvailable": 90 },
+    { "id": "st-io2-2025-11-10-0900-hn2", "movieId": "mv-insideout2", "theaterId": "th-hn-royalcity", "date": "2025-11-10", "time": "09:00", "format": "2D", "language": "VN Lồng tiếng", "room": "Screen 2", "price": 80000, "seatsAvailable": 95 },
+
+    { "id": "st-venom3-2025-11-08-2130-bt5", "movieId": "mv-venom3", "theaterId": "th-bt-benthanh", "date": "2025-11-08", "time": "21:30", "format": "2D", "language": "EN | VietSub", "room": "Screen 5", "price": 90000, "seatsAvailable": 40 },
+    { "id": "st-venom3-2025-11-09-1930-nk1", "movieId": "mv-venom3", "theaterId": "th-nk-nguyenkim", "date": "2025-11-09", "time": "19:30", "format": "3D", "language": "EN | VietSub", "room": "Screen 1", "price": 110000, "seatsAvailable": 65 },
+    { "id": "st-venom3-2025-11-10-2200-hn2", "movieId": "mv-venom3", "theaterId": "th-hn-royalcity", "date": "2025-11-10", "time": "22:00", "format": "2D", "language": "EN | VietSub", "room": "Screen 2", "price": 95000, "seatsAvailable": 72 },
+
+    { "id": "st-joker2-2025-11-08-2000-nk2", "movieId": "mv-joker2", "theaterId": "th-nk-nguyenkim", "date": "2025-11-08", "time": "20:00", "format": "2D", "language": "EN | VietSub", "room": "Screen 2", "price": 100000, "seatsAvailable": 55 },
+    { "id": "st-joker2-2025-11-09-1730-bt4", "movieId": "mv-joker2", "theaterId": "th-bt-benthanh", "date": "2025-11-09", "time": "17:30", "format": "2D", "language": "EN | VietSub", "room": "Screen 4", "price": 100000, "seatsAvailable": 88 },
+
+    { "id": "st-gxk-2025-11-08-1500-nk1", "movieId": "mv-godzkong", "theaterId": "th-nk-nguyenkim", "date": "2025-11-08", "time": "15:00", "format": "3D", "language": "EN | VietSub", "room": "Screen 1", "price": 120000, "seatsAvailable": 66 },
+    { "id": "st-gxk-2025-11-09-2000-dnX", "movieId": "mv-godzkong", "theaterId": "th-dn-helio", "date": "2025-11-09", "time": "20:00", "format": "2D", "language": "EN | VietSub", "room": "Screen X", "price": 90000, "seatsAvailable": 92 },
+
+    { "id": "st-opp-2025-11-08-1830-hn1", "movieId": "mv-oppenheimer", "theaterId": "th-hn-royalcity", "date": "2025-11-08", "time": "18:30", "format": "IMAX 2D", "language": "EN | VietSub", "room": "Screen 1 Dolby", "price": 150000, "seatsAvailable": 98 },
+    { "id": "st-opp-2025-11-10-1300-bt1", "movieId": "mv-oppenheimer", "theaterId": "th-bt-benthanh", "date": "2025-11-10", "time": "13:00", "format": "2D", "language": "EN | VietSub", "room": "IMAX 1", "price": 140000, "seatsAvailable": 120 }
+  ]
+}

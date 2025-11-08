@@ -1,0 +1,62 @@
+[
+  {
+    "id": "n1",
+    "title": "Vé DC-123456 đã xác nhận",
+    "text": "Bạn hãy đến rạp trước 10 phút.",
+    "tag": "ĐƠN HÀNG",
+    "icon": "🎟",
+    "createdAt": "2025-11-08T19:00:00+07:00",
+    "href": "confirmation.html?order=DC-123456",
+    "unread": true
+  },
+  {
+    "id": "n2",
+    "title": "Ưu đãi thành viên Gold",
+    "text": "Tặng 1 vé khi tích 5 vé trong tháng này.",
+    "tag": "THÀNH VIÊN",
+    "icon": "⭐",
+    "createdAt": "2025-11-08T17:00:00+07:00",
+    "href": "promotions.html#d2",
+    "unread": false
+  },
+  {
+    "id": "n3",
+    "title": "Crazy Tuesday sắp diễn ra",
+    "text": "Thứ Ba tuần này: 2D đồng giá 70K.",
+    "tag": "KHUYẾN MÃI",
+    "icon": "🔥",
+    "createdAt": "2025-11-07T09:00:00+07:00",
+    "href": "promotions.html#d4",
+    "unread": false
+  },
+  {
+    "id": "n4",
+    "title": "Nâng hạng Platinum",
+    "text": "Chúc mừng! Tài khoản của bạn đã lên hạng.",
+    "tag": "THÀNH VIÊN",
+    "icon": "🏆",
+    "createdAt": "2025-11-05T12:30:00+07:00",
+    "href": "profile.html#tier",
+    "unread": false
+  },
+  {
+    "id": "n5",
+    "title": "Trailer mới: Deadpool & Wolverine",
+    "text": "Xem ngay trailer chính thức.",
+    "tag": "TRAILER",
+    "icon": "▶",
+    "createdAt": "2025-11-04T20:00:00+07:00",
+    "href": "https://www.youtube.com/watch?v=73_1biulkYk",
+    "unread": true
+  },
+  {
+    "id": "n6",
+    "title": "Đổi điểm nhận quà",
+    "text": "500 điểm = 1 vé 2D (áp dụng đến 31/12).",
+    "tag": "ĐIỂM THƯỞNG",
+    "icon": "🎁",
+    "createdAt": "2025-11-03T08:15:00+07:00",
+    "href": "promotions.html#d2",
+    "unread": false
+  }
+]

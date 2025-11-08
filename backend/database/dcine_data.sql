@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
--- Host: localhost    Database: dcine_schema
+-- Host: localhost    Database: dcine_new
 -- ------------------------------------------------------
 -- Server version	8.0.43
 
@@ -42,7 +42,7 @@ CREATE TABLE `account` (
   KEY `membership_tier_id` (`membership_tier_id`),
   CONSTRAINT `account_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`),
   CONSTRAINT `account_ibfk_2` FOREIGN KEY (`membership_tier_id`) REFERENCES `membership_tier` (`tier_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -181,7 +181,7 @@ CREATE TABLE `cast_person` (
   `name` varchar(100) NOT NULL,
   `role_type` enum('ACTOR','DIRECTOR') NOT NULL,
   PRIMARY KEY (`cast_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,6 +190,7 @@ CREATE TABLE `cast_person` (
 
 LOCK TABLES `cast_person` WRITE;
 /*!40000 ALTER TABLE `cast_person` DISABLE KEYS */;
+INSERT INTO `cast_person` VALUES (1,'Ryan Reynolds','ACTOR'),(2,'Hugh Jackman','ACTOR'),(3,'James Cameron','DIRECTOR'),(4,'Pete Docter','DIRECTOR'),(5,'Minami Takayama','ACTOR'),(6,'Hayao Miyazaki','DIRECTOR'),(7,'Phương Anh Đào','ACTOR'),(8,'Trấn Thành','ACTOR'),(9,'Tom Hardy','ACTOR'),(10,'Tanjiro Kamado','ACTOR');
 /*!40000 ALTER TABLE `cast_person` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,7 +206,7 @@ CREATE TABLE `concession` (
   `name` varchar(100) NOT NULL,
   `price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`concession_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -214,6 +215,7 @@ CREATE TABLE `concession` (
 
 LOCK TABLES `concession` WRITE;
 /*!40000 ALTER TABLE `concession` DISABLE KEYS */;
+INSERT INTO `concession` VALUES (1,'Bắp rang bơ nhỏ',45000.00),(2,'Bắp rang bơ lớn',65000.00),(3,'Combo bắp + nước',85000.00),(4,'Combo đôi',150000.00),(5,'Pepsi lon',35000.00);
 /*!40000 ALTER TABLE `concession` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -230,7 +232,7 @@ CREATE TABLE `customer` (
   `phone` varchar(20) DEFAULT NULL,
   `dob` date DEFAULT NULL,
   PRIMARY KEY (`customer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +241,7 @@ CREATE TABLE `customer` (
 
 LOCK TABLES `customer` WRITE;
 /*!40000 ALTER TABLE `customer` DISABLE KEYS */;
-INSERT INTO `customer` VALUES (1,'Pham Minh Thuc',NULL,NULL);
+INSERT INTO `customer` VALUES (1,'Pham Minh Thuc',NULL,NULL),(2,'Phạm Minh Thức','0901234567','2004-05-12'),(3,'Nguyễn Hồng Khánh','0908889999','2004-08-20'),(4,'Trần Văn Kiên','0911222333','2003-12-15');
 /*!40000 ALTER TABLE `customer` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -255,7 +257,7 @@ CREATE TABLE `genre` (
   `name` varchar(50) NOT NULL,
   PRIMARY KEY (`genre_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -264,6 +266,7 @@ CREATE TABLE `genre` (
 
 LOCK TABLES `genre` WRITE;
 /*!40000 ALTER TABLE `genre` DISABLE KEYS */;
+INSERT INTO `genre` VALUES (6,'Hài hước'),(1,'Hành động'),(5,'Hoạt hình'),(8,'Khoa học viễn tưởng'),(4,'Kinh dị'),(2,'Phiêu lưu'),(7,'Tâm lý'),(3,'Tình cảm');
 /*!40000 ALTER TABLE `genre` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -282,7 +285,7 @@ CREATE TABLE `hall` (
   PRIMARY KEY (`hall_id`),
   KEY `theater_id` (`theater_id`),
   CONSTRAINT `hall_ibfk_1` FOREIGN KEY (`theater_id`) REFERENCES `theater` (`theater_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -291,6 +294,7 @@ CREATE TABLE `hall` (
 
 LOCK TABLES `hall` WRITE;
 /*!40000 ALTER TABLE `hall` DISABLE KEYS */;
+INSERT INTO `hall` VALUES (1,1,'Phòng 1 - IMAX',60),(2,1,'Phòng 2 - 3D',40),(3,2,'Phòng 1 - VIP',50),(4,3,'Phòng 1 - 2D',45),(5,4,'Phòng 1 - 4DX',55),(6,5,'Phòng 1 - Standard',50);
 /*!40000 ALTER TABLE `hall` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -306,7 +310,7 @@ CREATE TABLE `location` (
   `city_name` varchar(100) NOT NULL,
   `province` varchar(100) NOT NULL,
   PRIMARY KEY (`location_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -315,6 +319,7 @@ CREATE TABLE `location` (
 
 LOCK TABLES `location` WRITE;
 /*!40000 ALTER TABLE `location` DISABLE KEYS */;
+INSERT INTO `location` VALUES (1,'TP. Hồ Chí Minh','Hồ Chí Minh'),(2,'Hà Nội','Hà Nội'),(3,'Đà Nẵng','Đà Nẵng'),(4,'Cần Thơ','Cần Thơ'),(5,'Nha Trang','Khánh Hòa');
 /*!40000 ALTER TABLE `location` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -335,7 +340,7 @@ CREATE TABLE `membership_tier` (
   `last_update` timestamp NULL DEFAULT (now()),
   PRIMARY KEY (`tier_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -344,6 +349,7 @@ CREATE TABLE `membership_tier` (
 
 LOCK TABLES `membership_tier` WRITE;
 /*!40000 ALTER TABLE `membership_tier` DISABLE KEYS */;
+INSERT INTO `membership_tier` VALUES (1,'Standard','Thành viên cơ bản',0.00,0.00,1.00,'2025-11-07 09:37:21'),(2,'Silver','Khách hàng thân thiết',1000000.00,5.00,1.20,'2025-11-07 09:37:21'),(3,'Gold','Khách hàng VIP',3000000.00,10.00,1.50,'2025-11-07 09:37:21');
 /*!40000 ALTER TABLE `membership_tier` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -360,11 +366,16 @@ CREATE TABLE `movie` (
   `synopsis` text,
   `duration_min` int DEFAULT NULL,
   `rating` varchar(10) DEFAULT NULL,
+  `age_limit` varchar(50) DEFAULT NULL,
   `release_date` date DEFAULT NULL,
+  `end_showing_date` date DEFAULT NULL,
+  `early_screening_date` date DEFAULT NULL,
   `poster_url` varchar(255) DEFAULT NULL,
   `trailer_url` varchar(255) DEFAULT NULL,
+  `active` tinyint(1) DEFAULT '1',
+  `status` enum('soon','now','ended') DEFAULT 'soon',
   PRIMARY KEY (`movie_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -373,7 +384,7 @@ CREATE TABLE `movie` (
 
 LOCK TABLES `movie` WRITE;
 /*!40000 ALTER TABLE `movie` DISABLE KEYS */;
-INSERT INTO `movie` VALUES (1,'Avatar 3','Tiếp nối cuộc phiêu lưu của Jake Sully và Neytiri trên hành tinh Pandora, nơi cuộc chiến với loài người vẫn chưa kết thúc.',165,'PG-13','2025-05-10','https://dcine.vn/posters/avatar3.jpg','https://www.youtube.com/watch?v=abc123avatar'),(2,'Inside Out 2','Phần tiếp theo của bộ phim hoạt hình nổi tiếng, khám phá những cảm xúc mới trong tâm trí cô bé Riley khi bước vào tuổi thiếu niên.',100,'PG','2025-11-01','https://dcine.vn/posters/insideout2.jpg','https://www.youtube.com/watch?v=abc456insideout'),(3,'Conan Movie 27: The Million-Dollar Pentagram','Thám tử Conan cùng Ran và nhóm bạn đối đầu vụ án bí ẩn xoay quanh một biểu tượng cổ xưa và kho báu triệu đô.',110,'PG-13','2025-04-15','https://dcine.vn/posters/conan27.jpg','https://www.youtube.com/watch?v=conan27trailer'),(4,'Deadpool & Wolverine','Deadpool hợp tác cùng Wolverine trong một cuộc phiêu lưu đầy máu lửa và hài hước xuyên vũ trụ Marvel.',125,'R','2025-07-26','https://dcine.vn/posters/deadpool_wolverine.jpg','https://www.youtube.com/watch?v=deadpoolwolverine'),(5,'Đồi Gió Hú','Bản chuyển thể hiện đại của tác phẩm kinh điển, kể về mối tình bi kịch và sự ám ảnh giữa hai tâm hồn lạc lối.',130,'PG-16','2025-03-01','https://dcine.vn/posters/doigiohu.jpg','https://www.youtube.com/watch?v=doigiohu');
+INSERT INTO `movie` VALUES (1,'TEE YOD: Quỷ Ăn Tạng Phần 3','Tee Yod 3 kể về cuộc chiến mới của Yak và gia đình khi em gái út Yee đột ngột mất tích, buộc họ phải đến khu rừng ma ám \"Bong Sa Noh Bian\" để tìm em, đồng thời vén màn bí mật về lời nguyền Tee Yod, nguồn gốc của hận thù và bi kịch giữa con người với chiến tranh.',104,'8.2','T16 (Từ đủ 16 tuổi trở lên)','2025-10-10','2025-11-16','2025-10-08','https://dcine.vn/posters/tee_yod_quy_an_tang_phan_3.jpg','https://youtu.be/DXV3x2Htbyg?si=sb8URmHmGf2CWVVw',1,'now'),(2,'Cục Vàng Của Ngoại','\"Cục Vàng Của Ngoại\" là một bộ phim tâm lý gia đình ấm áp, kể về tình cảm sâu nặng giữa bà Hậu (Việt Hương) và cô cháu gái Su, người trở thành \"cục vàng\" duy nhất trong cuộc đời bà sau khi con gái bỏ đi. Phim miêu tả cuộc sống mộc mạc, những hy sinh thầm lặng, những va chạm thế hệ và hành trình chữa lành, dạy cho người xem về tình yêu thương vô bờ bến trong gia đình qua lăng kính của một xóm nhỏ Sài Gòn.',119,'8.0','T13 (Từ đủ 13 tuổi trở lên)','2025-10-17','2025-11-16','2025-10-12','https://dcine.vn/posters/cuc_vang_cua_ngoai.jpg','https://youtu.be/_cj77qa_wMc?si=N6ONr9MfZmjNnkhr',1,'now'),(3,'Nhà Ma Xó','Nhà Ma Xó là một bộ phim kinh dị tâm linh Việt Nam, kể về bà Hiền và các con sống trong cảnh nghèo khó, gặp biến cố sau khi con trai giữa vô tình nhặt được một chiếc khạp bí ẩn dưới sông. Từ đó, hàng loạt hiện tượng siêu nhiên và mâu thuẫn nội bộ gia đình xảy ra, hé lộ những bí mật bị chôn vùi, đặt ra câu hỏi về nguồn gốc của \"ma xó\" và sự rạn nứt gia đình.',108,'8.0','T16 (Từ đủ 16 tuổi trở lên)','2025-10-24','2025-11-25','2025-10-22','https://dcine.vn/posters/nha_ma_xo.jpg','https://youtu.be/ZEq0D-Y0VeU?si=bdGOVAfAhJyRYNGe',1,'now'),(4,'Phá Đám Sinh Nhật Mẹ','Phá Đám Sinh Nhật Mẹ là một bộ phim bi hài kịch gia đình xoay quanh kế hoạch làm đám tang giả của Y Đức để lừa tiền bảo hiểm cho mẹ. Bộ phim khám phá những tổn thương, định kiến thế hệ và khao khát được thấu hiểu trong các mối quan hệ gia đình Việt, đặt ra câu hỏi về sự thật và kỳ vọng. ',91,'7.8','T16 (Từ đủ 16 tuổi trở lên)','2025-10-31','2025-12-01','2025-10-27','https://dcine.vn/posters/pha_dam_sinh_nhat_me.jpg','https://youtu.be/auO0QxMjTlc?si=k8hCvuxead91UzaW',1,'now'),(5,'Cải Mã','Cải Mã là một bộ phim kinh dị tâm linh Việt Nam, khai thác đề tài cải táng (bốc mộ), kể về gia đình họ Đỗ gặp vận xui sau khi động mồ động mả tổ tiên, vô tình đánh thức một bí mật tày đình và thứ tà ma ám lấy gia đình, gây ra nhiều tai ương.',115,'8.6','T16 (Từ đủ 16 tuổi trở lên)','2025-10-31','2025-12-02','2025-10-28','https://dcine.vn/posters/cai_ma.jpg','https://youtu.be/KxvLXJqFCPY?si=_B4HuIY_0IUYx9ZO',1,'now'),(6,'Bí Mật Sau Bữa Tiệc','Phim kể về một câu chuyện nhỏ tưởng chừng gói gọn trong không gian gia đình nhưng lại mở ra góc nhìn sâu sắc về xã hội đương đại.',112,'7.6','T18 (Từ đủ 18 tuổi trở lên)','2025-10-31','2025-12-05','2025-10-28','https://dcine.vn/posters/bi_mat_sau_bua_tiec.jpg','https://youtu.be/kW4sYsN1_cc?si=6YXhuGXOPEsARdRx',1,'now'),(7,'Bịt Mắt Bắt Nai','Bịt Mắt Bắt Nai kể về Trang, một nhân viên bất động sản, lo sợ bạn trai Hiệp sẽ chia tay sau khi cô bị cưỡng bức, nên đã rủ anh đến một homestay để cầu hôn, nhưng tại đây, cô lại đối mặt với Long - kẻ bạo hành cô.',92,'7.5','T16 (Từ đủ 16 tuổi trở lên)','2025-10-31','2025-12-10','2025-10-29','https://dcine.vn/posters/bit_mat_bat_nai.jpg','https://youtu.be/AVm6gVRaOQE?si=0UBBnQy9h9hzq3rp',1,'now'),(8,'Điện Thoại Đen 2','Điện Thoại Đen 2 (The Black Phone 2) xoay quanh Finney và Gwen nhiều năm sau vụ bắt cóc, khi chiếc điện thoại đen lại reo lên ám ảnh họ, đưa hai anh em đến một trại đông lạnh để khám phá mối liên hệ kinh hoàng giữa The Grabber và quá khứ gia đình họ, buộc họ phải đối mặt với kẻ sát nhân mạnh mẽ hơn sau cái chết. ',114,'8.6','T18 (Từ đủ 18 tuổi trở lên)','2025-10-31','2025-11-30','2025-10-29','https://dcine.vn/posters/dien_thoai_den_2.jpg','https://youtu.be/K4Ml_YDwfoU?si=sH0damf21UmYmt8n',1,'now'),(9,'Trái Tim Què Quặt','Một vụ án mạng tàn bạo làm chấn động thị trấn yên bình. Khi thi thể người phụ nữ bị sát hại dã man được phát hiện, mọi nghi ngờ đổ dồn vào Sơn — có thể là người tình của nạn nhân. Triết, một nhà điêu khắc danh tiếng, rơi vào giằng xé giữa nghi ngờ và tình thân khi anh cùng vợ mình cố gắng tìm cách minh oan cho em trai. Rốt cuộc, Sơn là kẻ giết người, nạn nhân của định mệnh nghiệt ngã, hay một trái tim lạc lối bị cuốn vào tình yêu đến mức tự hủy diệt.',102,'8.2','T18 (Từ đủ 18 tuổi trở lên)','2025-11-07','2025-12-20','2025-11-01','https://dcine.vn/posters/trai_tim_que_quat.jpg','https://youtu.be/iMjjqsP9_nk?si=lH7b209c5hJd715A',1,'now'),(10,'Tình Người Duyên Ma','Lấy cảm hứng từ truyền thuyết dân gian Thái Lan về hồn ma Mae Nak, Tình Người Duyên Ma: Nhắm Mak Yêu Luôn kể câu chuyện tình vượt thời gian giữa nàng Nak và chàng Mak. Xuyên không đến 200 năm sau, Nak bất ngờ được vào vai nữ chính trong chính bộ phim về truyền thuyết của mình. Tình cờ thay, vai nam chính lại được thủ bởi Mak - lúc này đã là một nam diễn viên nổi tiếng toàn quốc. Ở đây, Nak phải chinh phục lại trái tim Mak trong vòng 30 ngày mà không được dùng đến ma lực, để có thể ở bên anh trọn đời trọn kiếp.',104,'8.7','T13 (Từ đủ 13 tuổi trở lên)','2025-11-07','2025-12-10','2025-11-05','https://dcine.vn/posters/tinh_nguoi_duyen_ma.jpg','https://youtu.be/TpUvaW2ymeg?si=A6jdTCUr-R7ncon7',1,'now'),(11,'Thai Chiêu Tài','Nhơn, một doanh nhân thành đạt nhờ thủ đoạn và mưu mẹo, tìm đến thứ tà thuật mang tên “Thai Chiêu Tài” để giữ lấy tài khí đã vô tình khơi dậy những ám ảnh từ quá khứ và sang chấn liên thế hệ.',104,'8.2','T18 (Từ đủ 18 tuổi trở lên)','2025-11-07','2025-12-10','2025-11-03','https://dcine.vn/posters/thai_chieu_tai.jpg','https://youtu.be/4QLv7aJq1Wg?si=c9td6U9QRjNkx-Lk',1,'now'),(12,'Quái Thú Vô Hình: Vùng Đất Chết Chóc','Quái Thú Vô Hình: Vùng Đất Chết Chóc (Predator: Badlands) đưa khán giả đến một hành tinh xa xôi, mở rộng thế giới của loài thợ săn huyền thoại với câu chuyện sinh tồn và tìm lại bản sắc đầy cảm xúc.',107,'8.8','T16 (Từ đủ 16 tuổi trở lên)','2025-11-07','2025-12-10','2025-11-04','https://dcine.vn/posters/quai_thu_vo_hinh_vung_dat_chet_choc.jpg','https://youtu.be/AzBi73ddou4?si=8UW6wY8PeQAa8pqB',1,'now'),(13,'Lọ Lem Chơi Ngải','Bộ phim xoay quanh Yuli - cô gái mồ côi phải sống như người hầu trong gia đình của Ambar và mang danh “tiểu tam”. Từ một người hiền lành và chân thành, Yuli dần biến thành kẻ độc ác và nuôi quyết tâm trả thù bằng cách tàn nhẫn nhất.',98,'8.1','T18 (Từ đủ 18 tuổi trở lên)','2025-11-07','2025-12-10','2025-11-05','https://dcine.vn/posters/lo_lem_choi_ngai.jpg','https://youtu.be/T6ty2iYxeT4?si=xlXBWoyFeKR_-HnM',1,'now'),(14,'Trốn Chạy Tử Thần','Trốn Chạy Tử Thần (The Running Man) là câu chuyện về Ben Richards, một người lao động nghèo tham gia chương trình truyền hình sinh tồn tàn khốc để kiếm tiền chữa bệnh cho con gái, phải trốn chạy 30 ngày khỏi những sát thủ chuyên nghiệp, trong khi cả đất nước theo dõi trực tiếp và ngày càng nghiện cảm giác hồi hộp khi anh đối mặt với nguy hiểm cận kề. ',NULL,'0',NULL,'2025-11-14','2025-12-20','2025-11-11','https://dcine.vn/posters/tron_chay_tu_than.jpg','https://youtu.be/A0HOepo6xQI?si=Vye5CeoQ6Cq_w3tI',1,'soon'),(15,'Truy Tìm Long Diên Hương','Truy Tìm Long Diên Hương là phim hài hành động xoay quanh hành trình truy tìm báu vật thiêng Long Diên Hương bị đánh cắp của hai anh em Tâm (Quang Tuấn) và Tuấn (Ma Ran Đô). Trên đường tìm lại báu vật, họ phải đối mặt với băng nhóm xã hội đen của Cường Liều (Doãn Quốc Đam), trải qua những pha hành động nghẹt thở, hài hước và dần nhận ra giá trị của tình thân, lòng trung thành. ',103,'0','T16 (Từ đủ 16 tuổi trở lên)','2025-11-14','2025-12-15','2025-11-10','https://dcine.vn/posters/truy_tim_long_dien_huong.jpg','https://youtu.be/-wmBoUIJ9uo?si=PGlY2d7zYWRfbcOO',1,'soon'),(16,'G-Dragon In Cinema','G-Dragon In Cinema là bộ phim tài liệu về buổi hòa nhạc năm 2025 giới thiệu chuyến lưu diễn toàn cầu đầu tiên của siêu sao K-pop sau tám năm, chuyến lưu diễn Übermensch của anh.',103,'0','T13 (Từ đủ 13 tuổi trở lên)','2025-11-11','2026-01-10','2025-11-09','https://dcine.vn/posters/g_dragon_in_cinema.jpg','https://youtu.be/r9dVQC_UjBo?si=Ry864i8j3--94z1J',1,'soon'),(17,'Bẫy Tiền','Bẫy Tiền kể về Đăng Thức, người bị cuốn vào một vụ lừa đảo qua điện thoại đầy nguy hiểm, khiến anh phải đối mặt với lựa chọn khó khăn giữa tiền bạc, tình thân và niềm tin, nơi mọi quyết định đều đánh đổi bằng những người anh yêu thương.',NULL,'0',NULL,'2025-11-21','2026-01-30','2025-11-18','https://dcine.vn/posters/bay_tien.jpg','https://youtu.be/0wuVwkK-Vsc?si=e4WvUPwUPqJaUpwn',1,'soon'),(18,'Phi Vụ Động Trời 2','Trong Phi Vụ Động Trời 2 (Zootopia 2), hai thám tử Judy Hopps và Nick Wilde đối mặt với một vụ án mới khi một sinh vật bò sát bí ẩn tên Gary xuất hiện, gây náo loạn thành phố Zootopia và đảo lộn trật tự xã hội động vật.',120,'0',NULL,'2025-11-26','2025-12-20','2025-11-20','https://dcine.vn/posters/phi_vu_dong_troi_2.jpg','https://youtu.be/EutV2x9GEZo?si=1sKRDXkpUXwyukGr',1,'soon'),(19,'Phòng Trọ Ma Bầu','Phòng Trọ Ma Bàu kể về hai người bạn thân (do Huỳnh Phương và Anh Tú thủ vai) trốn chạy khỏi trách nhiệm khi bạn gái của một trong hai người mang thai, thuê phải một căn phòng trọ cũ kỹ ở vùng quê và liên tục gặp phải các hiện tượng siêu nhiên, đối mặt với hồn ma \"ma bầu\" mang câu chuyện bi kịch và tình mẫu tử thiêng liêng.',120,'0',NULL,'2025-11-28','2025-12-30','2025-11-25','https://dcine.vn/posters/phong_tro_ma_bau.jpg','https://youtu.be/jgZM5IhnzDA?si=QKyRFWWiJAO1TT4a',1,'soon'),(20,'Hoàng Tử Quỷ','Hoàng Tử Quỷ kể về Thân Đức, một hoàng tử mang dòng máu quỷ, trốn khỏi cung cấm để thực hiện âm mưu giải thoát cha mình là Quỷ Xương Cuồng bằng cách tìm kiếm Du Hồn Giả và Bạch Hổ Nguyên Âm tại làng Hủi, nơi anh đối đầu với trưởng làng Lỗ Đạt trong cuộc chiến giữa chính nghĩa và tà niệm.',NULL,'0',NULL,'2025-12-05','2026-01-05','2025-12-01','https://dcine.vn/posters/hoang_tu_quy.jpg','https://youtu.be/Qzymh0WVyN8?si=-tGoQp2pYnLSAtju',1,'soon'),(21,'Năm Đêm Kinh Hoàng 2','Năm Đêm Kinh Hoàng 2 (Five Nights at Freddy\'s 2) lấy bối cảnh một năm sau phần đầu, khi thị trấn tổ chức lễ hội Fazfest dựa trên truyền thuyết về các animatronic, nhưng bí mật về chúng vẫn bị che giấu. Khi cô bé Abby lén đến gặp Freddy, Bonnie, Chica và Foxy, một chuỗi sự kiện kinh hoàng xảy ra, hé lộ nguồn gốc thực sự của Freddy\'s và đánh thức một nỗi kinh hoàng bị lãng quên.',120,'0',NULL,'2025-12-05','2025-01-27','2025-12-02','https://dcine.vn/posters/nam_dem_kinh_hoang_2.jpg','https://youtu.be/HccJNOYMBjM?si=pscIV4qWv7fHceSK',0,'soon'),(22,'Nhà \"Hai\" Chủ','Nhà \"Hai\" Chủ là một bộ phim kinh dị Việt Nam kể về một gia đình trẻ chuyển đến sống trong một căn nhà cũ, nơi người dân đồn đoán về những điều tâm linh kỳ lạ. Mua nhà nhầm vào ngày dữ, hai vợ chồng trẻ đối mặt với chuỗi hiện tượng rùng rợn. Lời cảnh báo “nhà làm vào ngày Tam Nương”, “nhà này có ma” chỉ là khởi đầu cho những điềm gở kinh hoàng sắp xảy ra. Những điều kỳ lạ liên tục xuất hiện khiến gia chủ không lường, dường như có ai đó không muốn họ ở đây.',NULL,'0',NULL,'2025-12-05','2026-01-10','2025-12-02','https://dcine.vn/posters/nha_hai_chu.jpg','https://youtu.be/ZZZUfZzX0ZU?si=xRMQa03E8Zax0108',1,'soon'),(23,'Avatar 3: Lửa Và Tro Tàn','Avatar 3: Fire and Ash theo chân gia đình Sully khi họ vật lộn với nỗi đau sau cái chết của Neteyam, dẫn đến cuộc chạm trán với Người Ash hung hãn do Varang cầm đầu.',NULL,'0',NULL,'2025-12-19','2026-02-20','2025-12-13','https://dcine.vn/posters/avatar_3_lua_va_tro_tan.jpg','https://youtu.be/nb_fFj_0rq8?si=gNKJvIbJP3NymfFS',1,'soon'),(24,'Đồi Gió Hú','Đồi Gió Hú (2026) là bản chuyển thể mới nhất từ tiểu thuyết kinh điển của Emily Brontë, tập trung vào câu chuyện tình yêu ám ảnh, dữ dội giữa Catherine Earnshaw và Heathcliff trên vùng đồng cỏ Yorkshire',NULL,'0',NULL,'2026-03-13','2026-04-25','2026-03-05','https://dcine.vn/posters/doi_gio_hu.jpg','https://youtu.be/TjAJ7cOjwjg?si=OEUP3OR4lWQQMTxo',1,'soon');
 /*!40000 ALTER TABLE `movie` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -400,6 +411,7 @@ CREATE TABLE `movie_cast` (
 
 LOCK TABLES `movie_cast` WRITE;
 /*!40000 ALTER TABLE `movie_cast` DISABLE KEYS */;
+INSERT INTO `movie_cast` VALUES (1,3),(2,4),(3,5),(4,1),(4,2),(5,6),(6,7),(7,8),(8,9),(9,6),(10,10);
 /*!40000 ALTER TABLE `movie_cast` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -426,6 +438,7 @@ CREATE TABLE `movie_genre` (
 
 LOCK TABLES `movie_genre` WRITE;
 /*!40000 ALTER TABLE `movie_genre` DISABLE KEYS */;
+INSERT INTO `movie_genre` VALUES (1,1),(3,1),(4,1),(8,1),(10,1),(3,2),(5,2),(9,2),(10,2),(5,3),(6,3),(7,3),(2,5),(9,5),(2,6),(4,6),(7,6),(6,7),(1,8),(8,8);
 /*!40000 ALTER TABLE `movie_genre` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -506,7 +519,7 @@ CREATE TABLE `seat` (
   KEY `seat_type_id` (`seat_type_id`),
   CONSTRAINT `seat_ibfk_1` FOREIGN KEY (`hall_id`) REFERENCES `hall` (`hall_id`),
   CONSTRAINT `seat_ibfk_2` FOREIGN KEY (`seat_type_id`) REFERENCES `seat_type` (`seat_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -515,6 +528,7 @@ CREATE TABLE `seat` (
 
 LOCK TABLES `seat` WRITE;
 /*!40000 ALTER TABLE `seat` DISABLE KEYS */;
+INSERT INTO `seat` VALUES (1,1,'A',1,1),(2,1,'A',2,1),(3,1,'A',3,2),(4,1,'B',1,1),(5,1,'B',2,2),(6,2,'A',1,1),(7,2,'A',2,2),(8,2,'B',1,1),(9,2,'B',2,3),(10,3,'A',1,1),(11,3,'A',2,1),(12,3,'B',1,2),(13,3,'B',2,3),(14,4,'A',1,1),(15,4,'A',2,1),(16,4,'B',1,2),(17,4,'B',2,3),(18,5,'A',1,1),(19,5,'A',2,1),(20,5,'B',1,2),(21,5,'B',2,3),(22,6,'A',1,1),(23,6,'A',2,2),(24,6,'B',1,3),(25,6,'B',2,1);
 /*!40000 ALTER TABLE `seat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -530,7 +544,7 @@ CREATE TABLE `seat_type` (
   `name` varchar(30) NOT NULL,
   `price_multiplier` decimal(5,2) DEFAULT '1.00',
   PRIMARY KEY (`seat_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -539,6 +553,7 @@ CREATE TABLE `seat_type` (
 
 LOCK TABLES `seat_type` WRITE;
 /*!40000 ALTER TABLE `seat_type` DISABLE KEYS */;
+INSERT INTO `seat_type` VALUES (1,'Ghế thường',1.00),(2,'Ghế VIP',1.20),(3,'Ghế đôi Couple',1.50);
 /*!40000 ALTER TABLE `seat_type` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -561,7 +576,7 @@ CREATE TABLE `showtime` (
   KEY `hall_id` (`hall_id`),
   CONSTRAINT `showtime_ibfk_1` FOREIGN KEY (`movie_id`) REFERENCES `movie` (`movie_id`),
   CONSTRAINT `showtime_ibfk_2` FOREIGN KEY (`hall_id`) REFERENCES `hall` (`hall_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -570,6 +585,7 @@ CREATE TABLE `showtime` (
 
 LOCK TABLES `showtime` WRITE;
 /*!40000 ALTER TABLE `showtime` DISABLE KEYS */;
+INSERT INTO `showtime` VALUES (1,1,1,'2025-11-08 09:00:00','2025-11-08 11:45:00',90000.00),(2,2,2,'2025-11-08 13:00:00','2025-11-08 14:40:00',75000.00),(3,3,3,'2025-11-08 15:00:00','2025-11-08 16:50:00',80000.00),(4,4,4,'2025-11-08 17:30:00','2025-11-08 19:35:00',95000.00),(5,5,5,'2025-11-08 20:00:00','2025-11-08 22:10:00',85000.00),(6,6,1,'2025-11-09 09:30:00','2025-11-09 11:35:00',85000.00),(7,7,2,'2025-11-09 12:30:00','2025-11-09 14:15:00',75000.00),(8,8,3,'2025-11-09 15:00:00','2025-11-09 17:05:00',95000.00),(9,9,4,'2025-11-09 18:00:00','2025-11-09 20:00:00',70000.00),(10,10,5,'2025-11-09 20:30:00','2025-11-09 22:25:00',85000.00);
 /*!40000 ALTER TABLE `showtime` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -588,7 +604,7 @@ CREATE TABLE `theater` (
   PRIMARY KEY (`theater_id`),
   KEY `location_id` (`location_id`),
   CONSTRAINT `theater_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -597,6 +613,7 @@ CREATE TABLE `theater` (
 
 LOCK TABLES `theater` WRITE;
 /*!40000 ALTER TABLE `theater` DISABLE KEYS */;
+INSERT INTO `theater` VALUES (1,'Dcine Bến Thành','6 Mạc Đĩnh Chi, Q.1, TP.HCM',1),(2,'Dcine Hà Đông','120 Tô Hiệu, Hà Đông, Hà Nội',2),(3,'Dcine Đà Nẵng','45 Nguyễn Văn Linh, Hải Châu, Đà Nẵng',3),(4,'Dcine Cần Thơ','22 Hòa Bình, Ninh Kiều, Cần Thơ',4),(5,'Dcine Nha Trang','10 Lê Thánh Tôn, Nha Trang, Khánh Hòa',5);
 /*!40000 ALTER TABLE `theater` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -622,7 +639,7 @@ CREATE TABLE `voucher` (
   UNIQUE KEY `code` (`code`),
   KEY `membership_tier_id` (`membership_tier_id`),
   CONSTRAINT `voucher_ibfk_1` FOREIGN KEY (`membership_tier_id`) REFERENCES `membership_tier` (`tier_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -631,6 +648,7 @@ CREATE TABLE `voucher` (
 
 LOCK TABLES `voucher` WRITE;
 /*!40000 ALTER TABLE `voucher` DISABLE KEYS */;
+INSERT INTO `voucher` VALUES (1,1,'WELCOME10','PERCENT',10.00,'2025-01-01 00:00:00','2025-12-31 00:00:00',100000.00,1000,0),(2,2,'SILVER20K','AMOUNT',20000.00,'2025-01-01 00:00:00','2025-12-31 00:00:00',150000.00,500,0),(3,3,'GOLD15','PERCENT',15.00,'2025-01-01 00:00:00','2025-12-31 00:00:00',200000.00,300,0),(4,NULL,'SUMMER25','PERCENT',25.00,'2025-05-01 00:00:00','2025-08-31 00:00:00',100000.00,200,0),(5,NULL,'MOVIE50K','AMOUNT',50000.00,'2025-03-01 00:00:00','2025-06-30 00:00:00',250000.00,100,0);
 /*!40000 ALTER TABLE `voucher` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -643,4 +661,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-06 21:15:16
+-- Dump completed on 2025-11-08 23:01:32

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "cb-m1",
+    "title": "Combo M1: 1 bắp + 1 nước",
+    "desc": "Bắp bơ + Coca 500ml",
+    "price": 49000,
+    "oldPrice": 65000,
+    "tag": "BEST VALUE",
+    "imageUrl": "https://picsum.photos/seed/pop1/420/280",
+    "variants": [
+      { "label": "M", "value": "M" },
+      { "label": "L (+6k)", "value": "L" }
+    ]
+  },
+  {
+    "id": "cb-m2",
+    "title": "Combo M2: 2 bắp + 2 nước",
+    "desc": "Tiết kiệm cho nhóm 2 người",
+    "price": 89000,
+    "oldPrice": 120000,
+    "imageUrl": "https://picsum.photos/seed/pop2/420/280",
+    "variants": []
+  },
+  {
+    "id": "cb-sweet",
+    "title": "Sweet Combo: Bắp caramel + Trà đào",
+    "desc": "Ngọt nhẹ, thơm béo",
+    "price": 99000,
+    "imageUrl": "https://picsum.photos/seed/pop3/420/280",
+    "variants": [{ "label": "L", "value": "L" }]
+  },
+  {
+    "id": "cb-max",
+    "title": "MAX Combo: 2 bắp phô mai + 2 nước lớn",
+    "desc": "Ăn đã cho nhóm 2-3 người",
+    "price": 139000,
+    "oldPrice": 169000,
+    "tag": "HOT",
+    "imageUrl": "https://picsum.photos/seed/pop4/420/280",
+    "variants": [
+      { "label": "L", "value": "L" },
+      { "label": "XL (+10k)", "value": "XL" }
+    ]
+  },
+  {
+    "id": "cb-student",
+    "title": "Student Combo",
+    "desc": "Bắp + Nước size M, giảm thêm cho SV",
+    "price": 45000,
+    "imageUrl": "https://picsum.photos/seed/pop5/420/280",
+    "variants": [{ "label": "M", "value": "M" }]
+  },
+  {
+    "id": "cb-couple",
+    "title": "Couple Set",
+    "desc": "1 bắp L + 2 nước L + snack",
+    "price": 159000,
+    "imageUrl": "https://picsum.photos/seed/pop6/420/280",
+    "variants": []
+  }
+]
