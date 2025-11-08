@@ -44,11 +44,12 @@ public class WebSecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("http://127.0.0.1:5500", "http://localhost:5500","http://localhost:*") // FE của bạn
+                        .allowedOriginPatterns("http://127.0.0.1:5500", "http://localhost:5500","http://localhost:8080") // FE của bạn
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
+            
 
             // ✅ Thêm đoạn này để cho phép truy cập ảnh /uploads/**
             @Override
@@ -57,7 +58,21 @@ public class WebSecurityConfig {
                         .addResourceLocations("file:uploads/");
                 // 👇 Nếu thư mục uploads nằm ở nơi khác:
                 // .addResourceLocations("file:C:/Users/YourName/Desktop/cinema/uploads/");
-        }
+            }
+        };
+    }
+     // 2️⃣ Cho phép Postman / public API (không credentials)
+    @Bean
+    public WebMvcConfigurer publicCorsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/public/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .allowCredentials(false);
+            }
         };
     }
 }

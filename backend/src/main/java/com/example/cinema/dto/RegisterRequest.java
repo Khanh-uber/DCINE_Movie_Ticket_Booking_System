@@ -4,27 +4,23 @@ package com.example.cinema.dto;
 // import java.time.LocalDate;
 
 public class RegisterRequest {
-    private String registerType;
     private String fullName;
     private String username;
     private String password;
     private String confirmPassword;
     private String phone;
     private String email;
-    private boolean agreeTerm;
     
     
     public RegisterRequest() {}
 
-    public RegisterRequest(String registerType,String username, String password, String fullName, String phone, String email, String cp, boolean agreeTerm) {
+    public RegisterRequest(String username, String password, String fullName, String phone, String email, String cp) {
         this.username = username;
         this.password = password;
         this.fullName = fullName;
         this.phone = phone;
         this.email = email;
         this.confirmPassword = cp;
-        this.registerType = registerType;
-        this.agreeTerm = agreeTerm;
     }
 
     // --- Getters & Setters ---
@@ -80,18 +76,18 @@ public class RegisterRequest {
     public void setConfirmPassword(String cp){
         confirmPassword = cp;
     }
-    public boolean isAgreeTerm(){
-        return agreeTerm;
-    }
-    public void setAgreeTerm(boolean at){
-        this.agreeTerm = at;
-    }
-    public String getRegisterType(){
-        return registerType;
-    }
-    public void setRegisterType(String rt){
-        this.registerType = rt;
-    }
+    // public boolean isAgreeTerm(){
+    //     return agreeTerm;
+    // }
+    // public void setAgreeTerm(boolean at){
+    //     this.agreeTerm = at;
+    // }
+    // public String getRegisterType(){
+    //     return registerType;
+    // }
+    // public void setRegisterType(String rt){
+    //     this.registerType = rt;
+    // }
     
 }
 

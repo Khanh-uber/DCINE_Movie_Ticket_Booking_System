@@ -1,6 +1,5 @@
 package com.example.cinema.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -25,6 +24,7 @@ public class OtpRecord {
     private LocalDateTime expiresAt;
     
     private boolean verified = false;
+    
     @Column(name="request_id")
     private String requestId;
 

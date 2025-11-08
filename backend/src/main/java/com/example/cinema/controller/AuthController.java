@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpSession;
 import com.example.cinema.dto.ForgotPasswordRequest;
 import com.example.cinema.dto.LoginRequest;
 import com.example.cinema.dto.RegisterRequest;
-import com.example.cinema.dto.VerifyOtpRequest;
+import com.example.cinema.dto.OtpRequest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -92,7 +92,7 @@ public class AuthController {
     }
     // === Gui OTP ===
     @PostMapping("forgot/send-otp")
-    public ResponseEntity<?> sendOtp(@RequestBody VerifyOtpRequest req){
+    public ResponseEntity<?> sendOtp(@RequestBody OtpRequest req){
         try {
             String identifier = req.getIdentifier();
             if (identifier==null || identifier.isBlank())
@@ -101,25 +101,25 @@ public class AuthController {
             if (acc == null)
                 throw new RuntimeException("Không tìm thấy tài khoản");
             
-            Map<String, Object> data = otpService.sendOtp(identifier);
+            Map<String, Object> data = otpService.sendOtp(req);
             
             return ResponseEntity.ok(Map.of("ok", true, 
-                                            "message", "Đã gửi OTP thành công", 
-                                            "data", data));
+                                            "data", data,
+                                            "message", "Đã gửi OTP thành công" ));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(Map.of("ok", false,"error", e.getMessage()));
         }
     }
     // === Xac thuc OTP ===
     @PostMapping("/forgot/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest req){
+    public ResponseEntity<?> verifyOtp(@RequestBody OtpRequest req){
         try {
-            String identifier = req.getIdentifier();
+            String requestId = req.getRequestId();
             String code = req.getCode();
-            OtpRecord otp = otpService.verifyOtp(identifier, code);
+            OtpRecord otp = otpService.verifyOtp(requestId, code);
             return ResponseEntity.ok(Map.of("ok", true,
                                             "message", "OTP hợp lệ",
-                                            "data", otp.getIdentifier()));
+                                            "data", otp.getRequestId()));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(Map.of("ok", false, "error", e.getMessage()));
         }

@@ -1,6 +1,6 @@
 package com.example.cinema.dto;
 
-public class VerifyOtpRequest {
+public class OtpRequest {
     private String channelType; // email hoac phone
     private String identifier; // email hoac so dien thoai
     private String code; // Ma OTP

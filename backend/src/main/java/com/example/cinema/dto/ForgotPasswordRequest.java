@@ -1,33 +1,18 @@
 package com.example.cinema.dto;
 
 public class ForgotPasswordRequest {
-    private String channelType ; // name or email
-    private String identifier;
+    private String requestId ;
     private String newPassword;
     private String confirmNewPassword;
-    private String token;
-    private String requestId ;
+    
     public ForgotPasswordRequest() {}
 
-    public ForgotPasswordRequest(String channelType, String newPassword, String cfn) {
-        this.channelType  = channelType;
+    public ForgotPasswordRequest(String requestId, String newPassword, String cfn) {
+        this.requestId  = requestId;
         this.newPassword = newPassword;
         this.confirmNewPassword = cfn;
     }
 
-    public String getIdentifier(){
-        return identifier;
-    }
-    public void setIdentifier(String identifier){
-        this.identifier = identifier;
-    }
-    public String getChannelType() {
-        return channelType;
-    }
-
-    public void setChannelType(String channelType) {
-        this.channelType = channelType;
-    }
 
     public String getNewPassword() {
         return newPassword;
@@ -41,6 +26,12 @@ public class ForgotPasswordRequest {
     }
     public void setConfirmPassword(String confirmNewPassword){
         this.confirmNewPassword = confirmNewPassword;
+    }
+    public String getRequestId(){
+        return requestId;
+    }
+    public void setRequestId(String requestId){
+        this.requestId = requestId;
     }
 }
 

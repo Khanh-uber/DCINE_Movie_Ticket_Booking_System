@@ -20,4 +20,11 @@ public interface OtpRepository extends JpaRepository<OtpRecord, Long> {
     @Modifying
     @Query(value = "delete from otp_record where expires_at < NOW()", nativeQuery = true)
     void deleteExpiredOtps();  // don dep otp cu;
+    
+    @Query(value = "SELECT * FROM otp_record WHERE request_id = :requestId LIMIT 1", nativeQuery = true)
+    OtpRecord findByRequestId(@Param("requestId") String requestId);
+
+    // Xóa OTP theo requestId (trả về số dòng bị xóa)
+    @Modifying
+    int deleteByRequestId(String requestId);
 }
