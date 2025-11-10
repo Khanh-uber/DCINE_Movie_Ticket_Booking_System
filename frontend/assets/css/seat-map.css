@@ -1,0 +1,222 @@
+/* ===== D-cine Seat Map (v6) ===== */
+:root{
+  --accent:#E50914; --accent-2:#FF4D57;
+  --bg:#0D0D0D; --panel:#121214; --panel-2:#16171B;
+  --stroke:rgba(255,255,255,.08); --text:#F3F4F6;
+
+  --seat-available:#FFFFFF; --seat-border:#C7CED6;
+  --seat-selected:var(--accent); --seat-booked:#2B2E33;
+
+  --vip-1:#FFF4C2; --vip-2:#FFD351;
+  --std-1:#D6E9FF; --std-2:#9CCBFF;
+  --eco-1:#DFF8E1; --eco-2:#A7F0B2;
+
+  --seat-size:38px; --gap:10px; --aisle-w:clamp(14px,2.2vw,20px);
+}
+
+.seatmap-page{ background:var(--bg); padding-top:calc(var(--header-h,64px) + 10px); padding-bottom:28px; color:var(--text); }
+.seat-layout{ display:grid; grid-template-columns:360px 1fr; gap:24px; }
+
+/* ===== Left info ===== */
+.side.left .movie-card-info{
+  display:flex; gap:14px; align-items:flex-start;
+  padding:16px; border:1px solid var(--stroke);
+  background:var(--panel-2); border-radius:14px;
+}
+.poster-wrap{ flex:0 0 32%; aspect-ratio:2/3; border-radius:14px; overflow:hidden; background:#0B0B0B; }
+.poster-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.mv-title{ color:var(--accent); font-weight:900; letter-spacing:.2px; line-height:1.2; margin:0 0 4px; }
+.mv-meta{ color:#DADDE2; opacity:.95; }
+.showtime-block{ display:grid; gap:6px; padding:12px; background:var(--panel); border:1px solid var(--stroke); border-radius:12px; margin-top:10px; }
+.showtime-block .row{ display:flex; gap:8px; }
+.showtime-block .row span{ color:#9FA6B2; min-width:92px; }
+
+/* ===== Button polish (không xuống dòng + icon đồng bộ) ===== */
+.seatmap-page .btn{
+  height:40px; padding:0 14px; border-radius:10px; border:1px solid transparent; font-weight:800;
+  display:inline-flex; align-items:center; gap:8px; white-space:nowrap; line-height:1;
+}
+.seatmap-page .btn svg{ width:18px; height:18px; flex-shrink:0; }
+.seatmap-page .btn:not(.outline){ background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 6px 18px #E5091426; }
+.seatmap-page .btn:not(.outline):hover{ filter:brightness(1.05); }
+.seatmap-page .btn.outline{ background:transparent; border:1px solid var(--accent); color:var(--accent); }
+.seatmap-page .btn.outline:hover{ background:var(--accent); color:#fff; }
+.btn[disabled]{ opacity:.55; cursor:not-allowed; }
+
+/* ===== Auditorium ===== */
+.auditorium{
+  position:relative; padding-top:10px; padding-bottom:12px;
+  background:
+    radial-gradient(1100px 420px at 50% -120px, rgba(229,9,20,.18), transparent 60%),
+    radial-gradient(900px 320px at 50% 0px, rgba(255,255,255,.06), transparent 62%);
+  border-top:1px solid var(--stroke);
+}
+.screen-wrap{ position:relative; margin:0 auto 8px; max-width:980px; }
+.screen-svg{ width:100%; height:120px; display:block; }
+.screen-stroke{ fill:none; stroke:#fff; stroke-width:2.2; opacity:.9; }
+.screen-text{ font:800 18px/1 Inter,system-ui,sans-serif; letter-spacing:9px; fill:#fff; }
+
+.zone-chips{ display:flex; gap:8px; justify-content:center; margin:4px 0 12px; }
+.zone-chips .chip{ padding:4px 8px; border-radius:999px; font-weight:700; font-size:12px; border:1px solid var(--stroke); cursor:default; }
+.zone-chips .vip{ background:#2B1618; color:#FFD1D3; border-color:#4a1d22; }
+.zone-chips .std{ background:#172025; color:#D6E8FF; border-color:#20303a; }
+.zone-chips .eco{ background:#181a15; color:#E5F7C8; border-color:#2d3423; }
+
+/* ===== Grid wrapper ===== */
+.seat-grid{
+  margin:0 auto 12px; background:var(--panel-2); border:1px solid var(--stroke);
+  border-radius:18px; padding:14px; width:fit-content; box-shadow:0 14px 40px rgba(0,0,0,.25);
+}
+
+/* Cột số & AISLE */
+.col-grid{
+  display:grid;
+  grid-template-columns:30px repeat(4,var(--seat-size)) var(--aisle-w) repeat(8,var(--seat-size)) var(--aisle-w) repeat(4,var(--seat-size)) 30px;
+  gap:var(--gap); padding:0 var(--gap);
+}
+.col-grid>.col-spacer{ width:30px; }
+.col-label{ text-align:center; color:#CFCFCF; font-weight:800; height:24px; display:grid; place-items:center; }
+.col-aisle{ width:var(--aisle-w); display:grid; place-items:center; color:transparent; }
+.col-aisle::after{ content:"AISLE"; color:#8b949e; font-size:10px; letter-spacing:.6px; }
+
+/* Hàng ghế — THẲNG HÀNG */
+.seat-grid .grid{
+  display:grid;
+  grid-template-columns:30px repeat(4,var(--seat-size)) var(--aisle-w) repeat(8,var(--seat-size)) var(--aisle-w) repeat(4,var(--seat-size)) 30px;
+  grid-auto-rows:var(--seat-size); gap:var(--gap); padding:8px var(--gap) 10px;
+}
+.row-label{ display:grid; place-items:center; color:#CFCFCF; font-weight:900; width:30px; }
+.aisle{
+  width:var(--aisle-w); height:var(--seat-size);
+  border-left:1px dashed rgba(255,255,255,.12); border-right:1px dashed rgba(255,255,255,.12);
+  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border-radius:8px;
+}
+
+/* ===== Seat button ===== */
+.seat{
+  position:relative; width:var(--seat-size); height:var(--seat-size);
+  border-radius:10px; border:1.5px solid var(--seat-border);
+  background:var(--seat-available); color:#0E1116;
+  font-weight:900; font-size:13px; font-variant-numeric:tabular-nums;
+  display:grid; place-items:center; cursor:pointer;
+  transition:transform .08s, filter .2s, box-shadow .25s, border-color .2s, background .2s;
+  user-select:none; outline:none;
+}
+.seat::before{ content:""; position:absolute; inset:2px 2px auto 2px; height:13px; border-radius:8px 8px 4px 4px;
+  background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.02)); pointer-events:none; }
+.seat:hover{ filter:brightness(1.03); border-color:#AAB4BF; }
+.seat:active{ transform:translateY(1px); }
+.seat:focus-visible{ box-shadow:0 0 0 3px rgba(229,9,20,.35); }
+
+.seat[data-state="booked"]{ background:var(--seat-booked) !important; border-color:#1D1F23; color:#BFC6CE; cursor:not-allowed; filter:saturate(.85); }
+.seat[data-state="selected"]{
+  background:var(--seat-selected) !important; color:#fff; border-color:var(--accent-2);
+  text-shadow:0 1px 0 rgba(0,0,0,.5);
+  box-shadow:0 10px 26px rgba(229,9,20,.34), inset 0 0 0 1px rgba(255,255,255,.18);
+}
+
+/* Màu theo zone (available) */
+.seat[data-zone="vip"]:not([data-state="selected"]):not([data-state="booked"]){
+  background:linear-gradient(180deg, var(--vip-1), var(--vip-2));
+  border-color:#F7C948;
+}
+.seat[data-zone="standard"]:not([data-state="selected"]):not([data-state="booked"]){
+  background:linear-gradient(180deg, var(--std-1), var(--std-2));
+  border-color:#7EB8FF;
+}
+.seat[data-zone="economy"]:not([data-state="selected"]):not([data-state="booked"]){
+  background:linear-gradient(180deg, var(--eco-1), var(--eco-2));
+  border-color:#88E39E;
+}
+
+/* Tooltip + flip */
+.seat[data-tip]{ position:relative; }
+.seat[data-tip]::after{
+  content:attr(data-tip);
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:#0E0F12; color:#fff; border:1px solid rgba(255,255,255,.1);
+  padding:6px 8px; font:700 12px/1.2 Inter,sans-serif; white-space:nowrap;
+  border-radius:8px; pointer-events:none; opacity:0; transition:opacity .2s, transform .2s;
+  box-shadow:0 12px 28px rgba(0,0,0,.35);
+}
+.seat:hover[data-tip]::after{ opacity:1; transform:translateX(-50%) translateY(-2px); }
+.seat[data-pos="left"]::after{ bottom:auto; top:50%; left:auto; right:calc(100% + 8px); transform:translateY(-50%); }
+.seat[data-pos="right"]::after{ bottom:auto; top:50%; left:calc(100% + 8px); transform:translateY(-50%); }
+.seat[data-pos="bottom"]::after{ top:calc(100% + 8px); bottom:auto; }
+
+/* Legend */
+.legend{ display:flex; align-items:center; gap:16px; justify-content:center; list-style:none; margin:12px 0 16px; padding:0; }
+.legend .chip-color{ width:18px; height:18px; border-radius:6px; border:1px solid var(--stroke); display:inline-block; }
+.legend .selected{ background:var(--accent); border-color:var(--accent); }
+.legend .available{ background:#fff; border-color:var(--seat-border); }
+.legend .booked{ background:var(--seat-booked); border-color:#1D1F23; }
+.legend .vip{ background:linear-gradient(180deg, var(--vip-1), var(--vip-2)); }
+.legend .std{ background:linear-gradient(180deg, var(--std-1), var(--std-2)); }
+.legend .eco{ background:linear-gradient(180deg, var(--eco-1), var(--eco-2)); }
+
+/* === Tabs chế độ & quota === */
+.mode-tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+.mode-tabs .tab{
+  padding:6px 10px; border-radius:999px; border:1px solid var(--stroke);
+  background:#0F1013; color:#C9D1D9; font-weight:800;
+}
+.mode-tabs .tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+.ticket-quota{ display:grid; gap:8px; }
+.ticket-quota[hidden]{ display:none !important; }
+.quota-row{ display:grid; grid-template-columns:100px repeat(3,1fr); gap:6px 8px; align-items:center; }
+.quota-row.head{ color:#C9CED7; font-weight:800; }
+.quota-row .qcell{
+  display:flex; justify-content:center; align-items:center;
+  background:var(--panel); border:1px solid var(--stroke); border-radius:10px; padding:6px 8px;
+}
+
+/* Summary sticky */
+.summary{
+  position:sticky; top:calc(var(--header-h,64px) + 12px);
+  background:var(--panel-2); border:1px solid var(--stroke);
+  border-radius:16px; padding:14px; display:grid; gap:12px;
+}
+.summary-head{ display:flex; align-items:center; justify-content:space-between; }
+.sel-list{ display:flex; flex-wrap:wrap; gap:8px; min-height:12px; }
+.sel-list .seat-chip{ padding:6px 8px; border-radius:999px; border:1px solid var(--stroke); background:#0F1013; font-weight:800; font-size:12px; color:#E7EAF0; }
+
+.price-matrix{ display:grid; grid-template-columns:100px repeat(3,1fr); gap:6px 8px; }
+.price-matrix .head{ color:#C9CED7; font-weight:800; }
+.price-matrix .z{ display:flex; align-items:center; gap:8px; }
+.price-matrix .dot{ width:14px; height:14px; border-radius:4px; border:1px solid var(--stroke); }
+.dot.vip{ background:linear-gradient(180deg, var(--vip-1), var(--vip-2)); }
+.dot.std{ background:linear-gradient(180deg, var(--std-1), var(--std-2)); }
+.dot.eco{ background:linear-gradient(180deg, var(--eco-1), var(--eco-2)); }
+.price-matrix .cell{
+  display:flex; justify-content:space-between; align-items:center;
+  background:var(--panel); border:1px solid var(--stroke); border-radius:10px; padding:6px 8px; font-weight:800;
+}
+
+/* Ticket types re-use .qty */
+.ticket-types{ display:grid; gap:10px; }
+.type-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid var(--stroke); background:var(--panel); }
+.type-row .label .name{ font-weight:800; }
+.type-row .label .price{ color:#F3F3F3; opacity:.95; font-weight:700; }
+.qty{ display:inline-flex; align-items:center; gap:8px; background:#0E0F12; border:1px solid var(--stroke); border-radius:999px; height:38px; padding:0 8px; }
+.qty .val{ width:38px; text-align:center; background:transparent; border:0; color:var(--text); font-weight:800; }
+.qty .step{ width:30px; height:30px; border-radius:999px; border:1px solid var(--stroke); background:#15161A; color:#fff; cursor:pointer; }
+.qty .step:hover{ filter:brightness(1.08); }
+
+.breakdown{ display:grid; gap:8px; }
+.breakdown .line{ display:flex; align-items:center; justify-content:space-between; }
+.breakdown hr{ border:0; height:1px; background:var(--stroke); margin:4px 0; }
+.breakdown .total strong{ font-size:20px; }
+.hint{ min-height:20px; }
+
+/* CTA */
+.cta-row{ display:flex; gap:10px; flex-wrap:wrap; }
+.cta-row.end{ justify-content:flex-end; }
+/* Không xuống dòng & căn số đồng đều */
+.seatmap-page .btn{ white-space: nowrap; }     /* nút không wrap text */
+.seat{ font-variant-numeric: tabular-nums; }   /* 1..16 thẳng hàng */
+
+@media (max-width:1100px){
+  .seat-layout{ grid-template-columns:1fr; }
+  .poster-wrap{ flex-basis:28%; }
+}

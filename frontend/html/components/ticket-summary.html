@@ -1,0 +1,86 @@
+
+<template id="ticket-summary">
+  <article class="ticket" data-order="">
+    <!-- Header -->
+    <header class="t-head">
+      <div class="brand">D-cine</div>
+      <div class="order">
+        <span class="label">Mã đặt vé</span>
+        <strong data-order>DC-ABC123</strong>
+      </div>
+    </header>
+
+    <!-- Thân -->
+    <div class="t-body">
+      <div class="poster"><img data-poster alt="Poster" loading="lazy" decoding="async"></div>
+
+      <div class="meta">
+        <h3 class="title" data-movie>Movie Title</h3>
+        <div class="row">
+          <span data-format>2D</span> • <span data-lang>Phụ đề</span> • <span data-rated>–</span>
+        </div>
+        <div class="row" data-theater>Rạp D-cine Quận 1 — Phòng 3</div>
+        <div class="row">
+          <span data-showdate>07/11/2025</span> • <span data-showtime>19:45</span>
+        </div>
+        <div class="row">
+          Ghế: <span data-seats>A5, A6</span> • <span data-qty>2 vé</span>
+        </div>
+      </div>
+
+      <div class="code">
+        <!-- QR từ BE (png/svg/base64) -->
+        <img data-qrcode alt="QR Code" />
+        <!-- (tuỳ chọn) text barcode/PNR -->
+        <div class="barcode" data-barcode hidden>PNR123456</div>
+      </div>
+    </div>
+
+    <!-- Phí & tổng -->
+    <div class="t-fee">
+      <div class="line"><span>Giá vé</span><strong data-price>90.000₫</strong></div>
+      <div class="line" data-fee-wrap hidden><span>Phí đặt vé</span><strong data-fee>10.000₫</strong></div>
+      <div class="line" data-combo-wrap hidden><span>Combo</span><strong data-combo>0₫</strong></div>
+      <div class="line" data-discount-wrap hidden><span>Khuyến mãi</span><strong data-discount>−0₫</strong></div>
+      <hr>
+      <div class="line total"><span>Tổng cộng</span><strong data-total>190.000₫</strong></div>
+    </div>
+
+    <!-- Chú ý/ghi chú -->
+    <footer class="t-foot">
+      <small class="note" data-note>Vui lòng đến rạp trước 10 phút để nhận vé/đồ ăn.</small>
+    </footer>
+  </article>
+</template>
+
+<!-- =====================================================================
+  (TÙY CHỌN) STATIC EXAMPLE – để test nhanh nếu chưa gắn JS
+  Sao chép block dưới, sửa text/ảnh là xem được ngay.
+===================================================================== -->
+<article class="ticket">
+  <header class="t-head">
+    <div class="brand">D-cine</div>
+    <div class="order"><span class="label">Mã đặt vé</span><strong>DC-XYZ789</strong></div>
+  </header>
+  <div class="t-body">
+    <div class="poster"><img src="https://picsum.photos/seed/poster1/320/480" alt=""></div>
+    <div class="meta">
+      <h3 class="title">Fire Force</h3>
+      <div class="row">2D • Phụ đề • P</div>
+      <div class="row">Rạp D-cine Quận 1 — Phòng 3</div>
+      <div class="row">07/11/2025 • 19:45</div>
+      <div class="row">Ghế: A5, A6 • 2 vé</div>
+    </div>
+    <div class="code">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=DC-XYZ789" alt="QR">
+    </div>
+  </div>
+  <div class="t-fee">
+    <div class="line"><span>Giá vé</span><strong>180.000₫</strong></div>
+    <div class="line"><span>Phí đặt vé</span><strong>10.000₫</strong></div>
+    <div class="line"><span>Combo</span><strong>49.000₫</strong></div>
+    <hr>
+    <div class="line total"><span>Tổng cộng</span><strong>239.000₫</strong></div>
+  </div>
+  <footer class="t-foot"><small>Chúc bạn xem phim vui vẻ!</small></footer>
+</article>

@@ -1,0 +1,23 @@
+
+<template id="notification-item">
+  <article class="notification" data-id="" data-unread="1" data-href="">
+    <div class="icon" data-icon>🔔</div>
+
+    <div class="copy">
+      <h4 class="title" data-title>Tiêu đề thông báo</h4>
+      <p class="text" data-text>Mô tả ngắn / nội dung thông báo…</p>
+
+      <div class="meta">
+        <span class="tag" data-tag hidden>HỆ THỐNG</span>
+        <span class="time" data-time>vừa xong</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-ghost mark" data-mark type="button" title="Đánh dấu đã đọc">✓</button>
+      <button class="btn-ghost remove" data-remove type="button" title="Xóa">✕</button>
+    </div>
+
+    <span class="dot" data-unread-dot></span>
+  </article>
+</template>

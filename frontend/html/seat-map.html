@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>D-cine — Chọn ghế (Seat Map)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=12">
+  <link rel="stylesheet" href="../assets/css/base.css?v=12">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=12">
+  <link rel="stylesheet" href="../assets/css/header.css?v=12">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=12">
+  <link rel="stylesheet" href="../assets/css/components.css?v=12">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="../assets/css/seat-map.css?v=6">
+</head>
+<body>
+  <!-- include header -->
+  <div id="hdr-include"></div>
+
+  <main class="container seatmap-page">
+    <nav id="bc" class="breadcrumb-wrap" aria-label="breadcrumbs"></nav>
+
+    <div class="seat-layout">
+      <!-- Cột trái: Thông tin phim -->
+      <aside class="side left">
+        <div class="movie-card-info">
+          <div class="poster-wrap">
+            <img id="mvPoster" alt="Poster phim" />
+          </div>
+
+          <div class="info-wrap">
+            <h1 id="mvTitle" class="mv-title">—</h1>
+            <div id="mvMeta" class="mv-meta small">—</div>
+
+            <div class="showtime-block" id="showBlock">
+              <div class="row"><span>Rạp:</span><strong id="mvTheater">—</strong></div>
+              <div class="row"><span>Ngày:</span><strong id="mvDate">—</strong></div>
+              <div class="row"><span>Suất:</span><strong id="mvTime">—</strong></div>
+              <div class="row"><span>Định dạng:</span><strong id="mvFormat">—</strong></div>
+            </div>
+
+            <div class="cta-row">
+              <!-- SVG, không dùng emoji -->
+              <button id="btnTrailer" class="btn outline" type="button">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+                <span>Xem trailer</span>
+              </button>
+
+              <a class="btn outline back" href="showtime.html">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
+                <span>Quay lại lịch chiếu</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Cột phải: Sơ đồ ghế -->
+      <section class="side right" aria-label="Sơ đồ ghế">
+        <div class="auditorium">
+          <div class="screen-wrap" aria-hidden="true">
+            <svg class="screen-svg" viewBox="0 0 1000 140" preserveAspectRatio="none">
+              <defs>
+                <path id="screen-arc" d="M60,110 Q500,24 940,110" />
+                <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              </defs>
+              <use href="#screen-arc" class="screen-stroke" filter="url(#glow)"></use>
+              <text class="screen-text">
+                <textPath href="#screen-arc" startOffset="50%" text-anchor="middle">SCREEN</textPath>
+              </text>
+            </svg>
+          </div>
+
+          <div class="zone-chips" aria-hidden="true">
+            <span class="chip vip">VIP A–C</span>
+            <span class="chip std">Standard D–H</span>
+            <span class="chip eco">Economy I–J</span>
+          </div>
+
+          <div id="seatGrid" class="seat-grid" role="grid" aria-label="Seat map"></div>
+        </div>
+
+        <!-- Legend -->
+        <ul class="legend" aria-label="Chú thích ghế">
+          <li><span class="chip-color selected"></span><span>Selected</span></li>
+          <li><span class="chip-color available"></span><span>Available</span></li>
+          <li><span class="chip-color booked"></span><span>Booked</span></li>
+          <li><span class="chip-color vip"></span><span>VIP</span></li>
+          <li><span class="chip-color std"></span><span>Standard</span></li>
+          <li><span class="chip-color eco"></span><span>Economy</span></li>
+        </ul>
+
+        <!-- Summary sticky -->
+        <section class="summary" aria-live="polite">
+          <div class="summary-head">
+            <h2>Chọn loại vé</h2>
+            <div id="selCount" class="small muted">0 ghế được chọn</div>
+          </div>
+
+          <!-- Chọn chế độ -->
+          <div class="mode-tabs" role="tablist" aria-label="Chế độ chọn">
+            <button class="tab active" data-mode="seat-first" type="button">Chọn ghế trước</button>
+            <button class="tab" data-mode="ticket-first" type="button">Chọn vé trước</button>
+          </div>
+
+          <div id="selList" class="sel-list"></div>
+
+          <!-- Bảng giá theo zone -->
+          <div class="price-matrix" id="priceMatrix"></div>
+
+          <!-- Nhóm đếm vé tổng (chế độ ghế trước) -->
+          <div class="ticket-types" id="ticketTypes">
+            <div class="type-row" data-type="adult">
+              <div class="label">
+                <div class="name">ODC Adult</div>
+                <div class="price" data-price="adult">120.000đ</div>
+              </div>
+              <div class="qty">
+                <button class="step" data-step="-1" aria-label="Giảm vé người lớn">−</button>
+                <input id="qtyAdult" class="val" type="text" value="0" readonly aria-label="Số vé người lớn">
+                <button class="step" data-step="1" aria-label="Tăng vé người lớn">+</button>
+              </div>
+            </div>
+
+            <div class="type-row" data-type="child">
+              <div class="label">
+                <div class="name">ODC Child</div>
+                <div class="price" data-price="child">90.000đ</div>
+              </div>
+              <div class="qty">
+                <button class="step" data-step="-1" aria-label="Giảm vé trẻ em">−</button>
+                <input id="qtyChild" class="val" type="text" value="0" readonly aria-label="Số vé trẻ em">
+                <button class="step" data-step="1" aria-label="Tăng vé trẻ em">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quota theo hạng (chế độ vé trước) -->
+          <div id="ticketQuota" class="ticket-quota" hidden>
+            <div class="quota-row head"><span></span><span>VIP</span><span>Standard</span><span>Economy</span></div>
+
+            <div class="quota-row" data-for="adult">
+              <div class="head">Adult</div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ad-vip" data-step="-1">−</button>
+                  <input class="val" id="q-ad-vip" value="0" readonly />
+                  <button class="step" data-q="ad-vip" data-step="1">+</button>
+                </div>
+              </div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ad-std" data-step="-1">−</button>
+                  <input class="val" id="q-ad-std" value="0" readonly />
+                  <button class="step" data-q="ad-std" data-step="1">+</button>
+                </div>
+              </div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ad-eco" data-step="-1">−</button>
+                  <input class="val" id="q-ad-eco" value="0" readonly />
+                  <button class="step" data-q="ad-eco" data-step="1">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="quota-row" data-for="child">
+              <div class="head">Child</div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ch-vip" data-step="-1">−</button>
+                  <input class="val" id="q-ch-vip" value="0" readonly />
+                  <button class="step" data-q="ch-vip" data-step="1">+</button>
+                </div>
+              </div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ch-std" data-step="-1">−</button>
+                  <input class="val" id="q-ch-std" value="0" readonly />
+                  <button class="step" data-q="ch-std" data-step="1">+</button>
+                </div>
+              </div>
+              <div class="qcell">
+                <div class="qty">
+                  <button class="step" data-q="ch-eco" data-step="-1">−</button>
+                  <input class="val" id="q-ch-eco" value="0" readonly />
+                  <button class="step" data-q="ch-eco" data-step="1">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown">
+            <div class="line"><span>ODC ADULT <span id="adCount">(x0)</span></span><span id="adTotal">0đ</span></div>
+            <div class="line"><span>ODC CHILD <span id="chCount">(x0)</span></span><span id="chTotal">0đ</span></div>
+            <hr>
+            <div class="line total"><span>TỔNG</span><strong id="grandTotal">0đ</strong></div>
+          </div>
+
+          <div id="hint" class="hint muted"></div>
+
+          <div class="cta-row end">
+            <a class="btn outline" href="movie-detail.html" id="btnBackMovie">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
+              <span>Quay lại phim</span>
+            </a>
+            <button class="btn" id="btnContinue" type="button" disabled>
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="m9 16 6-4-6-4v8z"/></svg>
+              <span>Tiếp tục</span>
+            </button>
+            <button class="btn outline" id="btnPay" type="button" disabled>
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 18c-1.1 0-2-.9-2-2V8h14v8c0 1.1-.9 2-2 2H7Zm0-10v2h10V8H7Z"/></svg>
+              <span>Thanh toán ngay</span>
+            </button>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <!-- include footer -->
+  <div id="footer-include"></div>
+
+  <script>
+    /* Fallback path: thử ../data trước, nếu không có thì /data */
+    window.API_BASE  = window.API_BASE  || '/api';
+    window.DATA_BASE = window.DATA_BASE || (location.pathname.includes('/html/') ? '../data' : '/data');
+  </script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/seatmap.js?v=6" defer></script>
+</body>
+</html>

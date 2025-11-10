@@ -1,0 +1,107 @@
+/* ===== Movie Detail (dùng token trong variable.css) ===== */
+
+/* HERO */
+.md-hero{
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 10px 0 22px;
+  min-height: 46vh;
+  background: #0a0a0a;
+}
+.md-hero__bg{
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: var(--hero-filter, saturate(1.05) contrast(1.05) brightness(1.02));
+  transform: translateZ(0);
+}
+.md-hero::before{
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(5,5,5,.65), rgba(5,5,5,0) 35%),
+    linear-gradient(0deg, rgba(5,5,5,.85) 12%, rgba(5,5,5,0) 60%);
+}
+.md-hero__inner{
+  position: relative; z-index: 1;
+  max-width: 920px; padding: 54px 18px 80px;
+}
+#mdTitle{
+  font-weight: 900;
+  font-size: clamp(28px, 5vw, 56px);
+  line-height: 1.05;
+  margin: 0 0 8px;
+  text-shadow: 0 10px 40px rgba(0,0,0,.55);
+}
+.md-hero__meta{
+  display: flex; gap: 10px; flex-wrap: wrap;
+  color: #eaeaea; opacity: .92; font-weight: 700;
+  margin-bottom: 12px;
+}
+.md-hero__meta .dot{ opacity:.6; }
+
+/* CTA row kế thừa .btn */
+.md-cta{ display:flex; gap:10px; flex-wrap:wrap }
+
+/* GRID BODY */
+.md-grid{
+  display: grid;
+  grid-template-columns: 1.25fr .85fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.md-col{ background: var(--panel-2); border:1px solid var(--stroke); border-radius: 16px; padding: 16px; }
+.md-book{ position: sticky; top: calc(var(--header-h) + 16px); align-self: start; }
+
+.md-h2{ font-size: 22px; margin:4px 0 10px; }
+.md-h3{ font-size: 18px; margin:14px 0 10px; }
+
+.md-desc{ color:#e7e7e7; }
+.md-facts{ list-style:none; padding:0; margin:14px 0 8px; display:grid; gap:6px; color:var(--muted); }
+.md-facts b{ color:#fff; }
+
+.md-cast{
+  display:grid; grid-template-columns: repeat(6, minmax(0,1fr));
+  gap:12px; margin-bottom: 10px;
+}
+.md-cast .actor{
+  display:grid; justify-items:center; gap:6px;
+}
+.md-cast .avatar{
+  width:72px; height:72px; border-radius:999px; overflow:hidden;
+  border:1px solid var(--stroke); background:#0b0b0b;
+}
+.md-cast .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.md-cast .name{ font-weight:800; font-size:13px; text-align:center; }
+.md-cast .as{ font-size:12px; color:var(--muted); text-align:center; }
+
+.md-team{ list-style: none; padding: 0; margin: 6px 0 0; color:#e5e5e5; display:grid; gap:6px; }
+.md-team li small{ color: var(--muted); }
+
+/* BOOKING */
+.md-field{ display:grid; gap:6px; margin: 6px 0 10px; }
+.md-times{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 12px; }
+.time-chip{
+  display:inline-flex; align-items:center; gap:6px;
+  height: 38px; padding: 0 12px;
+  border-radius: 10px; border:1px solid var(--stroke);
+  background: var(--panel);
+  color: #fff; font-weight: 800; cursor: pointer;
+  transition: filter .18s ease, transform .06s ease;
+}
+.time-chip:hover{ filter:brightness(1.06); transform: translateY(-1px); }
+.time-chip .badge{
+  font-size: 12px; font-weight:800; color:#fff;
+  background: rgba(229,9,20,.18); border:1px solid rgba(229,9,20,.45);
+  padding:4px 8px; border-radius:999px;
+}
+
+.md-go{ width:100%; justify-content:center; }
+.md-note{ color: var(--muted); display:block; margin-top:10px; }
+
+/* Responsive tweak */
+@media (max-width: 1024px){
+  .md-grid{ grid-template-columns: 1fr; }
+  .md-book{ position: static; }
+  .md-cast{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+}

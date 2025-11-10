@@ -1,0 +1,33 @@
+<!-- components/movie-card.html -->
+<!-- components/movie-card.html -->
+<!-- components/movie-card.html -->
+<template id="movie-card">
+  <article class="movie-card poster" data-id="">
+    <div class="movie-poster">
+      <img data-img alt="" loading="lazy" />
+    </div>
+
+    <div class="movie-info">
+      <div class="info-top">
+        <h3 class="title" data-title>Title</h3>
+        <div class="director" data-director></div>
+        <div class="meta">
+          <span class="rating" data-rating></span>
+          <span class="dot">•</span>
+          <span class="duration" data-duration></span>
+          <span class="release" data-release hidden></span>
+        </div>
+        <div class="tags" data-genres></div>
+      </div>
+
+      <div class="info-bottom">
+        <p class="desc" data-desc></p>
+        <div class="cta-row">
+          <a class="btn book" data-book hidden>Đặt vé</a>
+          <button class="btn outline trailer" data-trailer hidden>Xem Trailer</button>
+        </div>
+      </div>
+    </div>
+  </article>
+</template>
+

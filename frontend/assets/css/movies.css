@@ -1,0 +1,51 @@
+/* [CSS MỚI] Style cho Tab Navigation (Phong cách D-cine) */
+.tabs-nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tabs-nav .btn {
+  /* Dùng màu nền panel có sẵn */
+  background: var(--panel-2); 
+  /* Dùng màu viền stroke có sẵn */
+  border: 1px solid var(--stroke); 
+  /* Dùng màu chữ mờ có sẵn */
+  color: var(--muted); 
+  
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 999px; /* Bo tròn */
+  cursor: pointer;
+  transition: all .2s ease;
+  height: auto;
+  line-height: 1.2;
+}
+
+.tabs-nav .btn:hover {
+  /* Sáng lên 1 chút khi hover, giống các nút khác */
+  filter: brightness(1.1);
+  color: #fff;
+}
+
+.tabs-nav .btn.is-active {
+  /* Dùng MÀU ĐỎ (accent) của dự án */
+  background: var(--accent); 
+  border-color: var(--accent);
+  color: #fff; /* Chữ trắng */
+  box-shadow: 0 4px 14px rgba(229, 9, 20, 0.3); /* Thêm shadow đỏ nhẹ */
+}
+
+/* [CSS CŨ] Giữ lại grid layout */
+.movie-grid {
+  display: grid;
+  gap: 24px;
+  /* Dùng minmax 260px để khớp với kích cỡ thẻ 300px (grid-rasen) */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.section { padding: 24px 0; }
+.muted { color: var(--muted); }
+.col-min-220 { --col-min: 220px; }
+.sec-head h1, .sec-head h2 { letter-spacing: .2px; }

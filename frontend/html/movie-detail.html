@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>D-cine — Chi tiết phim</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+  <!-- CSS chain (giống các trang khác) -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=8">
+  <link rel="stylesheet" href="../assets/css/base.css?v=8">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=8">
+  <link rel="stylesheet" href="../assets/css/header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/main.css?v=8">
+  <link rel="stylesheet" href="../assets/css/components.css?v=8">
+  <link rel="stylesheet" href="../assets/css/movie-detail.css?v=1">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9">
+</head>
+<body>
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+
+  <main class="container">
+    <!-- Breadcrumb -->
+    <nav id="bc" class="breadcrumb" aria-label="Bạn đang ở đây"></nav>
+
+    <!-- HERO: backdrop + title + CTA -->
+    <section id="mdHero" class="md-hero reveal" aria-label="Giới thiệu phim">
+      <div class="md-hero__bg" id="mdBackdrop"></div>
+      <div class="md-hero__inner">
+        <h1 id="mdTitle">Movie title</h1>
+
+        <div id="mdMeta" class="md-hero__meta">
+          <!-- ví dụ: 2025 • Action/Sci-fi • 2h 13m • C13 -->
+        </div>
+
+        <div class="md-cta">
+          <button id="watchTrailerBtn" class="btn outline" type="button">▶ Xem trailer</button>
+          <a id="buyTicketsBtn" class="btn" href="showtime.html">🎟 Đặt vé</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- BODY: 2 cột -->
+    <section class="md-grid">
+      <article class="md-col">
+        <h2 class="md-h2">Story line</h2>
+        <p id="mdDesc" class="md-desc"></p>
+
+        <ul class="md-facts">
+          <li><b>Ngôn ngữ:</b> <span id="mdLang">–</span></li>
+          <li><b>Đạo diễn:</b> <span id="mdDirector">–</span></li>
+        </ul>
+
+        <h3 class="md-h3">Cast</h3>
+        <div id="mdCast" class="md-cast"></div>
+
+        <h3 class="md-h3">Team</h3>
+        <ul id="mdTeam" class="md-team"></ul>
+      </article>
+
+      <!-- BOOKING PANEL -->
+      <aside class="md-col md-book">
+        <h3 class="md-h3">Chọn rạp & ngày chiếu</h3>
+
+        <label class="md-field">
+          <span>Rạp</span>
+          <select id="selTheater" aria-label="Chọn rạp"></select>
+        </label>
+
+        <label class="md-field">
+          <span>Ngày</span>
+          <select id="selDate" aria-label="Chọn ngày"></select>
+        </label>
+
+        <div id="timeWrap" class="md-times" aria-live="polite"></div>
+
+        <a id="goShowtime" class="btn md-go" href="showtime.html">Tiếp tục chọn suất</a>
+
+        <small class="md-note">Nhấn 1 giờ chiếu để đi thẳng tới trang suất chiếu.</small>
+      </aside>
+    </section>
+  </main>
+
+  <!-- Footer include -->
+  <footer class="site-footer"></footer>
+
+  <!-- JS -->
+  <script>window.API_BASE = window.API_BASE || '/api';</script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/movie-detail.js" defer></script>
+</body>
+</html>

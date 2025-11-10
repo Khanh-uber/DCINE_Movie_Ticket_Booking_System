@@ -1,0 +1,78 @@
+<!-- =====================================================================
+  D-cine • component: promo-card.html
+  Dùng chung cho Ưu đãi/Khuyến mãi (Deals).
+  Khớp CSS hiện có: .deal, .bg, .grad, .copy, .panel, .btn
+  Cách dùng:
+    • Static: chèn <article class="deal"> vào grid hoặc .deals-carousel .rail
+    • Dynamic (JS): fetch file này, clone <template id="promo-card"> rồi set data-*
+===================================================================== -->
+
+<!-- TEMPLATE (dùng khi render bằng JS) -->
+<template id="promo-card">
+  <article class="deal" data-id="" data-href="">
+    <!-- hình nền -->
+    <div class="bg" data-img></div>
+    <!-- lớp gradient sẵn trong main.css -->
+    <div class="grad"></div>
+
+    <!-- copy block (đã có nền kính trong main.css qua .panel) -->
+    <div class="copy">
+      <div class="panel">
+        <div class="eyebrow" data-tag hidden>ƯU ĐÃI</div>
+        <h3 class="title" data-title>Deal title</h3>
+        <p class="desc" data-desc>Short description</p>
+
+        <div class="row" style="display:flex;align-items:center;gap:10px;margin:10px 0 8px;">
+          <span class="badge" data-badge hidden
+                style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;
+                       background:rgba(229,9,20,.14);border:1px solid rgba(229,9,20,.45);font-weight:800;">
+            -50%
+          </span>
+          <small class="small" data-valid hidden>Valid until …</small>
+        </div>
+
+        <a class="btn" data-cta href="">Nhận ưu đãi</a>
+      </div>
+    </div>
+  </article>
+</template>
+
+<!-- =====================================================================
+  STATIC EXAMPLES — Copy 1 block để dùng nhanh nếu chưa render bằng JS
+===================================================================== -->
+
+<!-- Example A: Giảm giá combo bắp nước -->
+<article class="deal" data-id="deal-combo" data-href="promotions.html#deal-combo">
+  <div class="bg" style="background-image:url('https://picsum.photos/seed/deal1/1280/720')"></div>
+  <div class="grad"></div>
+  <div class="copy">
+    <div class="panel">
+      <div class="eyebrow">ƯU ĐÃI HOT</div>
+      <h3 class="title">Combo Bắp + Nước -50%</h3>
+      <p class="desc">Áp dụng khi đặt vé online trong khung giờ vàng.</p>
+      <div class="row" style="display:flex;align-items:center;gap:10px;margin:10px 0 8px;">
+        <span class="badge"
+              style="display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;
+                     background:rgba(229,9,20,.14);border:1px solid rgba(229,9,20,.45);font-weight:800;">
+          -50%
+        </span>
+        <small class="small">HSD: 31/12/2025</small>
+      </div>
+      <a class="btn" href="promotions.html#deal-combo">Nhận ưu đãi</a>
+    </div>
+  </div>
+</article>
+
+<!-- Example B: Sự kiện thành viên -->
+<article class="deal" data-id="deal-member" data-href="promotions.html#deal-member">
+  <div class="bg" style="background-image:url('https://picsum.photos/seed/deal2/1280/720')"></div>
+  <div class="grad"></div>
+  <div class="copy">
+    <div class="panel">
+      <div class="eyebrow">THÀNH VIÊN</div>
+      <h3 class="title">Tặng 1 vé khi tích 5 vé</h3>
+      <p class="desc">Áp dụng hạng Gold trở lên, tự động cộng vào ví.</p>
+      <a class="btn" href="promotions.html#deal-member">Xem chi tiết</a>
+    </div>
+  </div>
+</article>

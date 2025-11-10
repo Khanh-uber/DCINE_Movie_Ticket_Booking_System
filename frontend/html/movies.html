@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>D-cine | Danh sách phim</title>
+  
+  <link rel="stylesheet" href="../assets/css/variable.css?v=8">
+  <link rel="stylesheet" href="../assets/css/base.css?v=8">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=8">
+  <link rel="stylesheet" href="../assets/css/header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/main.css?v=8">
+  <link rel="stylesheet" href="../assets/css/components.css?v=8">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9">
+
+  <link rel="stylesheet" href="../assets/css/movies.css">
+</head>
+<body class="with-fixed-header">
+  <div id="hdr-include"></div>
+
+  <main>
+    <div class="container section">
+      <div id="bc" class="mb-4"></div>
+
+      <header class="sec-head">
+        <h1>MOVIES</h1>
+      </header>
+
+      <nav class="tabs-nav mb-4">
+        <button id="tabNow" class="btn is-active">NOW SHOWING</button>
+        <button id="tabSoon" class="btn">COMING SOON</button>
+      </nav>
+
+      <div id="movieGrid" class="movie-grid grid-rasen">
+        </div>
+
+      <div id="moviePager" class="pagination">
+        </div>
+
+    </div> </main>
+
+  <footer id="footer-include"></footer>
+
+  <script src="../assets/js/header.js" defer></script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/footer.js" defer></script>
+
+  <script src="../assets/js/movies.js?v=2" defer></script>
+  <script>
+  // đảm bảo section hiện ngay cả khi IO chưa kích
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+  });
+</script>
+</body>
+</html>

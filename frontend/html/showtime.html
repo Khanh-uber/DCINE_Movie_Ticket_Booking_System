@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>D-cine — Chọn lịch chiếu</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=9">
+  <link rel="stylesheet" href="../assets/css/base.css?v=9">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=9">
+  <link rel="stylesheet" href="../assets/css/header.css?v=9">
+    <link rel="stylesheet" href="../assets/css/footer.css?v=1">
+  <link rel="stylesheet" href="../assets/css/main.css?v=9">
+  <link rel="stylesheet" href="../assets/css/components.css?v=9">
+
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="../assets/css/showtime.css?v=1">
+</head>
+<body>
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+
+  <main class="container showtime-page">
+    <!-- Breadcrumb -->
+    <nav id="bc" class="breadcrumb" aria-label="Breadcrumb"></nav>
+
+    <div class="st-grid">
+      <!-- 1) Cột trái: Thông tin phim -->
+      <aside id="movieSide" class="movie-side">
+        <div class="poster-wrap">
+          <img id="mvPoster" alt="Poster" />
+        </div>
+
+        <div class="mv-copy">
+          <h1 id="mvTitle">—</h1>
+          <div class="mv-meta">
+            <span id="mvYear">2025</span>
+            <span class="dot">•</span>
+            <span id="mvGenres">Action</span>
+            <span class="dot">•</span>
+            <span id="mvDuration">120 phút</span>
+          </div>
+          <p id="mvDesc" class="mv-desc">—</p>
+
+          <div class="cta-vertical">
+            <button id="btnTrailer" class="btn outline gold" hidden>▶️ XEM TRAILER</button>
+            <a id="btnContinue" class="btn" href="#filters">🎟 TIẾP TỤC ĐẶT VÉ</a>
+            <a id="btnBack" class="btn outline" href="movies.html">⬅️ QUAY LẠI TRANG PHIM</a>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2) Cột phải: Bộ chọn lịch chiếu -->
+      <section class="picker">
+        <!-- Bộ lọc -->
+        <div id="filters" class="filters card">
+          <div class="field">
+            <label for="citySel">Chọn thành phố</label>
+            <select id="citySel"></select>
+          </div>
+          <div class="field">
+            <label for="dateSel">Ngày chiếu</label>
+            <input id="dateSel" type="date" />
+          </div>
+        </div>
+
+        <!-- Danh sách rạp -->
+        <div class="theater-group">
+          <div class="tg-head">
+            <h3 id="cityLabel">Rạp tại —</h3>
+          </div>
+          <div id="theaterChips" class="chips"></div>
+        </div>
+
+        <!-- Suất chiếu theo rạp -->
+        <div id="showtimesWrap" class="showtimes card">
+          <!-- động bằng JS -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer include -->
+  <div id="footer-include"></div>
+
+  <script>window.API_BASE = window.API_BASE || '/api';</script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/showtime.js" defer></script>
+</body>
+</html>

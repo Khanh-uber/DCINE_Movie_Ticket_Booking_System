@@ -1,5 +1,7 @@
-create database dcine_cinema;
-use dcine_schema;
+DROP DATABASE IF EXISTS dcine_schema;
+CREATE DATABASE dcine_schema;
+USE dcine_schema;
+
 CREATE TABLE `account` (
   `account_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `customer_id` bigint NOT NULL,
@@ -40,8 +42,13 @@ CREATE TABLE `theater` (
 
 CREATE TABLE `location` (
   `location_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `city_name` varchar(100) NOT NULL,
-  `province` varchar(100) NOT NULL
+  `area` varchar(100) NOT NULL,
+  `province_id` bigint NOT NULL
+);
+
+CREATE TABLE `province` (
+  `province_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `province_name` varchar(100) NOT NULL
 );
 
 CREATE TABLE `hall` (
@@ -168,11 +175,31 @@ CREATE TABLE `booking_concession` (
   PRIMARY KEY (`booking_id`, `concession_id`)
 );
 
+CREATE TABLE `otp_record` (
+  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `account_id` BIGINT NULL,
+  `identifier` VARCHAR(100) NOT NULL,      
+  `code` VARCHAR(50) NOT NULL,            
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `expires_at` DATETIME NOT NULL,
+  `verified` TINYINT(1) DEFAULT 0,         
+  `request_id` VARCHAR(100) DEFAULT NULL,
+  `token` VARCHAR(100) DEFAULT NULL,
+
+  CONSTRAINT `fk_otp_account`
+    FOREIGN KEY (`account_id`) REFERENCES `account`(`account_id`),
+
+  CONSTRAINT `uq_identifier_verified`
+    UNIQUE (`identifier`, `verified`)
+);
+
 ALTER TABLE `account` ADD FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`);
 
 ALTER TABLE `account` ADD FOREIGN KEY (`membership_tier_id`) REFERENCES `membership_tier` (`tier_id`);
 
 ALTER TABLE `theater` ADD FOREIGN KEY (`location_id`) REFERENCES `location` (`location_id`);
+
+ALTER TABLE `location` ADD FOREIGN KEY (`province_id`) REFERENCES `province` (`province_id`);
 
 ALTER TABLE `hall` ADD FOREIGN KEY (`theater_id`) REFERENCES `theater` (`theater_id`);
 

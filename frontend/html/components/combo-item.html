@@ -1,0 +1,54 @@
+
+<!-- TEMPLATE (dùng để render bằng JS) -->
+<template id="combo-item">
+  <article class="combo" data-id="" data-price="0">
+    <div class="thumb"><img data-img alt=""></div>
+
+    <div class="copy">
+      <div class="eyebrow" data-tag hidden>BEST VALUE</div>
+      <h3 class="title" data-title>Combo Title</h3>
+      <p class="desc" data-desc>Short description…</p>
+
+      <!-- Tùy chọn biến thể (size) -->
+      <div class="variants" data-variants hidden>
+        <label>Size:</label>
+        <div class="opts" data-opts></div>
+      </div>
+
+      <!-- Giá -->
+      <div class="price-row">
+        <span class="price" data-price-text>0₫</span>
+        <s class="old" data-old hidden>0₫</s>
+        <span class="save" data-save hidden>Tiết kiệm …</span>
+      </div>
+
+      <!-- Điều khiển -->
+      <div class="controls">
+        <div class="qty">
+          <button class="step dec" type="button" aria-label="Giảm">−</button>
+          <input class="val" data-qty type="number" min="1" value="1" readonly>
+          <button class="step inc" type="button" aria-label="Tăng">＋</button>
+        </div>
+        <button class="btn add" data-add type="button">Thêm vào giỏ</button>
+        <button class="btn outline remove" data-remove type="button" hidden>Xóa</button>
+      </div>
+    </div>
+  </article>
+</template>
+
+<!-- =====================================================================
+  STATIC EXAMPLE — Copy 1 block để dùng nhanh nếu chưa render bằng JS
+===================================================================== -->
+<article class="combo">
+  <div class="thumb"><img src="https://picsum.photos/seed/pop1/420/280" alt="Combo M1"></div>
+  <div class="copy">
+    <div class="eyebrow">BEST VALUE</div>
+    <h3 class="title">Combo M1: 1 bắp + 1 nước</h3>
+    <p class="desc">Bắp bơ + Coca 500ml</p>
+    <div class="price-row"><span class="price">49.000₫</span><s class="old">65.000₫</s><span class="save">(-25%)</span></div>
+    <div class="controls">
+      <div class="qty"><button class="step">−</button><input class="val" value="1" readonly><button class="step">＋</button></div>
+      <button class="btn">Thêm vào giỏ</button>
+    </div>
+  </div>
+</article>

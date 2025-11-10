@@ -1,0 +1,666 @@
+/* ===== Main — dùng token từ variable.css ===== */
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Poppins',var(--font-ui)
+}
+a{color:inherit;text-decoration:none}
+main{padding-top:calc(var(--header-h) + 2px)}
+
+/* Section head: HTML dùng .section-head, code cũ dùng .sec-head -> hỗ trợ cả 2 */
+.section-head,
+.sec-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px
+}
+.section-head h2,
+.sec-head h2{
+  font-size:22px;
+  font-weight:800;
+  margin:0
+}
+
+/* [SỬA] more-link -> view-all cho đúng HTML */
+.view-all{
+  color:var(--muted-main);
+  font-weight:700;
+  letter-spacing:.2px;
+  position:relative
+}
+.view-all::after{
+  content:'';
+  position:absolute;
+  left:0;right:0;bottom:-2px;
+  height:2px;
+  background:currentColor;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .25s ease
+}
+.view-all:hover{color:var(--accent)}
+.view-all:hover::after{transform:scaleX(1)}
+
+/* ===== HERO ===== */
+.hero{
+  position:relative;
+  min-height:62vh;
+  border-radius:20px;
+  margin:16px 0 24px;
+  overflow:hidden;
+  background:#0a0a0a
+}
+.hero .hero-video{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity .6s
+}
+.hero .backdrop{
+  position:absolute;
+  inset:0;
+  background-size:cover;
+  background-position:center;
+  filter:brightness(.98) contrast(1.02) saturate(1.03);
+  opacity:.92;
+  transition:transform .2s ease;
+  background-image:url('../images/banners/tanjiro_akaza_infinity_castle.jpg');
+}
+.hero::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:var(--hero-grad)
+}
+.hero-inner{
+  position:relative;
+  z-index:1;
+  max-width:760px;
+  padding:72px 18px 90px
+}
+.h-eyebrow{
+  font-size:12px;
+  letter-spacing:.18em;
+  color:#ffb3b8;
+  text-transform:uppercase;
+  opacity:.9;
+  margin-bottom:8px
+}
+.hero h1{
+  font-weight:800;
+  font-size:clamp(28px,5vw,56px);
+  line-height:1.05;
+  margin:0 0 10px;
+  text-shadow:0 8px 40px rgba(0,0,0,.5)
+}
+.hero p{
+  color:#e9e9e9;
+  max-width:58ch;
+  opacity:.92;
+  margin:0 0 18px
+}
+.cta-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:42px;
+  padding:0 16px;
+  border-radius:12px;
+  border:0;
+  font-weight:800;
+  color:#0e0e0e;
+  background:var(--btn-grad);
+  box-shadow:0 10px 24px rgba(229,9,20,.28);
+  cursor:pointer
+}
+.btn.outline{
+  background:transparent;
+  border:1px solid #6b6b6b;
+  color:#eee;
+  box-shadow:none
+}
+
+/* ===== Poster (fallback legacy) ===== */
+/* Dùng cho trường hợp MOVIE_TPL lỗi, logic JS giữ nguyên */
+.poster{
+  flex:0 0 var(--poster-w);
+  position:relative;
+  border-radius:16px;
+  overflow:hidden;
+  scroll-snap-align:center;
+  background:#0c0c0c;
+  transform-origin:center bottom;
+  transform:translateY(0) scale(.96) rotateY(0.0001deg);
+  box-shadow:none;
+  opacity:.95;
+  transition:transform .35s var(--easing),box-shadow .35s,opacity .35s
+}
+.poster img{
+  width:100%;
+  height:var(--poster-h);
+  object-fit:cover;
+  display:block
+}
+.poster::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.4) 40%,rgba(0,0,0,.55) 65%);
+  opacity:.6;
+  transition:opacity .3s;
+  pointer-events:none; /* để không chặn nút bên trong */
+}
+
+.rate{
+  position:absolute;
+  left:10px;top:10px;
+  background:rgba(0,0,0,.64);
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--text);
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px
+}
+.meta-chip{
+  position:absolute;
+  left:10px;bottom:10px;
+  background:rgba(0,0,0,.64);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--text);
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px
+}
+.ov{
+  position:absolute;
+  inset:auto 0 0 0;
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.85));
+  transform:translateY(100%);
+  transition:transform .25s
+}
+.poster:hover .ov{transform:translateY(0)}
+.ov .btn{
+  height:38px;
+  padding:0 12px;
+  border-radius:10px
+}
+
+/* ===== Carousel base ===== */
+.carousel{
+  position:relative;
+  overflow:hidden;
+  border-radius:16px;
+  padding:12px 0
+}
+.rail{
+  display:flex;
+  gap:14px;
+  overflow:auto;
+  scroll-snap-type:x mandatory;
+  padding:0 4px 8px;
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+  pointer-events:auto
+}
+.rail::-webkit-scrollbar{
+  width:0;height:0;display:none
+}
+
+/* Arrow */
+.arrow{
+  position:absolute;
+  top:42%;
+  transform:translateY(-50%);
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(20,20,20,.75);
+  display:grid;
+  place-items:center;
+  color:var(--text);
+  opacity:.6;
+  cursor:pointer;
+  user-select:none;
+  pointer-events:auto;
+  transition:opacity .25s,background .2s,transform .2s;
+  z-index:10; /* [FIX] không bị che */
+}
+.arrow.left{left:8px}
+.arrow.right{right:8px}
+.carousel:hover .arrow,
+.carousel .arrow:focus-visible{opacity:1}
+
+/* Ẩn arrow cho Big Screen + Coming (coverflow dùng drag/dots) */
+#bigscreen .arrow,
+#coming .arrow{
+  display:none;
+}
+
+/* ===== Coverflow (Big Screen + Coming Soon) ===== */
+.carousel.coverflow{
+  perspective:1200px;
+  padding-bottom:28px
+}
+.carousel.coverflow .rail{
+  scroll-snap-type:none; /* JS tự snap */
+  gap:0;
+  padding-inline:0
+}
+.rail.dragging{
+  cursor:grabbing;
+  scroll-snap-type:none
+}
+
+/* ===== Dots ===== */
+.dots{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:10px
+}
+.dots .dot{
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#6b6b6b;
+  opacity:.85;
+  border:1px solid rgba(255,255,255,.15);
+  padding:0;
+  cursor:pointer;
+  transform:scale(1);
+  transition:transform .2s,background .2s
+}
+.dots .dot.active{
+  background:var(--text);
+  transform:scale(1.35)
+}
+
+/* ===== Membership v2 ===== */
+.member-v2{
+  position:relative;
+  border-radius:24px;
+  padding:28px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 30px 80px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
+  background:
+    radial-gradient(55% 70% at 60% 65%,var(--bgHalo,rgba(229,213,79,.20)),transparent 60%),
+    linear-gradient(180deg,var(--bgFrom,#111),var(--bgTo,#090909));
+  transition:background 300ms ease;
+
+  /* mặc định Gold */
+  --tier:#FFD43B;
+  --tier2:#E5B200;
+  --tierHalo:rgba(229,213,79,.45);
+  --tierShadow:rgba(229,213,79,.32);
+}
+
+.member-v2.gold{
+  --bgHalo:rgba(229,213,79,.20);
+  --bgFrom:#1a1410;
+  --bgTo:#0a0907;
+  --tier:#FFD43B;
+  --tier2:#E5B200;
+  --tierHalo:rgba(229,213,79,.45);
+  --tierShadow:rgba(229,213,79,.32);
+}
+
+.member-v2.platinum{
+  --bgHalo:rgba(162,185,255,.22);
+  --bgFrom:#121522;
+  --bgTo:#0a0e17;
+  --tier:#A2B9FF;
+  --tier2:#6F8CEB;
+  --tierHalo:rgba(162,185,255,.40);
+  --tierShadow:rgba(162,185,255,.32);
+}
+
+.member-v2.diamond{
+  --bgHalo:rgba(116,249,255,.22);
+  --bgFrom:#0d1718;
+  --bgTo:#081011;
+  --tier:#74F9FF;
+  --tier2:#35D1E2;
+  --tierHalo:rgba(116,249,255,.40);
+  --tierShadow:rgba(116,249,255,.32);
+}
+
+.member-v2 .member-copy{
+  padding:10px 10px 10px 6px
+}
+.member-v2 .kicker{
+  font-size:12px;
+  letter-spacing:.18em;
+  color:#ffb3b8;
+  text-transform:uppercase;
+  margin-bottom:6px
+}
+.member-v2 h2{
+  margin:0 0 12px;
+  font-size:28px;
+  line-height:1.1
+}
+.member-v2 .perks{
+  list-style:none;
+  margin:0 0 14px;
+  padding:0;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(180px,1fr));
+  gap:8px 14px
+}
+.member-v2 .perks li{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  padding:10px 12px;
+  border-radius:12px;
+  font-weight:700;
+  letter-spacing:.2px;
+  color:#eaeaea;
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+.member-v2 .tiers{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:4px 0 10px
+}
+.tier{
+  height:36px;
+  min-width:98px;
+  padding:0 14px;
+  border-radius:999px;
+  border:0;
+  cursor:pointer;
+  color:#eaeaea;
+  background:transparent;
+  font-weight:700;
+  letter-spacing:.2px;
+}
+.tier.active{
+  color:#000;
+  background:linear-gradient(180deg,var(--tier),var(--tier2))
+}
+.price{margin:2px 0 12px}
+.price .amt{
+  font-size:28px;
+  font-weight:900;
+  margin-right:6px
+}
+.btn.xl{
+  height:48px;
+  padding:0 18px;
+  border-radius:12px;
+  font-size:16px
+}
+.member-v2 .btn.xl{
+  background:linear-gradient(180deg,var(--tier),var(--tier2));
+  color:#000;
+  box-shadow:0 12px 28px rgba(0,0,0,.35)
+}
+.member-v2 .tier.active{
+  color:#000;
+  background:linear-gradient(180deg,var(--tier),var(--tier2))
+}
+.small.trust{
+  margin-top:10px;
+  color:#cfcfcf;
+  opacity:.9
+}
+
+/* Visual card */
+.member-v2 .visual{
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-height:220px
+}
+.glass-card{
+  position:relative;
+  width:340px;
+  height:210px;
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 20px 60px var(--tierShadow,rgba(229,9,20,.24)),
+             inset 0 1px 0 rgba(255,255,255,.25);
+  backdrop-filter:blur(8px);
+  overflow:hidden
+}
+.glass-card .shine{
+  position:absolute;
+  inset:-40% -40% auto -40%;
+  height:140%;
+  transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  animation:shine 3.5s ease-in-out infinite;
+  opacity:.35;
+  pointer-events:none
+}
+.glass-card .card-logo{
+  position:absolute;
+  left:18px;top:14px;
+  font-weight:900;
+  letter-spacing:.4px
+}
+.glass-card .chip{
+  position:absolute;
+  top:16px;right:16px;
+  width:36px;height:24px;
+  border-radius:6px;
+  background:linear-gradient(135deg,rgba(255,227,133,.95),rgba(255,180,58,.95));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.25)
+}
+.glass-card .card-name{
+  position:absolute;
+  left:18px;bottom:16px;
+  font-size:18px;
+  font-weight:900
+}
+.member-v2 .halo{
+  position:absolute;
+  left:0;right:0;
+  margin:auto;
+  inset:auto 0 -40px 0;
+  height:140px;
+  background:radial-gradient(60% 70% at 50% 10%,var(--tierHalo,rgba(229,9,20,.45)),transparent 60%);
+  filter:blur(14px);
+  opacity:.65;
+  pointer-events:none
+}
+
+/* Desktop layout cho membership + coverflow size */
+@media (min-width:1024px){
+  .member-v2{
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    align-items:center
+  }
+  .member-v2 .visual{min-height:260px}
+
+  .carousel.coverflow .poster,
+  .carousel.coverflow .movie-card{
+    flex:0 0 var(--poster-w-lg);
+    margin:0 -36px;
+  }
+  .carousel.coverflow .poster img,
+  .carousel.coverflow .movie-card img{
+    height:var(--poster-h-lg);
+  }
+}
+
+/* ===== Reveal on scroll ===== */
+.reveal{
+  opacity:0;
+  transform:translateY(14px);
+  transition:opacity .6s,transform .6s
+}
+.reveal.is-visible{
+  opacity:1;
+  transform:translateY(0)
+}
+
+/* ===== Kích thước movie-card cho Big Screen + Coming ===== */
+#bigscreen .movie-card,
+#coming .movie-card{
+  --poster-w:300px;
+  --poster-h:460px;
+}
+
+/* ===== Fix kéo chuột / hành vi ảnh / snap đơn giản ===== */
+
+/* Không chọn/copy ảnh khi kéo, để card nhận drag */
+.rail img{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+  pointer-events:none;
+}
+
+/* Cho phép click vào link / button bên trong item */
+.rail > * a,
+.rail > * button{
+  pointer-events:auto;
+}
+
+/* Carousel simple (Ưu đãi) để JS tự snap */
+.carousel.simple .rail{
+  scroll-snap-type:none;
+}
+
+/* ===== Coverflow movie-card + overlay ===== */
+
+:root{
+  --shadow-red:0 14px 40px rgba(229,9,20,.55);
+}
+
+/* Base movie-card trong coverflow (Big Screen + Coming) */
+.carousel.coverflow .movie-card{
+  position:relative;
+  overflow:hidden;
+  background:#050505;
+  pointer-events:auto;
+  box-shadow:none;
+}
+
+/* Info block dưới đáy */
+.carousel.coverflow .movie-card .mc-info{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  padding:12px 14px 12px;
+  display:grid;
+  gap:4px;
+  background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.96));
+  transform:translateY(0);
+  transition:transform .25s ease,background .25s ease;
+  z-index:2;
+}
+.carousel.coverflow .movie-card [data-title]{
+  font-size:15px;
+  font-weight:700;
+  text-shadow:0 4px 14px rgba(0,0,0,1);
+}
+.carousel.coverflow .movie-card .mc-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  opacity:.9;
+}
+.carousel.coverflow .movie-card [data-genres] .tag{
+  font-size:10px;
+  padding:6px 10px;
+}
+
+/* Mô tả + CTA ẩn ban đầu */
+.carousel.coverflow .movie-card [data-desc],
+.carousel.coverflow .movie-card .mc-cta{
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .25s ease,transform .25s ease;
+  font-size:11px;
+}
+
+/* Hover: kéo info lên, show desc + CTA */
+.carousel.coverflow .movie-card:hover .mc-info{
+  transform:translateY(-30px);
+}
+.carousel.coverflow .movie-card:hover [data-desc],
+.carousel.coverflow .movie-card:hover .mc-cta{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* CTA full width Big Screen + Coming */
+#bigscreen .movie-card .mc-cta .btn,
+#coming   .movie-card .mc-cta .btn,
+#bigscreen .movie-card [data-book],
+#bigscreen .movie-card [data-trailer],
+#coming   .movie-card [data-trailer]{
+  display:flex;
+  width:100%;
+  height:40px;
+  border-radius:10px;
+  justify-content:center;
+  align-items:center;
+  padding-inline:12px;
+}
+
+/* Hover shadow nhẹ */
+.carousel.coverflow .movie-card:hover{
+  box-shadow:0 8px 24px rgba(0,0,0,.55);
+}
+/* Center card Big Screen: shadow đỏ nổi bật */
+#bigscreen .carousel.coverflow .movie-card.is-center:hover{
+  box-shadow:var(--shadow-red);
+}
+
+/* Coming Soon: Trailer full width dưới cùng */
+#coming .movie-card [data-trailer]{
+  display:flex;
+  width:calc(100% - 24px);
+  margin:0 12px 14px;
+  justify-content:center;
+  height:40px;
+  border-radius:10px;
+}
+
+/* Khi đang kéo coverflow: tắt hover/CTA + shadow để không nhá và không lỡ click */
+.carousel.coverflow .rail.dragging .movie-card .mc-cta .btn,
+.carousel.coverflow .rail.dragging .movie-card [data-trailer],
+.carousel.coverflow .rail.dragging .movie-card [data-book]{
+  pointer-events:none;
+}
+.carousel.coverflow .rail.dragging .movie-card:hover .mc-info{
+  transform:translateY(0);
+}
+.carousel.coverflow .rail.dragging .movie-card [data-desc],
+.carousel.coverflow .rail.dragging .movie-card .mc-cta{
+  opacity:0;
+  transform:translateY(8px);
+}
+.carousel.coverflow .rail.dragging .movie-card,
+.carousel.coverflow .rail.dragging .movie-card.is-center:hover{
+  box-shadow:none;
+}
+.movie-card.poster::after {
+  pointer-events: none;
+}

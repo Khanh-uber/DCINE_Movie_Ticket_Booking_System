@@ -1,0 +1,514 @@
+/* Deals */
+.deals-carousel .rail{scroll-snap-type:x mandatory}
+.deal{position:relative;border-radius:16px;overflow:hidden;background:var(--panel-2);display:grid;min-height:320px;flex:0 0 100%}
+.deal .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.4}
+.deal .grad{position:absolute;inset:0;background:radial-gradient(100% 80% at 12% 60%,rgba(229,9,20,.3),rgba(0,0,0,.0) 40%),linear-gradient(90deg,rgba(0,0,0,.85),transparent 50%)}
+.deal .copy{position:relative;z-index:1;align-self:center;padding:20px}
+.deal .panel{width:min(520px,90%);border-radius:16px;background:rgba(0,0,0,.64);border:1px solid rgba(255,255,255,.1);padding:18px 18px 16px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+/* --- Deals polish (thêm dưới cùng main.css) --- */
+.deals-carousel{ padding: 8px 0; }
+.deals-carousel .rail{ gap:16px; }
+
+.deal{ min-height: 360px; border-radius: 20px; }
+.deal .bg{
+  opacity: .55;                     /* sáng nền lên */
+  background-position: 65% center;  /* đẩy chủ thể sang phải nhẹ cho bố cục */
+}
+.deal .grad{
+  /* lớp chuyển sắc mềm hơn, bớt đậm */
+  background:
+    radial-gradient(120% 120% at 14% 65%, rgba(229,9,20,.22), transparent 60%),
+    linear-gradient(90deg, rgba(0,0,0,.78), transparent 55%);
+}
+.deal .panel{
+  background: rgba(0,0,0,.48);      /* giảm từ .64 -> .48 */
+  border-color: rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+}
+.deal .panel .title{ font-size: 28px; line-height: 1.2; margin: 0 0 6px; }
+.deal .panel .desc{ color: #e2e2e2; margin: 0 0 8px; }
+
+/* === Deals Carousel (kéo + nút) === */
+.deals-carousel{ position:relative; }
+.deals-carousel .rail{
+  display:flex; gap:24px;
+  overflow-x:auto; overscroll-behavior-x: contain;
+  scroll-snap-type:x mandatory; scroll-padding-inline:24px;
+  padding:8px 4px;
+}
+.deals-carousel .rail::-webkit-scrollbar{ height:10px; }
+.deals-carousel .rail::-webkit-scrollbar-thumb{
+  background:#2a2a2a; border:2px solid #0e0e0e; border-radius:999px;
+}
+.deal{ flex:0 0 100%; scroll-snap-align:start; }  /* 1 card/khung, desktop */
+
+.deals-carousel .nav{
+  position:absolute; inset-block:0; margin:auto 0;
+  width:44px; height:44px; border-radius:999px;
+  border:1px solid var(--stroke); background:var(--panel-2);
+  display:flex; align-items:center; justify-content:center;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.25));
+  cursor:pointer; z-index:10; opacity:.92; transition:filter .18s, transform .06s;
+}
+.deals-carousel .nav:hover{ filter:brightness(1.08); }
+.deals-carousel .nav:active{ transform:translateY(1px); }
+.deals-carousel .nav.prev{ left:-8px; }
+.deals-carousel .nav.next{ right:-8px; }
+
+.deals-carousel .dots{
+  display:flex; gap:8px; justify-content:center;
+  padding:10px 0 0;
+}
+.deals-carousel .dots button{
+  width:8px; height:8px; border-radius:999px; border:0;
+  background:#5a5a5a; opacity:.6; cursor:pointer;
+}
+.deals-carousel .dots button.is-active{ background:#fff; opacity:1; }
+
+/* ===== Combos grid / card ===== */
+.combos-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.combo{
+  display:flex; gap:16px; align-items:stretch;
+  padding:16px; border-radius: var(--radius);
+  background: var(--panel-2); border:1px solid var(--stroke);
+}
+.combo .thumb{
+  flex:0 0 240px; height: 160px; overflow:hidden; border-radius:14px;
+  background:#0b0b0b;
+}
+.combo .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.combo .copy{ display:flex; flex-direction:column; gap:10px; min-width:0; }
+.combo .eyebrow{ font-weight:800; letter-spacing:.6px; color:#f3f3f3; opacity:.8; }
+.combo .title{ font-size:20px; line-height:1.25; margin:0; }
+.combo .desc{ color:var(--muted); margin:0; }
+
+.combo .variants{ display:flex; align-items:center; gap:10px; }
+.combo .variants .opts{ display:flex; gap:8px; }
+.combo .variants .chip{
+  display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+  padding:6px 10px; border-radius:999px; border:1px solid var(--stroke); background:var(--panel);
+}
+.combo .variants .chip input{ display:none; }
+.combo .variants .chip input:checked + span{
+  text-shadow:0 0 .01px currentColor; border:0;
+}
+.combo .variants .chip:has(input:checked){
+  background: rgba(229,9,20,.14); border-color: rgba(229,9,20,.45);
+}
+
+.combo .price-row{ display:flex; align-items:center; gap:10px; font-weight:800; }
+.combo .price{ font-size:18px; }
+.combo .price-row .old{ color:var(--muted); }
+.combo .price-row .save{ color:#ffb3b3; font-weight:700; }
+
+.combo .controls{ display:flex; align-items:center; gap:12px; margin-top:auto; }
+.combo .qty{ display:inline-flex; align-items:center; gap:8px; background:var(--field-bg);
+             border:1px solid var(--stroke); border-radius:999px; height:38px; padding:0 8px; }
+.combo .qty .val{ width:38px; text-align:center; background:transparent; border:0; color:var(--text); }
+.combo .qty .step{ width:30px; height:30px; border-radius:999px; border:1px solid var(--stroke);
+                   background:var(--panel); color:var(--text); cursor:pointer; }
+
+.combo .btn.add{ height:38px; padding:0 14px; }
+.combo .btn.remove{ height:38px; padding:0 14px; }
+
+/* ===== Ticket summary ===== */
+.ticket{
+  display:grid; gap:16px; padding:16px;
+  border-radius:var(--radius); background:var(--panel-2); border:1px solid var(--stroke);
+}
+.ticket .t-head{ display:flex; justify-content:space-between; align-items:center; }
+.ticket .t-head .brand{ font-weight:900; letter-spacing:.3px; }
+.ticket .t-head .order .label{ font-size:12px; color:var(--muted); margin-right:6px; }
+
+.ticket .t-body{ display:grid; grid-template-columns: 180px 1fr 160px; gap:16px; align-items:center; }
+.ticket .poster img{ width:100%; height:auto; border-radius:12px; display:block; }
+.ticket .meta .title{ margin:0 0 6px; font-size:20px; line-height:1.2; }
+.ticket .meta .row{ color:#e5e5e5; }
+
+.ticket .code{ display:grid; place-items:center; }
+.ticket .code img{ width:140px; height:140px; object-fit:contain; background:#0b0b0b; border-radius:12px; }
+
+.ticket .t-fee .line{ display:flex; justify-content:space-between; align-items:center; }
+.ticket .t-fee hr{ border:0; height:1px; background:var(--stroke); margin:8px 0; }
+.ticket .t-fee .total strong{ font-size:20px; }
+
+.ticket .t-foot .note{ color:var(--muted); }
+
+/* ===== Notifications ===== */
+.notif-list{ display:grid; gap:10px; }
+.notification{
+  position:relative; display:grid; grid-template-columns: 40px 1fr auto; gap:12px;
+  align-items:start; padding:12px; border-radius:var(--radius);
+  background:var(--panel-2); border:1px solid var(--stroke); cursor:pointer;
+  transition: filter .15s ease, border-color .2s ease;
+}
+.notification:hover{ filter:brightness(1.06); }
+.notification[data-unread="1"]{ border-color: rgba(229,9,20,.45); }
+.notification .icon{
+  width:40px; height:40px; border-radius:12px; display:grid; place-items:center;
+  background: rgba(229,9,20,.12); border:1px solid rgba(229,9,20,.35); font-size:18px;
+}
+.notification .title{ margin:0 0 4px; font-size:16px; line-height:1.25; }
+.notification .text{ margin:0; color:var(--muted); }
+.notification .meta{ display:flex; gap:10px; margin-top:6px; color:#e5e5e5; }
+.notification .tag{
+  display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:999px;
+  background:rgba(229,9,20,.14); border:1px solid rgba(229,9,20,.45); font-size:12px; font-weight:800;
+}
+.notification .actions{ display:flex; gap:6px; }
+.notification .btn-ghost{
+  width:28px; height:28px; border-radius:999px; border:1px solid var(--stroke);
+  background:var(--panel); color:var(--text); cursor:pointer;
+}
+.notification .dot{
+  position:absolute; top:10px; right:10px; width:8px; height:8px; border-radius:999px;
+  background:var(--accent); display: none;
+}
+.notification[data-unread="1"] .dot{ display:block; }
+
+/* ====== Modal (desktop) ====== */
+.modal-root{
+  position: fixed; inset: 0; z-index: 1000; display: none;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-root.is-open{ display: flex; }
+.modal-backdrop{
+  position: absolute; inset: 0; background: rgba(0,0,0,.6);
+  backdrop-filter: blur(2px);
+}
+.modal{
+  position: relative; z-index: 1; width: min(960px, 92vw);
+  border-radius: var(--radius); background: var(--panel-2);
+  border: 1px solid var(--stroke); box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  max-height: 90vh; overflow: hidden; display: grid; grid-template-rows: auto 1fr auto;
+}
+.modal-head{ padding: 14px 16px 0; }
+.modal-title{ margin: 0; font-size: 20px; line-height: 1.25; }
+.modal-body{ padding: 16px; overflow: auto; }
+.modal-foot{ padding: 12px 16px 16px; display: flex; gap: 8px; justify-content: flex-end; }
+
+.modal-close{
+  position: absolute; top: 10px; right: 10px; width: 36px; height: 36px;
+  border-radius: 999px; border: 1px solid var(--stroke); background: var(--panel);
+  color: var(--text); cursor: pointer;
+}
+
+/* Biến thể video (trailer) */
+.modal--video{ width: min(980px, 94vw); }
+.modal--video .modal-body{ padding: 0; aspect-ratio: 16 / 9; }
+.modal--video iframe, .modal--video video{ width: 100%; height: 100%; display: block; }
+
+/* Biến thể nhỏ: confirm/login */
+.modal--sm{ width: min(420px, 92vw); }
+
+/* === Trailer Modal polish === */
+:root{
+  --modal-close-yellow:#FFD400;
+  --modal-video-radius:16px;
+}
+.modal-backdrop{ background: rgba(0,0,0,.75); backdrop-filter: blur(2px); }
+
+/* Trailer Modal polish */
+.modal--video{ width:min(1000px,96vw); background:transparent; border:0; box-shadow:none; }
+.modal--video .modal-head, .modal--video .modal-foot{ display:none !important; }
+.modal--video .modal-body{
+  padding:0; aspect-ratio:16/9; overflow:hidden; border-radius:16px;
+  box-shadow:0 24px 80px rgba(0,0,0,.6); background:#000;
+}
+.modal--video iframe, .modal--video video{ width:100%; height:100%; display:block; }
+.modal-backdrop{ background:rgba(0,0,0,.75); backdrop-filter:blur(2px); }
+
+/* nút đóng màu đỏ */
+.modal--video .modal-close{
+  top:12px; right:12px; width:40px; height:40px;
+  background:var(--accent); color:#fff; border-color:transparent;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.modal--video .modal-close:hover{ filter:brightness(1.08); }
+
+/* hiệu ứng */
+.modal-root.is-open .modal{ animation:modalPop .16s cubic-bezier(.2,.7,.2,1); }
+@keyframes modalPop{ from{ transform:scale(.96); opacity:.6 } to{ transform:scale(1); opacity:1 } }
+
+body.modal-open{ overflow:hidden; }
+
+/* ===== Breadcrumb ===== */
+.breadcrumb{
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: block;
+}
+.breadcrumb ol{
+  display:flex; align-items:center; gap: 8px;
+  flex-wrap:wrap;
+  margin:0; padding:0; list-style:none;
+}
+.breadcrumb li{ display:flex; align-items:center; gap: 8px; }
+.breadcrumb li + li::before{
+  content:"›"; 
+  opacity:.6; 
+  color: var(--muted);
+}
+.breadcrumb a{
+  color: var(--muted);
+  text-decoration:none; 
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all .2s ease;
+}
+.breadcrumb a:hover{ 
+  color: #fff;
+  background: var(--panel); 
+}
+.breadcrumb .current{
+  color: #fff;
+  font-weight:700; 
+  padding: 4px;
+}
+
+/* ===== [ĐÃ SỬA] Pagination (Mũi tên to hơn) ===== */
+.pagination{
+  display:flex; align-items:center; justify-content:center; gap: 6px;
+  padding: 10px 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  margin-top: 24px;
+}
+.pagination .pages{ display:flex; gap:6px; margin:0; padding:0; list-style:none; }
+
+/* Nút số (1, 2, 3...) */
+.pagination .pages button{
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background: transparent;
+  color: var(--muted); 
+  border: 1px solid transparent; 
+  border-radius: 12px;
+  cursor:pointer; font-weight:700;
+  transition: all .2s ease;
+}
+
+/* [SỬA] Nút mũi tên ( « ‹ › » ) */
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  background: transparent;
+  color: var(--muted); 
+  border: 1px solid transparent; 
+  border-radius: 12px;
+  cursor:pointer;
+  transition: all .2s ease;
+  
+  /* [MỚI] Tăng cỡ chữ và độ đậm cho mũi tên */
+  font-size: 1.4em; /* To hơn */
+  font-weight: 800; /* Đậm hơn */
+}
+
+/* Hover chung cho cả nút số và nút mũi tên */
+.page-btn:hover, .pagination .pages button:hover{ 
+  filter: none;
+  background: var(--panel-2); 
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); 
+}
+.page-btn[disabled], .pagination .pages button[disabled]{ 
+  opacity:.3; cursor:not-allowed; 
+  background: transparent;
+  box-shadow: none;
+}
+
+.pagination .pages .is-current,
+.pagination .pages button.is-current:hover {
+  background: var(--accent);
+  border-color:transparent; 
+  color:#fff;
+  box-shadow: 0 4px 18px rgba(229, 9, 20, 0.45); 
+}
+.pagination .pages .ellipsis{
+  min-width:auto; padding:0 4px; border-color:transparent; background:transparent; cursor:default;
+  opacity: .3;
+  font-size: 1em; /* Reset cỡ chữ cho dấu ... */
+  font-weight: 700; /* Reset độ đậm cho dấu ... */
+}
+
+
+/* ===== Movie Card (poster + info slide-up on hover) ===== */
+/* ==== MOVIE CARD (base) ==== */
+.movie-card{
+  position:relative;
+  width:var(--poster-w,260px);
+  height:var(--poster-h,380px);
+  border-radius:12px;
+  overflow:hidden;
+  background:#0e0d12;
+  transition: box-shadow .35s ease;
+  box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
+}
+.movie-card.poster::after{ content:none !important; }
+.movie-card .ov{ display:none !important; }
+
+.movie-poster{ position:absolute; inset:0; }
+.movie-poster img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  transition:transform .45s cubic-bezier(.22,.61,.36,1);
+}
+
+.movie-info{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:flex-end; gap:8px;
+  padding: 16px 16px 20px 16px;
+  pointer-events:none;
+  background: linear-gradient(transparent, rgba(0,0,0,.65));
+}
+
+.movie-card .title{ color:#fff; font-weight:800; font-size:24px; line-height:1.25; }
+.movie-card .director{ color:#fff; opacity:.9; font-size:14px; font-weight:600; }
+
+.movie-card .meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  min-height: 1.2em;
+  color: #fff;
+  opacity: .9;
+  font-size: 14px;
+  font-weight: 600;
+}
+.movie-card .meta .rating {
+  font-weight: 800;
+  opacity: 1;
+  color: #fff;
+}
+.movie-card .dot{ opacity:.6; margin:0 8px; }
+
+.movie-card .tags .tag{
+  display:inline-block;
+  font-size: 13px;
+  padding: 6px 14px;
+  margin: 8px 8px 0 0;
+  background: rgba(255, 255, 255, 0.3);
+  color:#fff;
+  border-radius:999px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-bottom{ transform:translateY(12px); opacity:.95; }
+.info-bottom .desc{
+  color:#fff; opacity:.95;
+  font-size: 15px;
+  line-height:1.4;
+}
+
+.movie-card .cta-row{ display:flex; gap:10px; margin-top:16px; pointer-events:auto; }
+.movie-card .btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border:1px solid transparent;
+  font-weight: 700;
+  font-size: 15px;
+  color:#fff;
+  background:#E50914;
+  box-shadow:0 6px 18px #E5091426;
+  transition:filter .2s ease, transform .2s ease;
+}
+.movie-card .btn:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+
+.movie-card .btn.outline{
+  background: rgba(255,255,255,0.1);
+  border-color:#ffffffA0;
+  backdrop-filter: blur(2px);
+}
+.movie-card .btn.outline:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.movie-card .btn.book {
+  background: #E50914;
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(100, 0, 10, 0.6);
+}
+.movie-card .btn.book:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* ==== “Rasen” hover look cho trang movies ==== */
+.grid-rasen .movie-card .movie-info{
+  background: linear-gradient(180deg, transparent 10%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.95) 100%);
+  opacity:0; transition:opacity .35s ease;
+}
+.grid-rasen .movie-card:hover .movie-poster img{ transform:scale(1.05); }
+.grid-rasen .movie-card:hover .movie-info{ opacity:1; }
+
+.grid-rasen .movie-card:hover {
+  box-shadow: 0 0 35px 5px rgba(229, 9, 20, 0.45); /* Red glow */
+}
+
+/* ==== Carousel safety (index): không để hover phá coverflow ==== */
+.carousel .movie-card:hover .movie-poster img{ transform:none; }
+.carousel .movie-card:hover {
+  box-shadow: none;
+}
+
+/* Grid tối thiểu (nếu chưa có) */
+.movie-grid{ display:grid; gap:24px; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); }
+/* Movies page sizing */
+.movie-grid.grid-rasen{
+  --poster-w: 300px;
+  --poster-h: 460px;
+}
+/* ===== KẾT HỢP TỐT NHẤT CHO CAROUSEL (Thêm vào cuối components.css) ===== */
+
+/* 1. (QUAN TRỌNG) Giữ nguyên quy tắc an toàn: 
+   Tắt 'transform' (zoom) khi hover, để carousel toàn quyền kiểm soát.
+*/
+.carousel .movie-card:hover .movie-poster img {
+  transform: none; /* KHÔNG thay đổi dòng này! */
+}
+
+/* 2. (MỚI) Ẩn TOÀN BỘ thông tin (chữ, gradient) của các thẻ BÊN CẠNH */
+.carousel .movie-card:not(.is-center) .movie-info {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+/* 3. (MỚI) Với thẻ Ở GIỮA (.is-center):
+   - Luôn hiện .info-top (tên, điểm...)
+   - Ẩn .info-bottom (nút, mô tả) đi lúc bình thường
+*/
+.carousel .movie-card.is-center .movie-info {
+  opacity: 1;
+  background: linear-gradient(transparent, rgba(0,0,0,.65));
+}
+
+.carousel .movie-card.is-center .info-bottom {
+  transform: translateY(100%); /* Ẩn đi bằng cách đẩy xuống */
+  opacity: 0;
+  transition: transform .35s var(--easing, cubic-bezier(.22,.61,.36,1)), opacity .35s ease;
+  pointer-events: none; /* Không cho click khi bị ẩn */
+}
+
+/* 4. (MỚI) KHI HOVER vào thẻ Ở GIỮA:
+   - Đẩy .info-bottom (nút, mô tả) lên để hiển thị
+*/
+.carousel .movie-card.is-center:hover .info-bottom {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto; /* Cho phép click lại */
+}
