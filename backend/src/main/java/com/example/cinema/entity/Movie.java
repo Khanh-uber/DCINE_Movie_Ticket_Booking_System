@@ -1,7 +1,7 @@
 package com.example.cinema.entity;
 
 import jakarta.persistence.*;
-import java.util.*;
+
 import java.time.LocalDate;
 @Entity
 @Table(name="movie")
@@ -34,11 +34,7 @@ public class Movie {
 
     @Column(name="active")
     private boolean active = true;
-    // @Column(name ="banner_url")
-    // private String bannerUrl;
 
-    // @Column(name = "is_featured")
-    // private boolean isFeatured;
     public enum MovieStatus {
         now ,
         soon ,
@@ -47,8 +43,23 @@ public class Movie {
     @Column(nullable = false)
     private MovieStatus status = MovieStatus.soon;
     
+    @Column(name="age_limit")
+    private String rated ;
     
+    @Column(name="language", nullable = false)
+    private String language;
 
+    @Column(name="end_showing_date")
+    private LocalDate endShowingDate;
+
+    @Column(name="early_screening_date")
+    private LocalDate earlyScreeningDate;
+
+    @Column(name="backdrop_url")
+    private String backdropUrl;
+
+
+    public Movie(){};
     // getter and setter
 
     public Long getId(){
@@ -111,16 +122,25 @@ public class Movie {
     public void setActive(boolean active){
         this.active = active ;
     }
-    // public String getBannerUrl (){
-    //     return bannerUrl;
-    // }
-    // public void setBannerUrl(String bannerUrl){
-    //     this.bannerUrl = bannerUrl;
-    // }
-    // public boolean isFeatured(){
-    //     return isFeatured;
-    // }
-    // public void setFeatured(boolean isFeatured){
-    //     this.isFeatured = isFeatured;
-    // }
+    public String getLanguage(){
+        return language;
+    }
+    public void setLanguage(String language){
+        this.language = language;
+    }
+    public String getRated(){
+        return rated;
+    }
+    public void setRated(String rated){
+        this.rated = rated;
+    }
+
+    public LocalDate getEndShowingDate(){return endShowingDate;}
+    public void setEndShowingDate(LocalDate endShowingDate){this.endShowingDate = endShowingDate;}
+
+    public LocalDate getEarlyScreeningDate(){return earlyScreeningDate;}
+    public void setEarlyScreeningDate(LocalDate earlyScreeningDate){this.earlyScreeningDate=earlyScreeningDate;}
+
+    public String getBackDropUrl(){return backdropUrl;}
+    public void setBackDropUrl(String backdropUrl){this.backdropUrl = backdropUrl;}
 }

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.transaction.annotation.*;
+// import org.springframework.transaction.annotation.*;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 public interface MovieRepository extends JpaRepository<Movie, Long>{ 
@@ -56,4 +56,15 @@ public interface MovieRepository extends JpaRepository<Movie, Long>{
                 ));
             """, nativeQuery = true)
     void updateNowShowing();
+
+
+    // Tim genre theo movie id
+    @Query(value = """
+            SELECT DISTINCT g.name
+            FROM genre g
+            JOIN movie_genre mg ON mg.genre_id = g.genre_id
+            WHERE mg.movie_id = :movieId
+            ORDER BY g.name
+            """, nativeQuery = true)
+    List<String> findGenresByMovieId(@Param("movieId") Long movieId);
 }

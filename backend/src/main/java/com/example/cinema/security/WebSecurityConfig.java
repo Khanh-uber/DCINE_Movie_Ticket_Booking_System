@@ -44,35 +44,35 @@ public class WebSecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns("http://127.0.0.1:5500", "http://localhost:5500","http://localhost:8080") // FE của bạn
+                        .allowedOrigins("http://127.0.0.1:5500", "http://localhost:5500") // FE của bạn
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
             
 
-            // ✅ Thêm đoạn này để cho phép truy cập ảnh /uploads/**
+            // Thêm đoạn này để cho phép truy cập ảnh /uploads/**
             @Override
             public void addResourceHandlers(org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/uploads/**")
                         .addResourceLocations("file:uploads/");
-                // 👇 Nếu thư mục uploads nằm ở nơi khác:
+                // Nếu thư mục uploads nằm ở nơi khác:
                 // .addResourceLocations("file:C:/Users/YourName/Desktop/cinema/uploads/");
             }
         };
     }
      // 2️⃣ Cho phép Postman / public API (không credentials)
-    @Bean
-    public WebMvcConfigurer publicCorsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/public/**")
-                        .allowedOrigins("*")
-                        .allowedMethods("*")
-                        .allowedHeaders("*")
-                        .allowCredentials(false);
-            }
-        };
-    }
+    // @Bean
+    // public WebMvcConfigurer publicCorsConfigurer() {
+    //     return new WebMvcConfigurer() {
+    //         @Override
+    //         public void addCorsMappings(CorsRegistry registry) {
+    //             registry.addMapping("/public/**")
+    //                     .allowedOrigins("*")
+    //                     .allowedMethods("*")
+    //                     .allowedHeaders("*")
+    //                     .allowCredentials(false);
+    //         }
+    //     };
+    // }
 }

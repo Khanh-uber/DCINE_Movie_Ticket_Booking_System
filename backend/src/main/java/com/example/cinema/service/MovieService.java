@@ -5,9 +5,10 @@ import java.util.*;
 import org.springframework.stereotype.Service;
 import com.example.cinema.dto.MovieDTO;
 import com.example.cinema.entity.Movie;
-import com.example.cinema.entity.Showtime;
+
 import com.example.cinema.repository.MovieRepository;
-import com.example.cinema.repository.ShowTimeRepository;
+import com.example.cinema.repository.PersonRepository;
+
 
 
 
@@ -15,8 +16,11 @@ import com.example.cinema.repository.ShowTimeRepository;
 public class MovieService {
 
     private final MovieRepository movieRepo;
-    public MovieService (MovieRepository movieRepo){
+    private final PersonRepository personRepo ;
+
+    public MovieService (MovieRepository movieRepo, PersonRepository personRepo){
         this.movieRepo = movieRepo;
+        this.personRepo = personRepo;
     
     }
     public List<MovieDTO> getMoviesByStatus(String status) {
@@ -34,10 +38,19 @@ public class MovieService {
     }
     // phim dang chieu 
     public List<MovieDTO> getNowShowingMovies() {
-        return movieRepo.findNowShowingMovies()
-                .stream()
-                .map(MovieDTO::fromEntity)
-                .toList();
+        List<Movie> movies = movieRepo.findNowShowingMovies();
+        List<MovieDTO> dtos = new ArrayList<>();
+
+        for (Movie movie : movies){
+            MovieDTO dto = MovieDTO.fromEntity(movie);
+
+            dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
+            dto.setCast(personRepo.findCastByMovieId(movie.getId()));
+            dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
+            dtos.add(dto);
+        }
+        
+        return dtos;
     }
     
     public List<MovieDTO> getComingSoonMovies(){
