@@ -4,7 +4,7 @@
   // ====== Helpers ======
   const $  = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-  const API = window.API_BASE || '/api';
+  const API = window.API_BASE = "http://localhost:8080/api";
   const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
   const throttle=(fn,ms=16)=>{ let t=0; return (...a)=>{ const n=Date.now(); if(n-t>ms){ t=n; fn(...a);} } };
 

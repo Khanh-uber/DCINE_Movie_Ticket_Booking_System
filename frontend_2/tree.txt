@@ -1,0 +1,109 @@
+UI_UX/
+│
+└── DCINE/
+    │
+    ├── /html/
+    │   │
+    │   ├── /components/              → 📁 Các khối tái sử dụng (ĐÃ DI CHUYỂN)
+    │   │   ├── movie-card.html       → Thẻ phim
+    │   │   ├── promo-card.html       → Ưu đãi
+    │   │   ├── news-card.html        → Tin tức
+    │   │   ├── ticket-summary.html   → Tóm tắt vé
+    │   │   ├── combo-item.html       → Bắp nước
+    │   │   ├── notification-item.html → Thông báo
+    │   │   ├── modal.html            → Popup chung (login/trailer)
+    │   │   ├── breadcrumb.html       → Thanh điều hướng nhỏ
+    │   │   └── pagination.html       → Phân trang
+    │   │
+    │   ├── index.html                → Trang chủ
+    │   ├── movies.html               → Danh sách phim
+    │   ├── movie-detail.html         → Chi tiết phim
+    │   ├── showtime.html             → Chọn lịch chiếu
+    │   ├── seat-map.html             → Chọn ghế
+    │   ├── concessions.html          → Combo bắp nước
+    │   ├── cart.html                 → Giỏ hàng
+    │   ├── payment.html              → Thanh toán
+    │   ├── confirmation.html         → Xác nhận đặt vé
+    │   ├── promotions.html           → Khuyến mãi
+    │   ├── theaters.html             → Danh sách rạp
+    │   ├── profile.html              → Hồ sơ người dùng
+    │   ├── notifications.html        → Thông báo cá nhân
+    │   ├── D_cine_login.html         → Đăng nhập
+    │   ├── D_cine_signup.html        → Đăng ký
+    │   ├── D_cine_forgot.html        → Quên mật khẩu
+    │   ├── header.html               → Header dùng chung
+    │   └── footer.html               → Footer dùng chung
+    │
+    ├── /assets/
+    │   ├── /css/
+    │   │   ├── variables.css             → 🎨 Toàn bộ màu sắc, font, spacing chung
+    │   │   ├── base.css                  → Reset, typography, link, button
+    │   │   ├── layout.css                → Container, grid, spacing section
+    │   │   ├── components.css            → Style cho các component dùng lại
+    │   │   ├── header.css
+    │   │   ├── footer.css
+    │   │   ├── main.css                  → Style nền chung cho toàn site
+    │   │   ├── home.css                  → Trang chủ
+    │   │   ├── movies.css
+    │   │   ├── movie-detail.css
+    │   │   ├── showtime.css
+    │   │   ├── seat-map.css
+    │   │   ├── concessions.css
+    │   │   ├── cart.css
+    │   │   ├── payment.css
+    │   │   ├── confirmation.css
+    │   │   ├── promotions.css
+    │   │   ├── theaters.css
+    │   │   ├── profile.css
+    │   │   ├── notifications.css
+    │   │   ├── auth.login.css
+    │   │   ├── auth.signup.css
+    │   │   ├── auth.forgot.css
+    │   │   ├── responsive.css            → CSS responsive cho mobile/tablet
+    │   │   └── animation.css             → Hiệu ứng fade, hover, glow (tùy chọn)
+    │   │
+    │   ├── /js/
+    │   │   ├── main.js                   → Chức năng dùng chung (header, modal…)
+    │   │   ├── header.js
+    │   │   ├── footer.js
+    │   │   ├── fetchData.js              → Load dữ liệu JSON
+    │   │   ├── utils.js                  → Hàm tiện ích (format giá, random ID…)
+    │   │   ├── slider.js                 → Hiệu ứng trượt banner phim
+    │   │   ├── modal.js                  → Hiển thị popup (login/trailer)
+    │   │   ├── cart.js                   → Quản lý giỏ hàng
+    │   │   ├── seatmap.js                → Logic chọn ghế
+    │   │   ├── user.js                   → Quản lý thông tin user (localStorage)
+    │   │   ├── index.js                  → JS riêng cho trang chủ
+    │   │   ├── movies.js
+    │   │   ├── movie-detail.js
+    │   │   ├── showtime.js
+    │   │   ├── concessions.js
+    │   │   ├── payment.js
+    │   │   ├── promotions.js
+    │   │   ├── theaters.js
+    │   │   ├── profile.js
+    │   │   ├── notifications.js
+    │   │   ├── auth.login.js
+    │   │   ├── auth.signup.js
+    │   │   └── auth.forgot.js
+    │   │
+    │   ├── /images/
+    │   │   ├── /movies/                  → Poster phim
+    │   │   ├── /promotions/              → Banner ưu đãi
+    │   │   ├── /theaters/                → Ảnh rạp
+    │   │   ├── /news/                    → Hình tin tức
+    │   │   ├── /concessions/             → Combo bắp nước
+    │   │   ├── /avatars/                 → Ảnh user
+    │   │   └── /ui/                      → Icon, logo, bg, loading…
+    │   │
+    │   └── /icons/                       → SVG icon riêng (vé, user, chuông…)
+    │
+    └── /data/
+        ├── movies.json                   → Danh sách phim
+        ├── promotions.json               → Ưu đãi
+        ├── theaters.json                 → Rạp chiếu
+        ├── showtimes.json                → Suất chiếu
+        ├── concessions.json              → Combo bắp nước
+        ├── users.json                    → Người dùng
+        ├── notifications.json            → Thông báo cá nhân
+        └── orders.json
