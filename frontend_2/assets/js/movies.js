@@ -144,9 +144,19 @@
   // ===== Fetch data (Giữ nguyên) =====
   async function fetchMovies() {
     try {
-      const res = await fetch(API_DATA, { cache: 'no-store' });
-      if (res.ok) return await res.json();
-    } catch {}
+    const [nowRes, soonRes] = await Promise.all([
+      fetch('http://localhost:8080/api/movies/now',  { cache: 'no-store' }),
+      fetch('http://localhost:8080/api/movies/soon', { cache: 'no-store' })
+    ]);
+
+    if (nowRes.ok && soonRes.ok) {
+      const now = await nowRes.json();
+      const soon = await soonRes.json();
+      return { now, soon };
+    }
+  } catch (err) {
+    console.error("Lỗi khi gọi backend:", err);
+  }
     // Fallback (giữ nguyên)
     return {
       now: [ { id:'m1', title:'Edge of Midnight', posterUrl:'https://picsum.photos/seed/m1/600/900', rating:8.1, trailerUrl:'', duration:'2h 10m' } ],
