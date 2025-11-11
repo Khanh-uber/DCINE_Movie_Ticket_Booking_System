@@ -4,8 +4,6 @@
 -- ------------------------------------------------------
 -- Server version	8.0.43
 
-USE dcine_schema;
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -183,7 +181,7 @@ CREATE TABLE `cast_person` (
   `name` varchar(100) NOT NULL,
   `role_type` enum('ACTOR','DIRECTOR') NOT NULL,
   PRIMARY KEY (`cast_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=127 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -192,7 +190,7 @@ CREATE TABLE `cast_person` (
 
 LOCK TABLES `cast_person` WRITE;
 /*!40000 ALTER TABLE `cast_person` DISABLE KEYS */;
-INSERT INTO `cast_person` VALUES (1,'Ryan Reynolds','ACTOR'),(2,'Hugh Jackman','ACTOR'),(3,'James Cameron','DIRECTOR'),(4,'Pete Docter','DIRECTOR'),(5,'Minami Takayama','ACTOR'),(6,'Hayao Miyazaki','DIRECTOR'),(7,'Phương Anh Đào','ACTOR'),(8,'Trấn Thành','ACTOR'),(9,'Tom Hardy','ACTOR'),(10,'Tanjiro Kamado','ACTOR');
+INSERT INTO `cast_person` VALUES (1,'Băng Di','ACTOR'),(2,'Khương Ngọc','DIRECTOR'),(3,'Hồng Đào','ACTOR'),(4,'Hữu Châu','ACTOR'),(5,'Lâm Thanh Mỹ','ACTOR'),(6,'Việt Hương','ACTOR'),(7,'Anh Tú Atus','ACTOR'),(8,'Trần Hữu Tấn','DIRECTOR'),(9,'Hoàng Linh Chi','ACTOR'),(10,'Lương Thế Thành','ACTOR'),(11,'Huỳnh Thanh Trực','ACTOR'),(12,'Rima Thanh Vy','ACTOR'),(13,'Giovanni Ribisi','ACTOR'),(14,'James Cameron','DIRECTOR'),(15,'Kate Winslet','ACTOR'),(16,'Zoe Saldaña','ACTOR'),(17,'Diane Lane','ACTOR'),(18,'Jan Komasa','DIRECTOR'),(19,'Kyle Chandler','ACTOR'),(20,'Zoey Deutch','ACTOR'),(21,'Phoebe Dynevor','ACTOR'),(22,'Lương Gia Huy','ACTOR'),(23,'Hoàng Thơ','DIRECTOR'),(24,'Thái Trà My','ACTOR'),(25,'Dũng Bino','ACTOR'),(26,'Bích Ngọc','ACTOR'),(27,'Ethan Hawke','ACTOR'),(28,'Scott Derrickson','DIRECTOR'),(29,'Mason Thames','ACTOR'),(30,'Madeleine McGraw','ACTOR'),(31,'Demián Bichir','ACTOR'),(32,'Arianna Rivas','ACTOR'),(33,'G-DRAGON','ACTOR'),(34,'JINHO BYUN','DIRECTOR'),(35,'TAEYANG','ACTOR'),(36,'DAESUNG','ACTOR'),(37,'CL','ACTOR'),(38,'Yunita Siregar','ACTOR'),(39,'Hadrah Daeng Ratu','DIRECTOR'),(40,'Dinda Kanyadewi','ACTOR'),(41,'Tarra Budiman','ACTOR'),(42,'Mckenna Grace','ACTOR'),(43,'Emma Tammi','DIRECTOR'),(44,'Josh Hutcherson','ACTOR'),(45,'Matthew Lillard','ACTOR'),(46,'Quang Tuấn','ACTOR'),(47,'Trương Dũng','DIRECTOR'),(48,'Huỳnh Đông','ACTOR'),(49,'Vân Trang','ACTOR'),(50,'Hoàng Kim Ngọc','ACTOR'),(51,'Lan Thy','ACTOR'),(52,'Ái Như','ACTOR'),(53,'Nguyễn Thanh Bình','DIRECTOR'),(54,'Huy Khánh','ACTOR'),(55,'Tín Nguyễn','ACTOR'),(56,'Bé Sam','ACTOR'),(57,'Ngọc Sơn','ACTOR'),(58,'Jason Bateman','ACTOR'),(59,'Jared Bush','DIRECTOR'),(60,'Quinta Brunson','ACTOR'),(61,'Byron Howard','DIRECTOR'),(62,'Fortune Feimster','ACTOR'),(63,'Huỳnh Phương','ACTOR'),(64,'Ngụy Minh Khang','DIRECTOR'),(65,'Lý Hùng','ACTOR'),(66,'Phương Lan','ACTOR'),(67,'Cát Phượng','ACTOR'),(68,'Kim Tuyến','ACTOR'),(69,'Elle Fanning','ACTOR'),(70,'Dan Trachtenberg','DIRECTOR'),(71,'Dimitrius Schuster-Koloamatangi','ACTOR'),(72,'Nadech Kugimiya','ACTOR'),(73,'Narit Yuvaboon','DIRECTOR'),(74,'Denise Jelilcha Kapaun','ACTOR'),(75,'Mim Rattawadee Wongthong','ACTOR'),(76,'Junior Kajbhunditt Jaidee','ACTOR'),(77,'Friend Peerakrit Phacharaboonyakiat','ACTOR'),(78,'Minh Ngọc','ACTOR'),(79,'Trần Nhân Kiên','DIRECTOR'),(80,'Minh Phượng','ACTOR'),(81,'Hồng Thanh','ACTOR'),(82,'Tạ Lâm','ACTOR'),(83,'Ngọc Tưởng','ACTOR'),(84,'Quách Ngọc Ngoan','ACTOR'),(85,'Quốc Công','DIRECTOR'),(86,'Xuân Văn','ACTOR'),(87,'Nhật Linh','ACTOR'),(88,'Việt Hưng','ACTOR'),(89,'Glen Powell','ACTOR'),(90,'Edgar Wright','DIRECTOR'),(91,'William H. Macy','ACTOR'),(92,'Lee Pace','ACTOR'),(93,'Emilia Jones','ACTOR'),(94,'Michael Cera','ACTOR'),(95,'Liên Bỉnh Phát','ACTOR'),(96,'Kiều Oanh','ACTOR'),(97,'Lê Hải','ACTOR'),(98,'Mai Cát Vi','ACTOR'),(100,'Rima Thanh Vy','ACTOR'),(101,'Thúy Hạnh','ACTOR'),(102,'Hoàng Phúc','ACTOR'),(103,'Kiều Trinh','ACTOR'),(104,'Tam Triều Dâng','ACTOR'),(105,'Margot Robbie','ACTOR'),(106,'Jacob Elordi','ACTOR'),(107,'Hong Chau','ACTOR'),(108,'Shazad Latif','ACTOR'),(109,'Alison Oliver','ACTOR'),(110,'Kim Phương','ACTOR'),(111,'Yada Narilya Gulmongkolpech','ACTOR'),(112,'\"Krist\" Perawat Sangpotirat','ACTOR'),(113,'Choosak Iamsook','ACTOR'),(114,'Pongsak Pongsuwan','ACTOR'),(115,'Phetthai Vongkumlao','ACTOR'),(116,'Ma Ran Đô','ACTOR'),(117,'Nguyên Thảo','ACTOR'),(118,'Thanh Nam','ACTOR'),(119,'Oscar Dương','DIRECTOR'),(120,'Thắng Vũ','DIRECTOR'),(121,'Emerald Fennell','DIRECTOR'),(122,'Trần Duy Linh','DIRECTOR'),(123,'Phạm Trung Hiếu','DIRECTOR'),(124,' Choosak Iamsook','DIRECTOR'),(125,'Dương Minh Chiến','DIRECTOR'),(126,'Kim Hải','ACTOR');
 /*!40000 ALTER TABLE `cast_person` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -415,7 +413,7 @@ CREATE TABLE `movie_cast` (
 
 LOCK TABLES `movie_cast` WRITE;
 /*!40000 ALTER TABLE `movie_cast` DISABLE KEYS */;
-INSERT INTO `movie_cast` VALUES (1,3),(2,4),(3,5),(4,1),(4,2),(5,6),(6,7),(7,8),(8,9),(9,6),(10,10);
+INSERT INTO `movie_cast` VALUES (1,72),(1,73),(1,74),(1,75),(1,76),(1,77),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(3,46),(3,47),(3,48),(3,49),(3,50),(3,51),(4,4),(4,52),(4,53),(4,54),(4,55),(4,56),(4,57),(5,100),(5,101),(5,102),(5,103),(5,126),(5,120),(6,17),(6,18),(6,19),(6,20),(6,21),(7,22),(7,23),(7,24),(7,25),(7,26),(8,27),(8,28),(8,29),(8,30),(8,31),(8,32),(9,84),(9,85),(9,86),(9,87),(9,88),(10,111),(10,112),(10,113),(10,114),(10,115),(10,124),(11,78),(11,79),(11,80),(11,81),(11,82),(11,83),(12,69),(12,70),(12,71),(13,38),(13,39),(13,40),(13,41),(14,89),(14,90),(14,91),(14,92),(14,93),(14,94),(15,46),(15,116),(15,117),(15,118),(15,125),(16,33),(16,34),(16,35),(16,36),(16,37),(17,95),(17,104),(17,96),(17,97),(17,98),(17,119),(18,58),(18,59),(18,60),(18,61),(18,62),(19,63),(19,64),(19,65),(19,66),(19,67),(19,68),(20,7),(20,8),(20,9),(20,10),(20,11),(20,12),(21,42),(21,43),(21,44),(21,45),(22,126),(22,82),(22,110),(22,122),(22,123),(23,13),(23,14),(23,15),(23,16),(24,105),(24,106),(24,107),(24,108),(24,109),(24,121);
 /*!40000 ALTER TABLE `movie_cast` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -689,4 +687,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-10 20:32:21
+-- Dump completed on 2025-11-11 13:24:13
