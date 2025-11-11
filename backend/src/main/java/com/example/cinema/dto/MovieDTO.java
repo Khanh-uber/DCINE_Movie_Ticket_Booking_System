@@ -95,7 +95,14 @@ public class MovieDTO {
     
     public static MovieDTO fromEntity(Movie movie) {
         MovieDTO dto = new MovieDTO();
-        dto.setRated(movie.getRated().substring(0,3));
+        String rated = "";
+        String value = movie.getRated();
+
+        if (value != null && !value.isBlank()) {
+            rated = value.substring(0, 3);
+        }
+
+        dto.setRated(rated);
         dto.setBackDropUrl(movie.getBackDropUrl());
         dto.setLanguage(movie.getLanguage());
         dto.setId(movie.getId()); // Tạo mã "tt001"

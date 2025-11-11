@@ -54,9 +54,17 @@ public class MovieService {
     }
     
     public List<MovieDTO> getComingSoonMovies(){
-        return movieRepo.findComingSoonMovies()
-                .stream()
-                .map(MovieDTO::fromEntity) 
-                .toList();
+        List<Movie> movies = movieRepo.findComingSoonMovies();
+        List<MovieDTO> dtos = new ArrayList<>();
+
+        for (Movie movie : movies){
+            MovieDTO dto = MovieDTO.fromEntity(movie);
+
+            dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
+            dto.setCast(personRepo.findCastByMovieId(movie.getId()));
+            dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
+            dtos.add(dto);
+        }
+        return dtos;
     }
 }
