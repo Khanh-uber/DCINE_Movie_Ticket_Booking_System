@@ -18,6 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://127.0.0.1:5501"})
 
 public class AuthController {
     private final AccountService accountService;
