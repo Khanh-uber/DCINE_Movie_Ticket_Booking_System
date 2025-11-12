@@ -1,25 +1,124 @@
 [
-  { "id":"th-nk-nguyenkim","name":"DCINE Nguyễn Kim","address":"63-65 Trần Hưng Đạo, Q.1, TP.HCM","city":"HCMC",
-    "rooms":[{"name":"Screen 1","seats":120},{"name":"Screen 2","seats":90},{"name":"Screen 3","seats":80}] },
-  { "id":"th-bt-benthanh","name":"DCINE Bến Thành","address":"6 Mạc Thị Bưởi, Q.1, TP.HCM","city":"HCMC",
-    "rooms":[{"name":"IMAX 1","seats":180},{"name":"Screen 4","seats":120},{"name":"Screen 5","seats":100}] },
-  { "id":"th-hcm-pearl","name":"DCINE Pearl Center","address":"12 Quốc Hương, Thảo Điền, TP.Thủ Đức","city":"HCMC",
-    "rooms":[{"name":"Screen A","seats":110},{"name":"VIP Deluxe","seats":64}] },
-  { "id":"th-hcm-qt","name":"DCINE Quang Trung","address":"304 Quang Trung, Gò Vấp","city":"HCMC",
-    "rooms":[{"name":"Screen X","seats":120},{"name":"Screen Y","seats":90}] },
-
-  { "id":"th-hn-royalcity","name":"DCINE Royal City","address":"72A Nguyễn Trãi, Thanh Xuân","city":"Hanoi",
-    "rooms":[{"name":"Screen 1 Dolby","seats":140},{"name":"Screen 2","seats":100}] },
-  { "id":"th-hn-times","name":"DCINE Times City","address":"458 Minh Khai, Hai Bà Trưng","city":"Hanoi",
-    "rooms":[{"name":"Screen A","seats":120},{"name":"Screen B","seats":110}] },
-
-  { "id":"th-dn-helio","name":"DCINE Helio","address":"2/9, Hải Châu","city":"Da Nang",
-    "rooms":[{"name":"Screen X","seats":120},{"name":"Screen Y 4DX","seats":80}] },
-  { "id":"th-dn-vincom","name":"DCINE Vincom ĐN","address":"910A Ngô Quyền, Sơn Trà","city":"Da Nang",
-    "rooms":[{"name":"Screen 1","seats":100},{"name":"Screen 2","seats":90}] },
-
-  { "id":"th-hp-imperia","name":"DCINE Imperia","address":"Phạm Văn Đồng, Hải Phòng","city":"Hai Phong",
-    "rooms":[{"name":"Screen 1","seats":120},{"name":"Screen 2","seats":100}] },
-  { "id":"th-ct-sense","name":"DCINE Sense City","address":"1 Hòa Bình, Ninh Kiều, Cần Thơ","city":"Can Tho",
-    "rooms":[{"name":"Screen 1","seats":110},{"name":"Screen 2","seats":100}] }
+  { 
+    "theater_id": "th-hcm-nguyenkim", 
+    "name": "DCINE Nguyễn Kim", 
+    "address": "63-65 Trần Hưng Đạo, Q.1, TP.HCM", 
+    "city": "HCMC", 
+    "province_id": 1,
+    "location_id": 1,
+    "rooms": [
+      { "room_id": "s1", "name": "Screen 1", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "s2", "name": "Screen 2", "capacity": 90, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] },
+      { "room_id": "s3", "name": "Screen 3", "capacity": 80, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hcm-benthanh", 
+    "name": "DCINE Bến Thành", 
+    "address": "6 Mạc Thị Bưởi, Q.1, TP.HCM", 
+    "city": "HCMC", 
+    "province_id": 1,
+    "location_id": 1,
+    "rooms": [
+      { "room_id": "i1", "name": "IMAX 1", "capacity": 180, "room_type": "IMAX", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "s4", "name": "Screen 4", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] },
+      { "room_id": "s5", "name": "Screen 5", "capacity": 100, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hcm-pearl", 
+    "name": "DCINE Pearl Center", 
+    "address": "12 Quốc Hương, Thảo Điền, TP.Thủ Đức", 
+    "city": "HCMC", 
+    "province_id": 1,
+    "location_id": 3,
+    "rooms": [
+      { "room_id": "sa", "name": "Screen A", "capacity": 110, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] },
+      { "room_id": "vd", "name": "VIP Deluxe", "capacity": 64, "room_type": "VIP Deluxe", "seat_types_available": ["VIP", "Couple"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hcm-qt", 
+    "name": "DCINE Quang Trung", 
+    "address": "304 Quang Trung, Gò Vấp", 
+    "city": "HCMC", 
+    "province_id": 1,
+    "location_id": 6,
+    "rooms": [
+      { "room_id": "sx", "name": "Screen X", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "sy", "name": "Screen Y", "capacity": 90, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hn-royalcity", 
+    "name": "DCINE Royal City", 
+    "address": "72A Nguyễn Trãi, Thanh Xuân", 
+    "city": "Hanoi", 
+    "province_id": 2,
+    "location_id": 9,
+    "rooms": [
+      { "room_id": "d1", "name": "Screen 1 Dolby", "capacity": 140, "room_type": "Dolby", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "s2", "name": "Screen 2", "capacity": 100, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hn-times", 
+    "name": "DCINE Times City", 
+    "address": "458 Minh Khai, Hai Bà Trưng", 
+    "city": "Hanoi", 
+    "province_id": 2,
+    "location_id": 11,
+    "rooms": [
+      { "room_id": "sa", "name": "Screen A", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "sb", "name": "Screen B", "capacity": 110, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-dn-helio", 
+    "name": "DCINE Helio", 
+    "address": "2/9, Hải Châu", 
+    "city": "Da Nang", 
+    "province_id": 6,
+    "location_id": 26,
+    "rooms": [
+      { "room_id": "sx", "name": "Screen X", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "y4", "name": "Screen Y 4DX", "capacity": 80, "room_type": "4DX", "seat_types_available": ["VIP"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-dn-vincom", 
+    "name": "DCINE Vincom ĐN", 
+    "address": "910A Ngô Quyền, Sơn Trà", 
+    "city": "Da Nang", 
+    "province_id": 6,
+    "location_id": 26,
+    "rooms": [
+      { "room_id": "s1", "name": "Screen 1", "capacity": 100, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] },
+      { "room_id": "s2", "name": "Screen 2", "capacity": 90, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-hp-imperia", 
+    "name": "DCINE Imperia", 
+    "address": "Phạm Văn Đồng, Hải Phòng", 
+    "city": "Hai Phong", 
+    "province_id": 3,
+    "location_id": 13,
+    "rooms": [
+      { "room_id": "s1", "name": "Screen 1", "capacity": 120, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "s2", "name": "Screen 2", "capacity": 100, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] }
+    ] 
+  },
+  { 
+    "theater_id": "th-ct-sense", 
+    "name": "DCINE Sense City", 
+    "address": "1 Hòa Bình, Ninh Kiều, Cần Thơ", 
+    "city": "Can Tho", 
+    "province_id": 8,
+    "location_id": 34,
+    "rooms": [
+      { "room_id": "s1", "name": "Screen 1", "capacity": 110, "room_type": "Standard", "seat_types_available": ["Regular", "VIP"] },
+      { "room_id": "s2", "name": "Screen 2", "capacity": 100, "room_type": "Standard", "seat_types_available": ["Regular", "VIP", "Couple"] }
+    ] 
+  }
 ]

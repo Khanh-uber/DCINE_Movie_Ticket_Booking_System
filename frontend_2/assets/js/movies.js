@@ -26,83 +26,145 @@
     return MOVIE_TPL;
   }
 
-  // ===== Tạo 1 card phim (Giữ nguyên logic của bạn) =====
-  function cardFrom(m, { showRating=false, showRelease=false } = {}) {
-    if (!MOVIE_TPL?.content?.firstElementChild) {
-      // Fallback (giữ nguyên)
-      const el = document.createElement('article');
-      el.className = 'poster card';
-      el.innerHTML = `...`; // Fallback code
-      return el;
+function cardFrom(m, { showRating = false, showRelease = false } = {}) {
+  // Nếu có template <template id="movie-card">
+  let el;
+  if (MOVIE_TPL?.content?.firstElementChild) {
+    el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
+  } else {
+    // fallback đơn giản
+    el = document.createElement('article');
+    el.className = 'movie-card poster';
+  }
+
+  el.dataset.id = m.id || '';
+
+  // Poster
+  const img = el.querySelector('[data-img]');
+  if (img) {
+    img.src = m.posterUrl || m.poster || '';
+    img.alt = m.title || 'Poster';
+    img.draggable = false;
+  }
+
+  // Title
+  const t = el.querySelector('[data-title]');
+  if (t) t.textContent = m.title || '';
+
+  // Director
+  const d = el.querySelector('[data-director]');
+  if (d) d.textContent = m.director ? `Directed by ${m.director}` : '';
+
+  // Duration + Release
+  const u = el.querySelector('[data-duration]');
+  if (u) {
+    const raw = m.duration || m.runtime || '';
+    const dur =
+      raw && /^\d+$/.test(String(raw).trim())
+        ? `${raw} phút`
+        : (raw || '');
+    const rel = showRelease && m.releaseDate ? m.releaseDate : '';
+    u.textContent = dur && rel ? `${dur} • ${rel}` : (dur || rel || '');
+  }
+
+  // Rating (chỉ dùng để phân biệt phim đang chiếu)
+  const rate = el.querySelector('[data-rating]');
+  if (rate) {
+    if (showRating && (m.rating ?? null) !== null) {
+      rate.innerHTML = `⭐ ${Number(m.rating || 0).toFixed(1)}/10`;
+    } else {
+      rate.innerHTML = '';
     }
+  }
 
-    // Dùng movie-card template mới (giữ nguyên logic của bạn)
-    const el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
-    el.dataset.id = m.id ?? '';
-
-    const img = el.querySelector('[data-img]');
-    if (img) { img.src = m.posterUrl || m.poster || ''; img.alt = m.title || 'Poster'; }
-
-    const t = el.querySelector('[data-title]');     if (t) t.textContent = m.title || '';
-    const d = el.querySelector('[data-director]');  if (d) d.textContent = m.director ? `Directed by ${m.director}` : '';
-    
-    const u = el.querySelector('[data-duration]');
-    if (u) {
-      const durationVal = m.duration || m.runtime || '';
-      if (durationVal) {
-        u.textContent = /^\d+$/.test(String(durationVal).trim()) ? `${durationVal} phút` : durationVal;
-      } else {
-        u.textContent = '';
-      }
-    }
-    
-    const rate = el.querySelector('[data-rating]');
-    if (rate) {
-      // Dùng innerHTML để hiện icon ⭐
-      if (showRating && (m.rating ?? null) !== null) rate.innerHTML = `⭐ ${Number(m.rating||0).toFixed(1)}/10`;
-      else rate.textContent = '';
-    }
-
-    const gWrap = el.querySelector('[data-genres]');
-    if (gWrap) {
-      const genres = Array.isArray(m.genres) ? m.genres
-                  : (typeof m.genre === 'string' ? m.genre.split(',') : []);
-      gWrap.innerHTML = '';
-      genres.map(x=>String(x).trim()).filter(Boolean).slice(0,4).forEach(g=>{
-        const s = document.createElement('span'); s.className='tag'; s.textContent = g;
+  // Genres
+  const gWrap = el.querySelector('[data-genres]');
+  if (gWrap) {
+    const genres = Array.isArray(m.genres)
+      ? m.genres
+      : (typeof m.genre === 'string' ? m.genre.split(',') : []);
+    gWrap.innerHTML = '';
+    genres
+      .map(x => String(x).trim())
+      .filter(Boolean)
+      .slice(0, 4)
+      .forEach(g => {
+        const s = document.createElement('span');
+        s.className = 'tag';
+        s.textContent = g;
         gWrap.appendChild(s);
       });
+  }
+
+  // Description
+  const desc = el.querySelector('[data-desc]');
+  if (desc) {
+    desc.textContent = m.synopsis || m.description || m.desc || '';
+  }
+
+  // ===== Trailer button =====
+  const btnT = el.querySelector('[data-trailer]');
+  if (btnT) {
+    const trailerUrl = m.trailerUrl || m.trailer || '';
+    if (trailerUrl) {
+      btnT.hidden = false;
+      btnT.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // KHÔNG cho nổi lên card
+        if (window.openTrailerModal) {
+          window.openTrailerModal(trailerUrl);
+        } else {
+          window.open(trailerUrl, '_blank');
+        }
+      });
+    } else {
+      btnT.remove();
     }
+  }
 
-    const s = el.querySelector('[data-desc]');      if (s) s.textContent = m.synopsis || m.description || m.desc || '';
+  // ===== Book button -> sang showtime cho phim đang chiếu =====
+  const book = el.querySelector('[data-book]');
+  if (book) {
+    if (!showRating) {
+      // Coming soon: không cho đặt vé
+      book.remove();
+    } else {
+      const movieId = encodeURIComponent(m.id || '');
+      book.hidden = false;
+      book.href = movieId
+        ? `showtime.html?movie=${movieId}`
+        : `showtime.html`;
 
-    const btnT = el.querySelector('[data-trailer]');
-    if (btnT) {
-      const u = m.trailerUrl || m.trailer || '';
-      btnT.hidden = !u;
-      if (u) btnT.addEventListener('click', (e) => {
+      // Cho anchor tự điều hướng, nhưng không bắn click card
+      book.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (window.openTrailerModal) openTrailerModal(u);
-        else window.open(u, '_blank');
       });
     }
+  }
 
-    // [QUAN TRỌNG] Ẩn/hiện nút Đặt vé dựa trên 'showRating'
-    // 'Now Showing' (showRating=true) -> Hiện nút
-    // 'Coming Soon' (showRating=false) -> Ẩn nút
-    const book = el.querySelector('[data-book]');
-    if (book) {
-      book.hidden = !showRating; 
-      book.href   = `movie-detail.html?id=${encodeURIComponent(m.id||'')}`;
-      book.addEventListener('click', (e) => e.stopPropagation());
+  // ===== Click cả card -> movie-detail (trừ 2 nút trên, trừ lúc kéo) =====
+  el.addEventListener('click', (e) => {
+    // Nếu bấm vào Trailer/Book thì bỏ (đã handle riêng)
+    if (e.target.closest('[data-trailer],[data-book]')) return;
+
+    // Nếu đang kéo coverflow thì không điều hướng
+    const rail = el.closest('.rail');
+    if (rail && rail.dataset.isDragging === '1') {
+      rail.dataset.isDragging = '0';
+      e.preventDefault();
+      e.stopPropagation();
+      return;
     }
 
-    el.addEventListener('click', () => {
-      location.href = `movie-detail.html?id=${encodeURIComponent(m.id||'')}`;
-    });
+    const id = m.id || '';
+    if (id) {
+      location.href = `movie-detail.html?movie=${encodeURIComponent(id)}`;
+    }
+  });
 
-    return el;
-  }
+  return el;
+}
+
 
   // ===== [HÀM MỚI] Render 1 section (có phân trang) =====
   async function renderPagedGrid({ list, gridId, pagerId, perPage, page = 1, options = {} }) {
@@ -158,10 +220,12 @@
     console.error("Lỗi khi gọi backend:", err);
   }
     // Fallback (giữ nguyên)
-    return {
-      now: [ { id:'m1', title:'Edge of Midnight', posterUrl:'https://picsum.photos/seed/m1/600/900', rating:8.1, trailerUrl:'', duration:'2h 10m' } ],
-      soon: [ { id:'m3', title:'Crimson Blade',    posterUrl:'https://picsum.photos/seed/m3/600/900', rating:null, trailerUrl:'', releaseDate:'2025-12-05', duration:'2h 05m' } ]
-    };
+    return fetch(API_DATA, { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+    ;
   }
 
   // ===== Tự chia now/soon (Giữ nguyên) =====

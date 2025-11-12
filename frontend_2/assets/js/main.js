@@ -3,27 +3,35 @@
 
   // ====== Helpers ======
   const $  = (s, r=document) => r.querySelector(s);
-  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
   const API = window.API_BASE = "http://localhost:8080/api";
   const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
   const throttle=(fn,ms=16)=>{ let t=0; return (...a)=>{ const n=Date.now(); if(n-t>ms){ t=n; fn(...a);} } };
 
-  // ====== [ĐÃ SỬA] Movie-card template loader (lấy từ movies.js) ======
-  let MOVIE_TPL = null;
-  async function ensureMovieTpl() {
-    if (MOVIE_TPL) return MOVIE_TPL;
-    try {
-      // [SỬA LỖI] Sửa đường dẫn file
-      const res = await fetch('../../html/components/movie-card.html', { cache: 'no-store' });
-      if (!res.ok) return null;
-      const html = await res.text();
-      const box  = document.createElement('div'); box.innerHTML = html;
-      MOVIE_TPL  = box.querySelector('#movie-card');
-      if (MOVIE_TPL) document.body.appendChild(MOVIE_TPL);
-    } catch {}
-    if (!MOVIE_TPL) console.warn('[movie-card] không tìm thấy template');
-    return MOVIE_TPL;
+// ===== Movie-card template loader =====
+let MOVIE_TPL = null;
+
+async function ensureMovieTpl() {
+  if (MOVIE_TPL) return MOVIE_TPL;
+  try {
+    // ĐƯỜNG DẪN ĐÚNG: từ index.html / movies.html -> ./components/movie-card.html
+    const res = await fetch('./components/movie-card.html', { cache: 'no-store' });
+    if (!res.ok) throw new Error('movie-card.html not found');
+
+    const html = await res.text();
+    const box = document.createElement('div');
+    box.innerHTML = html;
+
+    MOVIE_TPL = box.querySelector('#movie-card');
+    if (!MOVIE_TPL) throw new Error('#movie-card template missing');
+
+    document.body.appendChild(MOVIE_TPL);
+  } catch (err) {
+    console.error('[movie-card] load failed:', err);
   }
+  return MOVIE_TPL;
+}
+
 
   // ====== Promo-card template loader (once) ======
   let PROMO_TPL = null;
@@ -743,17 +751,20 @@ Object.assign(window, { mountPagination });
   // ====== UI helpers ======
   const fmtStars = (r=0) => `⭐ ${Number(r||0).toFixed(1)}`;
 
-  // ===== [ĐÃ SỬA] Thay thế posterItem bằng cardFrom từ movies.js =====
 function cardFrom(m, { showRating = false, showRelease = false } = {}) {
+  // fallback nếu chưa load được template
   if (!MOVIE_TPL?.content?.firstElementChild) {
     const el = document.createElement('article');
-    el.className = 'poster card';
-    el.innerHTML = '...';
+    el.className = 'movie-card poster';
+    el.textContent = m.title || 'Movie';
+    el.addEventListener('click', () => {
+      if (m.id) location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
+    });
     return el;
   }
 
   const el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
-  el.dataset.id = m.id ?? '';
+  el.dataset.id = m.id || '';
 
   // Poster
   const img = el.querySelector('[data-img]');
@@ -763,7 +774,7 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     img.draggable = false;
   }
 
-  // Title, director
+  // Title / Director
   const t = el.querySelector('[data-title]');
   if (t) t.textContent = m.title || '';
 
@@ -789,7 +800,7 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     if (durationText && releaseText) {
       u.textContent = `${durationText} • ${releaseText}`;
     } else {
-      u.textContent = durationText || releaseText;
+      u.textContent = durationText || releaseText || '';
     }
   }
 
@@ -803,10 +814,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // data-release (không dùng trực tiếp -> bỏ)
-  const rel = el.querySelector('[data-release]');
-  if (rel) rel.remove();
-
   // Genres
   const gWrap = el.querySelector('[data-genres]');
   if (gWrap) {
@@ -814,72 +821,72 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       ? m.genres
       : (typeof m.genre === 'string' ? m.genre.split(',') : []);
     gWrap.innerHTML = '';
-    genres.map(x => String(x).trim()).filter(Boolean).slice(0, 4).forEach(g => {
-      const s = document.createElement('span');
-      s.className = 'tag';
-      s.textContent = g;
-      gWrap.appendChild(s);
-    });
+    genres
+      .map(x => String(x).trim())
+      .filter(Boolean)
+      .slice(0, 4)
+      .forEach(g => {
+        const s = document.createElement('span');
+        s.className = 'tag';
+        s.textContent = g;
+        gWrap.appendChild(s);
+      });
   }
 
   // Description
-  const s = el.querySelector('[data-desc]');
-  if (s) s.textContent = m.synopsis || m.description || m.desc || '';
+  const desc = el.querySelector('[data-desc]');
+  if (desc) desc.textContent = m.synopsis || m.description || m.desc || '';
 
-const btnT = el.querySelector('[data-trailer]');
-if (btnT) {
-  const trailerUrl = m.trailerUrl || m.trailer || '';
-
-  if (trailerUrl) {
-    btnT.hidden = false;
-
-    btnT.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation(); // không cho lan lên card (tránh nhảy movie-detail)
-
-      if (window.openTrailerModal) {
-        window.openTrailerModal(trailerUrl);
-      } else {
-        window.open(trailerUrl, '_blank');
-      }
-    });
-  } else {
-    // không có trailer thì ẩn nút
-    btnT.remove();
+  // ==== NÚT TRAILER ====
+  const btnT = el.querySelector('[data-trailer]');
+  if (btnT) {
+    const trailerUrl = m.trailerUrl || m.trailer || '';
+    if (trailerUrl) {
+      btnT.hidden = false;
+      btnT.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();                // chặn click card
+        if (window.openTrailerModal) {
+          window.openTrailerModal(trailerUrl);
+        } else {
+          window.open(trailerUrl, '_blank');
+        }
+      });
+    } else {
+      btnT.remove();
+    }
   }
-}
 
-
-
-  // ===== Book button -> luôn sang showtime.html =====
+  // ==== NÚT ĐẶT VÉ ====
   const book = el.querySelector('[data-book]');
   if (book) {
     if (!showRating) {
-      // Coming soon: ẩn nút đặt vé
+      // Coming Soon: không cho đặt vé
       book.remove();
     } else {
       const movieId = encodeURIComponent(m.id || '');
-      // Chốt: luôn đi showtime, không dùng m.href để tránh nhảy sang movie-detail
-      book.href = movieId
+      const href = movieId
         ? `showtime.html?movie=${movieId}`
         : `showtime.html`;
 
+      book.href = href;
       book.hidden = false;
 
       book.addEventListener('click', (e) => {
-        // Cho phép điều hướng nhưng không trigger click card
-        e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();                // chặn click card
+        location.href = href;
       });
     }
   }
 
-  // ===== Click toàn card -> movie-detail (trừ 2 nút trên) =====
+  // ==== CLICK TOÀN CARD -> MOVIE DETAIL ====
   el.addEventListener('click', (e) => {
-    // Nếu bấm Trailer hoặc Book thì bỏ qua (đã xử lý riêng)
+    // nếu vừa click vào 2 nút trên thì thôi
     if (e.target.closest('[data-trailer],[data-book]')) return;
 
-    // Nếu đang kéo coverflow thì không điều hướng
-    const rail = e.currentTarget.closest('.rail');
+    // nếu đang kéo carousel thì không click
+    const rail = el.closest('.rail');
     if (rail && rail.dataset.isDragging === '1') {
       rail.dataset.isDragging = '0';
       e.preventDefault();
@@ -887,7 +894,7 @@ if (btnT) {
       return;
     }
 
-    const id = m.id ?? '';
+    const id = m.id || '';
     if (id) {
       location.href = `movie-detail.html?movie=${encodeURIComponent(id)}`;
     }
@@ -896,10 +903,12 @@ if (btnT) {
   return el;
 }
 
+
+
   
 // ===== Coverflow engine (BIG SCREEN) — 5 items + auto-snap =====
 function initCoverflow(rail, dotsEl, baseLen){
-  let cards = [...rail.querySelectorAll('.movie-card, .poster')]; // Hỗ trợ cả 2 class
+  let cards = Array.from(rail.querySelectorAll('.movie-card, .poster')); // Hỗ trợ cả 2 class
 
   // Dots
   dotsEl.innerHTML = '';
@@ -1103,12 +1112,11 @@ function initCoverflow(rail, dotsEl, baseLen){
     const view = base.concat(base, base);
 
   rail.innerHTML = '';
-  view.forEach((m,idx)=>{
-    // [SỬA LỖI] Đổi posterItem -> cardFrom
-    const a = cardFrom(m, { showRating:true, showRelease:false });
-    a.dataset.baseIndex = String(idx % originalBaseLen); 
-    rail.appendChild(a);
-  });
+view.forEach((m, idx) => {
+  const a = cardFrom(m, { showRating: true, showRelease: false });
+  a.dataset.baseIndex = String(idx % originalBaseLen);
+  rail.appendChild(a);
+});
 
     const api = initCoverflow(rail, dots, originalBaseLen);
     const left  = wrap.querySelector('.arrow.left');
@@ -1170,7 +1178,6 @@ function initCoverflow(rail, dotsEl, baseLen){
 
     rail.innerHTML = '';
     view.forEach((m,idx)=>{
-      // [SỬA LỖI] Đổi posterItem -> cardFrom
       const a = cardFrom(m, { showRating:false, showRelease:true });
       a.dataset.baseIndex = String(idx % originalBaseLen);
       rail.appendChild(a);
@@ -1512,7 +1519,7 @@ rail.addEventListener('scroll', () => {
 
 
   // ====== Boot ======
-  document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
     await mountHeader();
     await mountFooter();
     document.body.classList.add('ready');
@@ -1523,7 +1530,7 @@ rail.addEventListener('scroll', () => {
     enhanceMember();
     parallax();
   });
-  // expose modal helpers to global
+    // expose modal helpers to global
 Object.assign(window, {
   ensureModalTemplate,
   openModal,
@@ -1532,47 +1539,39 @@ Object.assign(window, {
   openConfirm,
   openQuickLogin
 });
-  // ====== Global handler: Trailer / Quick Login / Confirm ======
-  document.addEventListener('click', async (e) => {
-    const t = e.target.closest('[data-open-login],[data-confirm]');
-    if (!t) return;
+// ====== Global handler: Trailer / Quick Login / Confirm ======
+document.addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-trailer-url],[data-open-login],[data-confirm]');
+  if (!t) return;
 
-    // Trailer -> luôn ưu tiên mở modal
-    if (t.hasAttribute('data-trailer-url')) {
-      e.preventDefault();
-      const url = t.getAttribute('data-trailer-url');
-      if (!url) return;
+  if (t.hasAttribute('data-trailer-url')) {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = t.getAttribute('data-trailer-url');
+    if (!url) return;
+    if (window.openTrailerModal) window.openTrailerModal(url);
+    else window.open(url, '_blank');
+    return;
+  }
 
-      if (window.openTrailerModal) {
-        window.openTrailerModal(url);
-      } else {
-        window.open(url, '_blank');
-      }
-      return;
+  if (t.hasAttribute('data-open-login')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.openQuickLogin) window.openQuickLogin();
+    return;
+  }
+
+  if (t.hasAttribute('data-confirm')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.openConfirm) {
+      const ok = await window.openConfirm({
+        title: t.getAttribute('data-title') || 'Xác nhận',
+        message: t.getAttribute('data-message') || 'Bạn chắc chứ?'
+      });
+      if (ok) console.log('Confirmed');
     }
-
-    // Nút mở login nhanh (nếu có)
-    if (t.hasAttribute('data-open-login')) {
-      e.preventDefault();
-      if (window.openQuickLogin) {
-        window.openQuickLogin();
-      }
-      return;
-    }
-
-    // Nút confirm (nếu có dùng)
-    if (t.hasAttribute('data-confirm')) {
-      e.preventDefault();
-      if (window.openConfirm) {
-        const ok = await window.openConfirm({
-          title: t.getAttribute('data-title') || 'Xác nhận',
-          message: t.getAttribute('data-message') || 'Bạn chắc chứ?',
-        });
-        if (ok) {
-          console.log('Confirmed');
-        }
-      }
-    }
-  });
+  }
+});
 
 })();

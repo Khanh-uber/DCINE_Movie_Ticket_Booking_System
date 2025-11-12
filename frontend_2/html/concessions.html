@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>D-cine | Concessions</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+
+  <!-- Core styles from project (keep the same include chain) -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/base.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/layout.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/header.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/main.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/components.css?v=9" />
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9" />
+
+  <!-- Page style -->
+  <link rel="stylesheet" href="../assets/css/concessions.css?v=1" />
+</head>
+<body class="theme-dcine with-fixed-header">
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+
+  <main class="container section">
+    <!-- Breadcrumb -->
+    <nav id="bc" class="breadcrumb" aria-label="Bạn đang ở đây"></nav>
+
+    <!-- Ticket summary (compact) -->
+    <section id="ticketWrap" class="ticket sticky-card" aria-live="polite"></section>
+
+    <!-- Categories -->
+    <nav id="catTabs" class="cat-tabs" aria-label="Danh mục món ăn">
+      <button class="cat is-active" data-cat="all">Tất cả</button>
+      <button class="cat" data-cat="Popcorn">Popcorn</button>
+      <button class="cat" data-cat="Beverage">Beverage</button>
+      <button class="cat" data-cat="Coffee">Coffee</button>
+      <button class="cat" data-cat="Hot Food">Hot Food</button>
+      <button class="cat" data-cat="Desserts">Desserts</button>
+      <button class="cat" data-cat="Combo">Combo</button>
+    </nav>
+
+    <!-- Product grid -->
+    <section>
+      <header class="section-head"><h2>Chọn món</h2></header>
+      <div id="combosGrid" class="combos-grid"></div>
+      <div id="pager" class="pagination"></div>
+    </section>
+
+    <!-- Cart panel -->
+    <section id="cartPanel" class="cart-panel" aria-live="polite">
+      <div class="cp-left">
+        <h3>Giỏ hàng tạm</h3>
+        <div class="cp-ticket-fee">
+          <div class="line"><span>Tổng tiền vé</span><strong id="ticketFee">0₫</strong></div>
+        </div>
+        <div id="cartList" class="cp-list"></div>
+        <div class="cp-total">
+          <div class="line"><span>Tổng cộng</span><strong id="grandTotal">0₫</strong></div>
+        </div>
+      </div>
+      <div class="cp-right">
+        <button id="btnCheckout" class="btn xl gold">Tiếp tục thanh toán</button>
+        <a id="btnBackSeats" class="btn outline xl gold-outline" href="seat-map.html">Quay lại chọn ghế</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer include -->
+  <footer id="footer-include"></footer>
+
+  <!-- JS -->
+  <script>window.API_BASE = window.API_BASE || 'http://localhost:8080/api';</script>
+  <script src="../assets/js/header.js" defer></script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/footer.js" defer></script>
+  <script src="../assets/js/concessions.js?v=1" defer></script>
+</body>
+</html>

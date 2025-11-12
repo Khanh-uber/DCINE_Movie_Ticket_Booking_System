@@ -5,83 +5,84 @@
   <title>D-cine — Chọn lịch chiếu</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
 
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Core CSS -->
-  <link rel="stylesheet" href="../assets/css/variable.css?v=9">
-  <link rel="stylesheet" href="../assets/css/base.css?v=9">
-  <link rel="stylesheet" href="../assets/css/layout.css?v=9">
-  <link rel="stylesheet" href="../assets/css/header.css?v=9">
-    <link rel="stylesheet" href="../assets/css/footer.css?v=1">
-  <link rel="stylesheet" href="../assets/css/main.css?v=9">
-  <link rel="stylesheet" href="../assets/css/components.css?v=9">
+  <!-- Core CSS (giữ nguyên đường dẫn dự án) -->
+  <link rel="stylesheet" href="../assets/css/variable.css">
+  <link rel="stylesheet" href="../assets/css/base.css">
+  <link rel="stylesheet" href="../assets/css/layout.css">
+  <link rel="stylesheet" href="../assets/css/header.css">
+  <link rel="stylesheet" href="../assets/css/footer.css">
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
 
   <!-- Page CSS -->
-  <link rel="stylesheet" href="../assets/css/showtime.css?v=1">
+  <link rel="stylesheet" href="../assets/css/showtime.css">
 </head>
-<body>
+<body class="theme-dcine">
   <!-- Header include -->
   <div id="hdr-include"></div>
 
   <main class="container showtime-page">
-    <!-- Breadcrumb -->
     <nav id="bc" class="breadcrumb" aria-label="Breadcrumb"></nav>
 
     <div class="st-grid">
-      <!-- 1) Cột trái: Thông tin phim -->
+      <!-- LEFT: Movie card -->
       <aside id="movieSide" class="movie-side">
         <div class="poster-wrap">
           <img id="mvPoster" alt="Poster" />
+          <!-- Trailer: đỏ + căn giữa -->
+          <button id="btnTrailer" class="btn trailer-red" hidden>
+            ▶ WATCH TRAILER
+          </button>
         </div>
 
         <div class="mv-copy">
           <h1 id="mvTitle">—</h1>
           <div class="mv-meta">
-            <span id="mvYear">2025</span>
-            <span class="dot">•</span>
-            <span id="mvGenres">Action</span>
-            <span class="dot">•</span>
-            <span id="mvDuration">120 phút</span>
+            <span id="mvYear">—</span> <span class="dot">•</span>
+            <span id="mvGenres">—</span> <span class="dot">•</span>
+            <span id="mvDuration">—</span>
           </div>
           <p id="mvDesc" class="mv-desc">—</p>
 
           <div class="cta-vertical">
-            <button id="btnTrailer" class="btn outline gold" hidden>▶️ XEM TRAILER</button>
-            <a id="btnContinue" class="btn" href="#filters">🎟 TIẾP TỤC ĐẶT VÉ</a>
-            <a id="btnBack" class="btn outline" href="movies.html">⬅️ QUAY LẠI TRANG PHIM</a>
+            <a id="btnContinue" class="btn" href="#filters">CONTINUE BOOKING</a>
+            <a id="btnBack" class="btn outline" href="movies.html">⬅ BACK TO MOVIE PAGE</a>
           </div>
         </div>
       </aside>
 
-      <!-- 2) Cột phải: Bộ chọn lịch chiếu -->
+      <!-- RIGHT: Filters + Theatres + Showtimes -->
       <section class="picker">
-        <!-- Bộ lọc -->
+        <!-- Filters -->
         <div id="filters" class="filters card">
           <div class="field">
-            <label for="citySel">Chọn thành phố</label>
+            <label for="citySel">Select your city</label>
             <select id="citySel"></select>
           </div>
           <div class="field">
-            <label for="dateSel">Ngày chiếu</label>
+            <label for="dateSel">Date</label>
             <input id="dateSel" type="date" />
           </div>
         </div>
 
-        <!-- Danh sách rạp -->
+        <!-- Day chips -->
+        <div id="dayChips" class="day-chips"></div>
+
+        <!-- Theatres (2 cột) -->
         <div class="theater-group">
           <div class="tg-head">
-            <h3 id="cityLabel">Rạp tại —</h3>
+            <h3 id="cityLabel" class="section-ttl">Movie Theatres in —</h3>
           </div>
-          <div id="theaterChips" class="chips"></div>
+          <div id="theaterChips" class="chips grid-2"></div>
         </div>
 
-        <!-- Suất chiếu theo rạp -->
-        <div id="showtimesWrap" class="showtimes card">
-          <!-- động bằng JS -->
-        </div>
+        <!-- Showtimes -->
+        <div id="showtimesWrap" class="showtimes card" aria-live="polite"></div>
       </section>
     </div>
   </main>

@@ -1,0 +1,47 @@
+[
+  { "location_id": 1,  "city_name": "Quận 1",       "province_id": 1 },
+  { "location_id": 2,  "city_name": "Bình Thạnh",   "province_id": 1 },
+  { "location_id": 3,  "city_name": "Thủ Đức",      "province_id": 1 },
+  { "location_id": 4,  "city_name": "Hóc Môn",      "province_id": 1 },
+  { "location_id": 5,  "city_name": "Quận 7",       "province_id": 1 },
+  { "location_id": 6,  "city_name": "Gò Vấp",       "province_id": 1 },
+  { "location_id": 7,  "city_name": "Bình Dương",   "province_id": 1 },
+  { "location_id": 8,  "city_name": "Vũng Tàu",     "province_id": 1 },
+
+  { "location_id": 9,  "city_name": "Hà Đông",      "province_id": 2 },
+  { "location_id": 10, "city_name": "Tây Hồ",       "province_id": 2 },
+  { "location_id": 11, "city_name": "Đống Đa",      "province_id": 2 },
+  { "location_id": 12, "city_name": "Cầu Giấy",     "province_id": 2 },
+
+  { "location_id": 13, "city_name": "Hải Phòng",    "province_id": 3 },
+  { "location_id": 14, "city_name": "Ninh Bình",    "province_id": 3 },
+  { "location_id": 15, "city_name": "Bắc Ninh",     "province_id": 3 },
+  { "location_id": 16, "city_name": "Hưng Yên",     "province_id": 3 },
+
+  { "location_id": 17, "city_name": "Lào Cai",      "province_id": 4 },
+  { "location_id": 18, "city_name": "Thái Nguyên",  "province_id": 4 },
+  { "location_id": 19, "city_name": "Tuyên Quang",  "province_id": 4 },
+  { "location_id": 20, "city_name": "Phú Thọ",      "province_id": 4 },
+
+  { "location_id": 21, "city_name": "Thanh Hóa",    "province_id": 5 },
+  { "location_id": 22, "city_name": "Nghệ An",      "province_id": 5 },
+  { "location_id": 23, "city_name": "Hà Tĩnh",      "province_id": 5 },
+  { "location_id": 24, "city_name": "Quảng Trị",    "province_id": 5 },
+  { "location_id": 25, "city_name": "Huế",          "province_id": 5 },
+
+  { "location_id": 26, "city_name": "Đà Nẵng",      "province_id": 6 },
+  { "location_id": 27, "city_name": "Quảng Ngãi",   "province_id": 6 },
+  { "location_id": 28, "city_name": "Gia Lai",      "province_id": 6 },
+  { "location_id": 29, "city_name": "Đắk Lắk",      "province_id": 6 },
+  { "location_id": 30, "city_name": "Khánh Hòa",    "province_id": 6 },
+  { "location_id": 31, "city_name": "Lâm Đồng",     "province_id": 6 },
+
+  { "location_id": 32, "city_name": "Đồng Nai",     "province_id": 7 },
+  { "location_id": 33, "city_name": "Tây Ninh",     "province_id": 7 },
+
+  { "location_id": 34, "city_name": "Cần Thơ",      "province_id": 8 },
+  { "location_id": 35, "city_name": "An Giang",     "province_id": 8 },
+  { "location_id": 36, "city_name": "Vĩnh Long",    "province_id": 8 },
+  { "location_id": 37, "city_name": "Đồng Tháp",    "province_id": 8 },
+  { "location_id": 38, "city_name": "Cà Mau",       "province_id": 8 }
+]

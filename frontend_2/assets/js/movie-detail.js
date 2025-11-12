@@ -1,7 +1,8 @@
 (() => {
   const $  = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-  const API = window.API_BASE || '/api';
+  const API = window.API_BASE = 'http://localhost:8080/api';
+
 
   // ---------- utils ----------
   const getParam = (k) => new URL(location.href).searchParams.get(k);
@@ -15,37 +16,76 @@
   };
   const pickText = (x, y) => (x && String(x).trim()) || (y && String(y).trim()) || '';
 
-  async function getJSON(api, local){
-    try{ const r = await fetch(api, {cache:'no-store'}); if(r.ok) return await r.json(); }catch{}
-    try{ const r = await fetch(local, {cache:'no-store'}); if(r.ok) return await r.json(); }catch{}
-    return null;
-  }
+async function getJSON(api, local){
+  try {
+    const r = await fetch(api, { cache:'no-store' });
+    if (r.ok) return await r.json();
+  } catch {}
+  if (!local) return null;
+  try {
+    const r2 = await fetch(local, { cache:'no-store' });
+    if (r2.ok) return await r2.json();
+  } catch {}
+  return null;
+}
+
 
   // ---------- data loaders ----------
-  async function loadMovieById(id){
-    try{
-      const r = await fetch(`${API}/movies/${encodeURIComponent(id)}`, {cache:'no-store'});
-      if (r.ok) return await r.json();
-    }catch{}
+async function loadMovieById(id){
+  if (!id) return null;
 
-    const all = await getJSON(`${API}/movies`, '../data/movies.json');
-    if (!all) return null;
+  // 1) Thử BE /movies/:id
+  try {
+    const r = await fetch(`${API}/movies/${encodeURIComponent(id)}`, { cache:'no-store' });
+    if (r.ok) {
+      const m = await r.json();
+      if (m && m.id) return m;
+    }
+  } catch {}
 
-    if (Array.isArray(all)) return all.find(m => String(m.id) === String(id)) || all[0];
+  // 2) Thử BE /movies/now + /movies/soon (giống movies.js)
+  try {
+    const [nowRes, soonRes] = await Promise.all([
+      fetch(`${API}/movies/now`,  { cache:'no-store' }),
+      fetch(`${API}/movies/soon`, { cache:'no-store' })
+    ]);
 
-    const pile = [...(all.now||[]), ...(all.soon||[])];
-    return pile.find(m => String(m.id) === String(id)) || pile[0] || null;
+    let pile = [];
+    if (nowRes.ok)  pile = pile.concat(await nowRes.json()  || []);
+    if (soonRes.ok) pile = pile.concat(await soonRes.json() || []);
+
+    const found = pile.find(m => String(m.id) === String(id));
+    if (found) return found;
+  } catch {}
+
+  // 3) Fallback: đọc movies.json (hỗ trợ cả dạng mảng hoặc {now,soon})
+  const json = await getJSON('../data/movies.json');
+  if (Array.isArray(json)) {
+    return json.find(m => String(m.id) === String(id)) || null;
+  } else if (json) {
+    const pile = []
+      .concat(json.now  || [])
+      .concat(json.soon || []);
+    return pile.find(m => String(m.id) === String(id)) || null;
   }
+
+  return null;
+}
+
 
   async function loadTheaters(){
     const t = await getJSON(`${API}/theaters`, '../data/theaters.json');
     return Array.isArray(t) ? t : (t?.items || []);
   }
 
-  async function loadShowtimes(){
-    const s = await getJSON(`${API}/showtimes`, '../data/showtimes.json');
-    return Array.isArray(s) ? s : (s?.items || []);
-  }
+  async function loadShowtimes(movieId){ 
+      // Thay vì gọi /api/showtimes, hãy gọi API mới
+      const s = await getJSON(
+          `${API}/showtimes/movie/${encodeURIComponent(movieId)}`, // <--- API mới
+          '../data/showtimes.json' // giữ fallback
+      );
+      return Array.isArray(s) ? s : (s?.items || []);
+    }
 
   // ---------- normalize ----------
   function normalizeShowtimesItem(st){
@@ -251,7 +291,16 @@
       renderHero(movie);
       renderCopy(movie);
 
-      const [theaters, showtimes] = await Promise.all([loadTheaters(), loadShowtimes()]);
+      localStorage.setItem('selectedMovie', JSON.stringify({
+        id: movie.id, title: movie.title,
+        posterUrl: movie.posterUrl || movie.poster || '',
+        trailerUrl: movie.trailerUrl || movie.trailer || '',
+        year: (movie.releaseDate||'').slice(0,4) || movie.year || '',
+        genres: Array.isArray(movie.genres) ? movie.genres : (movie.genre ? [movie.genre] : []),
+        duration: movie.duration || movie.runtime || ''
+      }));
+      
+      const [theaters, showtimes] = await Promise.all([loadTheaters(), loadShowtimes(id)]);
       bindBooking(movie, theaters, showtimes);
     }catch(e){
       console.error('[movie-detail] boot error:', e);

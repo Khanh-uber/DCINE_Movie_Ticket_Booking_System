@@ -10,7 +10,8 @@
   const fullname = $('#fullname'), fullnameBox = $('#fullnameBox'), errFullname = $('#err-fullname');
   const username = $('#username'), usernameBox = $('#usernameBox'), errUsername = $('#err-username'), userStatus = $('#userStatus');
 
-  const ident = $('#ident'), identBox = $('#identBox'), identLabel = $('#ident-label'), hintIdent = $('#hint-ident'), errIdent = $('#err-ident'), identPrefix = $('#identPrefix');
+  const ident = $('#ident'), identBox = $('#identBox'), identLabel = $('#ident-label'),
+        hintIdent = $('#hint-ident'), errIdent = $('#err-ident'), identPrefix = $('#identPrefix');
 
   const password = $('#password'), passwordBox = $('#passwordBox'), errPassword = $('#err-password');
   const confirmPw = $('#confirm'), confirmBox = $('#confirmBox'), errConfirm = $('#err-confirm');
@@ -20,6 +21,14 @@
   const form = $('#signupForm'), formWrap = $('#formWrap');
   const formError = $('#formError'), formSuccess = $('#formSuccess');
   const signUpBtn = $('#signUpBtn');
+
+  // ==== NEW: Toggle password DOM ====
+  const togglePw1 = $('#togglePw1');
+  const togglePw2 = $('#togglePw2');
+  const eyeOff1 = $('#eyeOff1');
+  const eyeOn1  = $('#eyeOn1');
+  const eyeOff2 = $('#eyeOff2');
+  const eyeOn2  = $('#eyeOn2');
 
   // ===== State =====
   let mode = 'email';
@@ -78,13 +87,18 @@
     clearFieldError(identBox, errIdent); return true;
   }
   function scorePassword(v){
-    let s=0; if(v.length>=8) s++; if(/[A-Z]/.test(v) && /[a-z]/.test(v)) s++; if(/\d/.test(v)) s++; if(/[^\w\s]/.test(v)) s++; return s;
+    let s=0;
+    if(v.length>=8) s++;
+    if(/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
+    if(/\d/.test(v)) s++;
+    if(/[^\w\s]/.test(v)) s++;
+    return s;
   }
   function validatePassword(show=true){
     const v = (password?.value || '');
     const ok = (v.length>=8 && /[A-Za-z]/.test(v) && /\d/.test(v));
-    // meter
-    const sc = scorePassword(v), pct = [0,25,50,75,100][sc]; if (pwBar) pwBar.style.width = pct + '%';
+    const sc = scorePassword(v), pct = [0,25,50,75,100][sc];
+    if (pwBar) pwBar.style.width = pct + '%';
     if (show) ok ? clearFieldError(passwordBox, errPassword)
                  : showFieldError(passwordBox, errPassword, 'Tối thiểu 8 ký tự, gồm chữ và số.');
     return ok;
@@ -131,6 +145,7 @@
     checkFormValid();
     ident?.focus();
   }
+
   segEmail?.addEventListener('click', ()=> setMode('email'));
   segPhone?.addEventListener('click', ()=> setMode('phone'));
 
@@ -148,11 +163,35 @@
   confirmPw?.addEventListener('input', ()=>{ touchedConfirm  = true; validateConfirm(true); checkFormValid(); });
   agree   ?.addEventListener('change', ()=> checkFormValid());
 
+  // ===== NEW: Toggle password show/hide =====
+  function bindToggle(btn, input, eyeOff, eyeOn){
+    if (!btn || !input || !eyeOff || !eyeOn) return;
+    btn.addEventListener('click', () => {
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+      eyeOff.style.display = show ? 'none' : 'block';
+      eyeOn.style.display  = show ? 'block' : 'none';
+
+      // giữ caret cuối
+      const v = input.value;
+      input.focus();
+      input.setSelectionRange(v.length, v.length);
+    });
+  }
+
+  bindToggle(togglePw1, password,  eyeOff1, eyeOn1);
+  bindToggle(togglePw2, confirmPw, eyeOff2, eyeOn2);
+
   // ===== Ripple =====
   signUpBtn?.addEventListener('click', (e)=>{
-    const r = signUpBtn.getBoundingClientRect(); const sp=document.createElement('span');
-    sp.className='ripple'; sp.style.left=(e.clientX-r.left)+'px'; sp.style.top=(e.clientY-r.top)+'px';
-    signUpBtn.appendChild(sp); sp.addEventListener('animationend', ()=>sp.remove());
+    const r = signUpBtn.getBoundingClientRect();
+    const sp = document.createElement('span');
+    sp.className = 'ripple';
+    sp.style.left = (e.clientX - r.left) + 'px';
+    sp.style.top  = (e.clientY - r.top)  + 'px';
+    signUpBtn.appendChild(sp);
+    sp.addEventListener('animationend', ()=> sp.remove());
   });
 
   // ===== Submit =====
@@ -167,7 +206,6 @@
       return;
     }
 
-    // Chuẩn hoá ident
     const idRaw = (ident?.value || '').trim();
     const email = (mode==='email') ? idRaw : null;
     const phone = (mode==='phone') ? idRaw.replace(/\s|-/g,'').replace(/^\+84/,'0') : null;
@@ -176,8 +214,7 @@
       fullName: (fullname?.value || '').trim(),
       username: (username?.value || '').trim(),
       email, phone,
-      password: (password?.value || ''),
-      confirmPassword:  (confirmPw?.value || '')
+      password: (password?.value || '')
     };
 
     signUpBtn?.classList.add('loading');
@@ -197,7 +234,6 @@
         const msg = (json && (json.message || json.error || json.detail)) || text || `HTTP ${res.status}`;
         if (formError){ formError.textContent = msg; formError.style.display = 'block'; }
 
-        // highlight cơ bản theo từ khoá
         const m = (msg || '').toLowerCase();
         clearFieldError(usernameBox, errUsername);
         clearFieldError(identBox, errIdent);
@@ -211,15 +247,22 @@
         return;
       }
 
-      if (formSuccess){ formSuccess.textContent = 'Tạo tài khoản thành công. Đang chuyển đến đăng nhập…'; formSuccess.style.display = 'block'; }
+      if (formSuccess){
+        formSuccess.textContent = 'Tạo tài khoản thành công. Đang chuyển đến đăng nhập…';
+        formSuccess.style.display = 'block';
+      }
       window.location.href = LOGIN_URL;
 
     } catch (err){
-      if (formError){ formError.textContent = err?.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.'; formError.style.display = 'block'; }
+      if (formError){
+        formError.textContent = err?.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.';
+        formError.style.display = 'block';
+      }
       formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');
     } finally {
       signUpBtn?.classList.remove('loading');
-      if (signUpBtn) signUpBtn.disabled = false;
+      // Cho phép bấm lại nếu lỗi; nếu thành công thì đã redirect.
+      if (signUpBtn) signUpBtn.disabled = !checkFormValid();
     }
   });
 

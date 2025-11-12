@@ -1,0 +1,10 @@
+[
+  { "genre_id": 1, "name": "Hành động" },
+  { "genre_id": 2, "name": "Phiêu lưu" },
+  { "genre_id": 3, "name": "Tình cảm" },
+  { "genre_id": 4, "name": "Kinh dị" },
+  { "genre_id": 5, "name": "Hoạt hình" },
+  { "genre_id": 6, "name": "Hài hước" },
+  { "genre_id": 7, "name": "Tâm lý" },
+  { "genre_id": 8, "name": "Khoa học viễn tưởng" }
+]

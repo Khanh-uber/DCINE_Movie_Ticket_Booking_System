@@ -1,0 +1,10 @@
+[
+  { "province_id": 1, "province_name": "TP. Hồ Chí Minh" },
+  { "province_id": 2, "province_name": "Hà Nội" },
+  { "province_id": 3, "province_name": "ĐB Sông Hồng" },
+  { "province_id": 4, "province_name": "Đông Bắc, Tây Bắc" },
+  { "province_id": 5, "province_name": "Bắc Miền Trung" },
+  { "province_id": 6, "province_name": "Nam Miền Trung" },
+  { "province_id": 7, "province_name": "Đông Nam Bộ" },
+  { "province_id": 8, "province_name": "Tây Nam Bộ" }
+]
