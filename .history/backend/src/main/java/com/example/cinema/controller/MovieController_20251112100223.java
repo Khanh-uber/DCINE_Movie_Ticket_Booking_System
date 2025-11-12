@@ -35,7 +35,7 @@ public class MovieController {
     public ResponseEntity<?> getMoviesByStatus(@RequestParam String status) {
         return ResponseEntity.ok(movieService.getMoviesByStatus(status));
     }
-    // ====== LẤY THÔNG TIN 1 PHIM THEO ID ======
+    // // ====== LẤY THÔNG TIN 1 PHIM THEO ID ======
     // @GetMapping("/{id}")
     // public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
     //     MovieDTO movie = movieService.getMovieById(id);
