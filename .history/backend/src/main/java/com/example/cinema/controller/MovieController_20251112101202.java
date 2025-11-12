@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
 @RequestMapping("/api/movies")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://127.0.0.1:5501"})
+// @CrossOrigin(origins = "*") // Cho phép FE (HTML/JS) gọi API từ domain khác
 public class MovieController {
 
     private final MovieService movieService;
@@ -35,7 +35,7 @@ public class MovieController {
     public ResponseEntity<?> getMoviesByStatus(@RequestParam String status) {
         return ResponseEntity.ok(movieService.getMoviesByStatus(status));
     }
-    // ====== LẤY THÔNG TIN 1 PHIM THEO ID ======
+    ====== LẤY THÔNG TIN 1 PHIM THEO ID ======
     @GetMapping("/{id}")
     public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
         MovieDTO movie = movieService.getMovieById(id);

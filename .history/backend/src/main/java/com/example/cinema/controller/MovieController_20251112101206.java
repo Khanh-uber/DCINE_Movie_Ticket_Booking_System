@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
 @RequestMapping("/api/movies")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://127.0.0.1:5501"})
+// @CrossOrigin(origins = "*") // Cho phép FE (HTML/JS) gọi API từ domain khác
 public class MovieController {
 
     private final MovieService movieService;

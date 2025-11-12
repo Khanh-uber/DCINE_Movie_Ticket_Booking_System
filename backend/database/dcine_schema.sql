@@ -54,8 +54,8 @@ CREATE TABLE `province` (
 CREATE TABLE `hall` (
   `hall_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `theater_id` bigint NOT NULL,
-  `name` varchar(50) NOT NULL,
-  `capacity` int NOT NULL
+  `seat_layout_id` BIGINT NOT NULL,
+  `name` varchar(50) NOT NULL
 );
 
 CREATE TABLE `seat_type` (
@@ -75,12 +75,20 @@ CREATE TABLE `seat` (
 CREATE TABLE `movie` (
   `movie_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `title` varchar(150) NOT NULL,
+  `original_title` varchar(150) NOT NULL,
   `synopsis` text DEFAULT null,
   `duration_min` int DEFAULT null,
   `rating` varchar(10) DEFAULT null,
+  `age_limit` varchar(50) DEFAULT null,
   `release_date` date DEFAULT null,
+  `end_showing_date` date DEFAULT null,
+  `early_screening_date` date DEFAULT null,
   `poster_url` varchar(255) DEFAULT null,
-  `trailer_url` varchar(255) DEFAULT null
+  `banner_url` varchar(255) DEFAULT null,
+  `trailer_url` varchar(255) DEFAULT null,
+  `active` tinyint(1) DEFAULT 1,
+  `status` enum('soon', 'now' ,'ended') DEFAULT 'soon',
+  `language` varchar(50) DEFAULT null
 );
 
 CREATE TABLE `genre` (
@@ -192,6 +200,27 @@ CREATE TABLE `otp_record` (
   CONSTRAINT `uq_identifier_verified`
     UNIQUE (`identifier`, `verified`)
 );
+
+-- 🔹 EXTENSION: ROOM TYPE & SEAT LAYOUT TABLES
+
+-- Bảng quản lý loại phòng chiếu
+CREATE TABLE `room_type` (
+  `room_type_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) UNIQUE NOT NULL,           -- 2D, 4DX, BEDOM, SUPER CLASS, DEXP,...
+  `description` TEXT DEFAULT NULL
+);
+
+-- Bảng mô tả sơ đồ ghế cho từng loại phòng
+CREATE TABLE `seat_layout` (
+  `seat_layout_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `room_type_id` BIGINT NOT NULL,
+  `name` VARCHAR(50) NOT NULL,                  -- 2D-A, 2D-B, 2D-C, Default,...
+  `capacity` INT NOT NULL
+);
+
+ALTER TABLE `hall` ADD FOREIGN KEY (`seat_layout_id`) REFERENCES `seat_layout`(`seat_layout_id`);
+
+ALTER TABLE `seat_layout` ADD FOREIGN KEY (`room_type_id`) REFERENCES `room_type`(`room_type_id`);
 
 ALTER TABLE `account` ADD FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`);
 

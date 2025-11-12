@@ -68,12 +68,6 @@ public class MovieService {
         return dtos;
     }
     public MovieDTO getMovieById(Long id){
-        Movie movie = movieRepo.findByMovieId(id);
-        
-        MovieDTO dto = MovieDTO.fromEntity(movie);
-        dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
-        dto.setCast(personRepo.findCastByMovieId(movie.getId()));
-        dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
-        return dto;
+        Movie movie = movieRepo.findBy
     }
 }
