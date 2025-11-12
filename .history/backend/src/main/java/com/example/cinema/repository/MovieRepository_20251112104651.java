@@ -70,7 +70,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long>{
 
     @Query(value = """
             select * from movie 
-            where movie.movie_id = :movieId
-            """, nativeQuery = true)
-    Movie findByMovieId(@Param("movieId") Long movieId);
+            where movie.movie_id = 
+            """;)
+    Movie findById();
 }

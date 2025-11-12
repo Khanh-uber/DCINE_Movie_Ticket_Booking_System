@@ -36,14 +36,14 @@ public class MovieController {
         return ResponseEntity.ok(movieService.getMoviesByStatus(status));
     }
     // ====== LẤY THÔNG TIN 1 PHIM THEO ID ======
-    @GetMapping("/{id}")
-    public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
-        MovieDTO movie = movieService.getMovieById(id);
-        if (movie == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(movie);
-    }
+    // @GetMapping("/{id}")
+    // public ResponseEntity<MovieDTO> getMovieById(@PathVariable Long id) {
+    //     MovieDTO movie = movieService.getMovieById(id);
+    //     if (movie == null) {
+    //         return ResponseEntity.notFound().build();
+    //     }
+    //     return ResponseEntity.ok(movie);
+    // }
 
     // // ====== 4️⃣ (TÙY CHỌN) LẤY TẤT CẢ PHIM ACTIVE ======
     // @GetMapping

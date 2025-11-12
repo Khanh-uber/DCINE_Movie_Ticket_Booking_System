@@ -67,10 +67,4 @@ public interface MovieRepository extends JpaRepository<Movie, Long>{
             ORDER BY g.name
             """, nativeQuery = true)
     List<String> findGenresByMovieId(@Param("movieId") Long movieId);
-
-    @Query(value = """
-            select * from movie 
-            where movie.movie_id = :movieId
-            """, nativeQuery = true)
-    Movie findByMovieId(@Param("movieId") Long movieId);
 }

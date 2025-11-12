@@ -74,6 +74,5 @@ public class MovieService {
         dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
         dto.setCast(personRepo.findCastByMovieId(movie.getId()));
         dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
-        return dto;
     }
 }
