@@ -1,0 +1,6 @@
+package com.example.cinema.dto;
+
+public class TheaterId {
+    private Long theaterId;
+    private String name q
+}

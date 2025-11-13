@@ -1,0 +1,26 @@
+[
+  { "id":"th-nk-nguyenkim","name":"DCINE Nguyễn Kim","address":"63-65 Trần Hưng Đạo, Q.1, TP.HCM","city":"HCMC",
+    "rooms":[{"name":"Screen 1","seats":120},{"name":"Screen 2","seats":90},{"name":"Screen 3","seats":80}] },
+    
+  { "id":"th-bt-benthanh","name":"DCINE Bến Thành","address":"6 Mạc Thị Bưởi, Q.1, TP.HCM","city":"HCMC",
+    "rooms":[{"name":"IMAX 1","seats":180},{"name":"Screen 4","seats":120},{"name":"Screen 5","seats":100}] },
+  { "id":"th-hcm-pearl","name":"DCINE Pearl Center","address":"12 Quốc Hương, Thảo Điền, TP.Thủ Đức","city":"HCMC",
+    "rooms":[{"name":"Screen A","seats":110},{"name":"VIP Deluxe","seats":64}] },
+  { "id":"th-hcm-qt","name":"DCINE Quang Trung","address":"304 Quang Trung, Gò Vấp","city":"HCMC",
+    "rooms":[{"name":"Screen X","seats":120},{"name":"Screen Y","seats":90}] },
+
+  { "id":"th-hn-royalcity","name":"DCINE Royal City","address":"72A Nguyễn Trãi, Thanh Xuân","city":"Hanoi",
+    "rooms":[{"name":"Screen 1 Dolby","seats":140},{"name":"Screen 2","seats":100}] },
+  { "id":"th-hn-times","name":"DCINE Times City","address":"458 Minh Khai, Hai Bà Trưng","city":"Hanoi",
+    "rooms":[{"name":"Screen A","seats":120},{"name":"Screen B","seats":110}] },
+
+  { "id":"th-dn-helio","name":"DCINE Helio","address":"2/9, Hải Châu","city":"Da Nang",
+    "rooms":[{"name":"Screen X","seats":120},{"name":"Screen Y 4DX","seats":80}] },
+  { "id":"th-dn-vincom","name":"DCINE Vincom ĐN","address":"910A Ngô Quyền, Sơn Trà","city":"Da Nang",
+    "rooms":[{"name":"Screen 1","seats":100},{"name":"Screen 2","seats":90}] },
+
+  { "id":"th-hp-imperia","name":"DCINE Imperia","address":"Phạm Văn Đồng, Hải Phòng","city":"Hai Phong",
+    "rooms":[{"name":"Screen 1","seats":120},{"name":"Screen 2","seats":100}] },
+  { "id":"th-ct-sense","name":"DCINE Sense City","address":"1 Hòa Bình, Ninh Kiều, Cần Thơ","city":"Can Tho",
+    "rooms":[{"name":"Screen 1","seats":110},{"name":"Screen 2","seats":100}] }
+]
