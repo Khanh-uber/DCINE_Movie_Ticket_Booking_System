@@ -215,7 +215,8 @@ CREATE TABLE `seat_layout` (
   `seat_layout_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `room_type_id` BIGINT NOT NULL,
   `name` VARCHAR(50) NOT NULL,                  -- 2D-A, 2D-B, 2D-C, Default,...
-  `capacity` INT NOT NULL
+  `capacity` INT NOT NULL,
+  `layout_map` json DEFAULT NULL
 );
 
 ALTER TABLE `hall` ADD FOREIGN KEY (`seat_layout_id`) REFERENCES `seat_layout`(`seat_layout_id`);
