@@ -13,6 +13,7 @@ CREATE TABLE `account` (
   `status` enum('ACTIVE','INACTIVE') DEFAULT 'ACTIVE',
   `role` enum('ADMIN','CUSTOMER') NOT NULL,
   `loyalty_points` int DEFAULT 0,
+  `avatar_url` varchar(255) DEFAULT null,
   `created_at` timestamp DEFAULT (CURRENT_TIMESTAMP)
 );
 
@@ -79,7 +80,7 @@ CREATE TABLE `movie` (
   `synopsis` text DEFAULT null,
   `duration_min` int DEFAULT null,
   `rating` varchar(10) DEFAULT null,
-  `age_limit` varchar(50) DEFAULT null,
+  `age_limit` varchar(100) DEFAULT null,
   `release_date` date DEFAULT null,
   `end_showing_date` date DEFAULT null,
   `early_screening_date` date DEFAULT null,
@@ -119,7 +120,8 @@ CREATE TABLE `showtime` (
   `hall_id` bigint NOT NULL,
   `start_at` datetime NOT NULL,
   `end_at` datetime NOT NULL,
-  `base_price` decimal(10,2) NOT NULL
+  `base_price` decimal(10,2) NOT NULL,
+  `is_early_screening` boolean default false
 );
 
 CREATE TABLE `booking` (
@@ -169,18 +171,35 @@ CREATE TABLE `booking_voucher` (
   PRIMARY KEY (`booking_id`, `voucher_id`)
 );
 
-CREATE TABLE `concession` (
-  `concession_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) NOT NULL,
-  `price` decimal(10,2) NOT NULL
+CREATE TABLE `combo` (
+  `combo_id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `code` VARCHAR(50) UNIQUE,
+  `title` VARCHAR(255) NOT NULL,
+  `description` TEXT,
+  `price` DECIMAL(10,2) NOT NULL,
+  `old_price` DECIMAL(10,2) DEFAULT NULL,
+  `tag` VARCHAR(50) DEFAULT NULL,
+  `combo_url` VARCHAR(255) DEFAULT NULL,
+  `active` BOOLEAN DEFAULT TRUE
 );
 
-CREATE TABLE `booking_concession` (
-  `booking_id` bigint NOT NULL,
-  `concession_id` bigint NOT NULL,
-  `qty` int NOT NULL,
-  `unit_price` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`booking_id`, `concession_id`)
+CREATE TABLE `combo_variant` (
+  `variant_id` BIGINT PRIMARY KEY AUTO_INCREMENT,
+  `combo_id` BIGINT NOT NULL,
+  `label` VARCHAR(100) NOT NULL,       
+  `value` VARCHAR(50) NOT NULL,        
+  `price_diff` DECIMAL(10,2) DEFAULT 0,
+  FOREIGN KEY (combo_id) REFERENCES combo(combo_id)
+);
+
+CREATE TABLE `booking_combo` (
+  `booking_id` BIGINT,
+  `combo_id` BIGINT,
+  `quantity` INT DEFAULT 1,
+  `total_price` DECIMAL(10,2),
+  PRIMARY KEY (booking_id, combo_id),
+  FOREIGN KEY (booking_id) REFERENCES booking(booking_id),
+  FOREIGN KEY (combo_id) REFERENCES combo(combo_id)
 );
 
 CREATE TABLE `otp_record` (
