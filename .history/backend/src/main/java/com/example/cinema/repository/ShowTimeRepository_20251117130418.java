@@ -60,7 +60,6 @@ public interface ShowTimeRepository extends JpaRepository<Showtime, Long>{
             JOIN theater t ON t.theater_id = h.theater_id
             JOIN movie m ON m.movie_id = s.movie_id
             WHERE s.movie_id = :movieId
-            AND DATE(s.start_at) >= CURDATE()
             ORDER BY theaterId, date, time
             """, nativeQuery = true)
             List<Map<String, Object>> findShowtimesFlat(@Param("movieId") Long movieId);

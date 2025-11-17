@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>D-cine — Trang chủ (Coverflow)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=8">
+  <link rel="stylesheet" href="../assets/css/base.css?v=8">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=8">
+  <link rel="stylesheet" href="../assets/css/header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/main.css?v=8">
+  <link rel="stylesheet" href="../assets/css/components.css?v=8">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9">
+</head>
+<body>
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero reveal">
+      <video id="heroVideo" class="hero-video" autoplay muted loop playsinline></video>
+      <div id="heroBackdrop" class="backdrop"></div>
+      <div class="hero-inner">
+        <div class="h-eyebrow" id="heroEyebrow">Now streaming</div>
+        <h1 id="heroTitle">Experience the Magic of Cinema with D-cine</h1>
+        <p id="heroDesc">Watch the latest blockbusters and book your favorite seats in seconds.</p>
+        <div class="cta-row">
+          <a id="heroCta" class="btn" href="showtime.html">🎟 Book Now</a>
+          <button id="heroTrailerBtn" class="btn outline"
+        data-trailer-url="https://www.youtube.com/watch?v=x7uLutVRBfI">▶ Watch Trailer</button>
+        <!-- <button id="heroTrailerBtn" class="btn outline">▶ Watch Trailer</button> -->
+        </div>
+      </div>
+    </section>
+
+<!-- ========== ON THE BIG SCREEN ========== -->
+<section id="bigscreen" class="section">
+  <div class="section-head">
+    <h2>ON THE BIG SCREEN</h2>
+    <a href="movies.html#now" class="view-all">View all movies</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railBigScreen" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsBigScreen" class="dots"></div>
+</section>
+
+<!-- ========== COMING SOON ========== -->
+<section id="coming" class="section">
+  <div class="section-head">
+    <h2>COMING SOON</h2>
+    <a href="movies.html#soon" class="view-all">View all</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railComingSoon" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsComingSoon" class="dots"></div>
+</section>
+
+<section id="deals" class="section">
+  <div class="section-head">
+    <h2>ƯU ĐÃI HẤP DẪN</h2>
+    <a href="promotions.html" class="view-all">Xem tất cả</a>
+  </div>
+
+  <div id="wrapDeals" class="carousel simple">
+    <button class="arrow left nav prev" aria-label="Prev">‹</button>
+
+    <div id="railDeals" class="rail">
+      </div>
+
+    <button class="arrow right nav next" aria-label="Next">›</button>
+
+    <div class="dots"></div>
+  </div>
+</section>
+<section class="section member reveal" id="member">
+  </section>
+    <!-- MEMBERSHIP -->
+    <section class="section member reveal" id="member">
+      <div class="member-wrap member-v2">
+        <div class="member-copy">
+          <div class="kicker">Membership</div>
+          <h2><span class="cine">D-cine Elite</span> — đặc quyền xứng tầm</h2>
+
+          <ul class="perks">
+            <li>🎟 1 lần chọn ghế VIP / tháng</li>
+            <li>🍿 Combo bắp nước ưu đãi 20%</li>
+            <li>⏱️ Mua vé sớm hơn công chúng 24h</li>
+            <li>🎁 Tích điểm đổi quà & voucher</li>
+          </ul>
+
+          <div class="tier-switch" role="tablist" aria-label="Chọn hạng">
+            <button class="tier active" data-tier="gold" aria-selected="true">Gold</button>
+            <button class="tier" data-tier="platinum" aria-selected="false">Platinum</button>
+            <button class="tier" data-tier="diamond" aria-selected="false">Diamond</button>
+          </div>
+
+          <div class="price">
+            <span class="amt" id="tierPrice">79.000đ</span><span class="per">/tháng</span>
+          </div>
+
+          <a class="btn xl" id="joinEliteBtn" href="membership.html">Join Elite</a>
+          <div class="small trust">Hơn <b>120.000</b> thành viên đang hoạt động • ⭐ 4.9/5</div>
+        </div>
+
+        <div class="visual">
+          <div class="glass-card" aria-hidden="true">
+            <div class="shine"></div>
+            <div class="card-logo">D-cine Elite</div>
+            <div class="chip"></div>
+            <div class="card-name">Member</div>
+          </div>
+          <div class="halo"></div>
+        </div>
+      </div>
+    </section>
+</main>
+  <!-- Footer include -->
+  <footer class="site-footer" data-version="v3">
+  <div class="sf-container">
+    <div class="sf-grid">
+      <div class="sf-brand">
+        <a class="sf-logo" href="index.html">
+          <span class="d">D</span><span class="cine">-cine</span>
+        </a>
+        <p>Trải nghiệm điện ảnh đỉnh cao – đặt vé nhanh, nhận ưu đãi thành viên.</p>
+        <div class="sf-social">
+          <a href="#" aria-label="Facebook" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v3H8v3h3v6h3v-6h3l1-3h-4V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Instagram" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor"/>
+            </svg>
+          </a>
+          <a href="#" aria-label="YouTube" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M22 12s0-3-.7-4.4a3 3 0 0 0-2.1-2.1C17.8 5 12 5 12 5s-5.8 0-7.2.5A3 3 0 0 0 2.7 7.6C2 9 2 12 2 12s0 3 .7 4.4a3 3 0 0 0 2.1 2.1C6.2 19 12 19 12 19s5.8 0 7.2-.5a3 3 0 0 0 2.1-2.1C22 15 22 12 22 12z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M10 15V9l6 3-6 3z" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <nav class="sf-col">
+        <h4>Danh mục</h4>
+        <ul class="sf-links">
+          <li><a href="index.html">Trang chủ</a></li>
+          <li><a href="movies.html">Phim</a></li>
+          <li><a href="promotions.html">Khuyến mãi</a></li>
+          <li><a href="contact.html">Liên hệ</a></li>
+        </ul>
+      </nav>
+
+      <nav class="sf-col">
+        <h4>Hỗ trợ</h4>
+        <ul class="sf-links">
+          <li><a href="theaters.html">Hệ thống rạp</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="terms.html">Điều khoản</a></li>
+          <li><a href="privacy.html">Bảo mật</a></li>
+        </ul>
+      </nav>
+
+      <div class="sf-news">
+        <h4>Nhận bản tin</h4>
+        <form class="sf-form" onsubmit="return false" novalidate>
+          <input type="email" class="sf-input" placeholder="Nhập email của bạn" aria-label="Email">
+          <button class="sf-btn" type="submit">Subscribe</button>
+        </form>
+        <small class="sf-note">Bạn có thể hủy bất cứ lúc nào.</small>
+      </div>
+    </div>
+
+    <div class="sf-bottom">
+      <p>© <span data-year>2025</span> D-cine. All rights reserved.</p> <ul class="sf-bottom-links">
+        <li><a href="terms.html">Điều khoản</a></li>
+        <li><a href="privacy.html">Bảo mật</a></li>
+        <li><a href="contact.html">Liên hệ</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+  <!-- JS -->
+  <script>
+    window.API_BASE = window.API_BASE || '/api';
+  </script>
+  
+  <script src="../assets/js/main.js" defer></script>
+</body>
+</html>

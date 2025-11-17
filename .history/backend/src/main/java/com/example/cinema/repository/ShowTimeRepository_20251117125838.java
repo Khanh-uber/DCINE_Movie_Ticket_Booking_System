@@ -38,7 +38,6 @@ public interface ShowTimeRepository extends JpaRepository<Showtime, Long>{
                         join movie m on s.movie_id = m.movie_id
                         WHERE (:movieId IS NULL OR s.movie_id = :movieId) 
                         AND s.start_at > NOW() + INTERVAL 10 MINUTE
-                        AND DATE(s.start_at) >= CURDATE()
                         ORDER BY movieId, theaterId, date, time
                     """, nativeQuery = true )
     List<Map<String, Object>> findShowtimes(@Param("movieId") Long movieId);
@@ -60,7 +59,6 @@ public interface ShowTimeRepository extends JpaRepository<Showtime, Long>{
             JOIN theater t ON t.theater_id = h.theater_id
             JOIN movie m ON m.movie_id = s.movie_id
             WHERE s.movie_id = :movieId
-            AND DATE(s.start_at) >= CURDATE()
             ORDER BY theaterId, date, time
             """, nativeQuery = true)
             List<Map<String, Object>> findShowtimesFlat(@Param("movieId") Long movieId);
