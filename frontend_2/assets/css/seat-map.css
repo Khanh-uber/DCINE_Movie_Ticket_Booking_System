@@ -9,7 +9,8 @@
 
   --vip-1:#FFF4C2; --vip-2:#FFD351;
   --std-1:#D6E9FF; --std-2:#9CCBFF;
-  --eco-1:#DFF8E1; --eco-2:#A7F0B2;
+  --couple-1: #FFC2D6; /* Hồng phấn nhạt */
+  --couple-2: #FF5C8D; /* Hồng đậm */
 
   --seat-size:38px; --gap:10px; --aisle-w:clamp(14px,2.2vw,20px);
 }
@@ -60,20 +61,28 @@
 .zone-chips .chip{ padding:4px 8px; border-radius:999px; font-weight:700; font-size:12px; border:1px solid var(--stroke); cursor:default; }
 .zone-chips .vip{ background:#2B1618; color:#FFD1D3; border-color:#4a1d22; }
 .zone-chips .std{ background:#172025; color:#D6E8FF; border-color:#20303a; }
-.zone-chips .eco{ background:#181a15; color:#E5F7C8; border-color:#2d3423; }
+.zone-chips .couple { background: #290E16; color: #FFC2D6; border-color: #5C2233; }
 
-/* ===== Grid wrapper ===== */
+/* ===== Grid wrapper (no outer card) ===== */
 .seat-grid{
-  margin:0 auto 12px; background:var(--panel-2); border:1px solid var(--stroke);
-  border-radius:18px; padding:14px; width:fit-content; box-shadow:0 14px 40px rgba(0,0,0,.25);
+  margin: 0 auto 12px;
+  background: transparent;   /* bỏ nền */
+  border: none;              /* bỏ khung */
+  border-radius: 0;
+  padding: 0 0 14px;         /* chỉ để chút space phía dưới */
+  width: fit-content;
+  box-shadow: none;          /* bỏ đổ bóng card */
 }
 
 /* Cột số & AISLE */
 .col-grid{
   display:grid;
   grid-template-columns:30px repeat(4,var(--seat-size)) var(--aisle-w) repeat(8,var(--seat-size)) var(--aisle-w) repeat(4,var(--seat-size)) 30px;
-  gap:var(--gap); padding:0 var(--gap);
+  gap:var(--gap);
+  padding:0 var(--gap);
+  margin-bottom:4px;  /* hàng số trên cách ghế 1 khoảng nhỏ đều mắt */
 }
+
 .col-grid>.col-spacer{ width:30px; }
 .col-label{ text-align:center; color:#CFCFCF; font-weight:800; height:24px; display:grid; place-items:center; }
 .col-aisle{ width:var(--aisle-w); display:grid; place-items:center; color:transparent; }
@@ -83,30 +92,85 @@
 .seat-grid .grid{
   display:grid;
   grid-template-columns:30px repeat(4,var(--seat-size)) var(--aisle-w) repeat(8,var(--seat-size)) var(--aisle-w) repeat(4,var(--seat-size)) 30px;
-  grid-auto-rows:var(--seat-size); gap:var(--gap); padding:8px var(--gap) 10px;
-}
-.row-label{ display:grid; place-items:center; color:#CFCFCF; font-weight:900; width:30px; }
-.aisle{
-  width:var(--aisle-w); height:var(--seat-size);
-  border-left:1px dashed rgba(255,255,255,.12); border-right:1px dashed rgba(255,255,255,.12);
-  background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border-radius:8px;
+  grid-auto-rows:var(--seat-size);
+  gap:var(--gap);
+  padding:4px var(--gap) 6px;  /* thu gọn top/bottom => nhìn sát với hàng số hơn */
 }
 
-/* ===== Seat button ===== */
-.seat{
-  position:relative; width:var(--seat-size); height:var(--seat-size);
-  border-radius:10px; border:1.5px solid var(--seat-border);
-  background:var(--seat-available); color:#0E1116;
-  font-weight:900; font-size:13px; font-variant-numeric:tabular-nums;
-  display:grid; place-items:center; cursor:pointer;
-  transition:transform .08s, filter .2s, box-shadow .25s, border-color .2s, background .2s;
-  user-select:none; outline:none;
+.row-label{ display:grid; place-items:center; color:#CFCFCF; font-weight:900; width:30px; }
+.aisle{
+  width: var(--aisle-w);
+  height: var(--seat-size);
+  background: transparent;   /* bỏ nền mờ */
+  border: none;              /* bỏ viền dashed */
+  border-radius: 0;
 }
-.seat::before{ content:""; position:absolute; inset:2px 2px auto 2px; height:13px; border-radius:8px 8px 4px 4px;
-  background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.02)); pointer-events:none; }
-.seat:hover{ filter:brightness(1.03); border-color:#AAB4BF; }
-.seat:active{ transform:translateY(1px); }
-.seat:focus-visible{ box-shadow:0 0 0 3px rgba(229,9,20,.35); }
+
+
+/* ===== Seat button: pill + chân ghế rõ hơn ===== */
+.seat{
+  position: relative;
+  width: var(--seat-size);
+  height: calc(var(--seat-size) * 0.6);  
+  border-radius: 8px;                   
+  border: 1.5px solid var(--seat-border);
+  background: var(--seat-available);
+  color: #0E1116;
+  font-weight: 800;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform .08s,
+    filter .2s,
+    box-shadow .25s,
+    border-color .2s,
+    background .2s;
+  user-select: none;
+  outline: none;
+}
+
+
+.seat::before{
+  content: "";
+  position: absolute;
+  bottom: -10px;                 /* tụt xuống dưới một chút làm chân ghế */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;                    /* ngắn hơn thân ghế một chút */
+  height: 6px;
+  border-radius: 999px;
+  background: #ffffff28;   /* gạch tối nhẹ */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+.seat.couple-right::before{
+  content: none;
+}
+
+/* Ghế trái: chân kéo dài cho cả sofa */
+.seat.couple-left::before{
+  bottom: -10px;             /* giữ cùng độ cao với ghế thường */
+  width: 100%;               /* phủ gần hết chiều ngang sofa */
+}
+/* Hover giống cảm giác demo: sáng nhẹ, viền nhấn màu đỏ */
+.seat:hover{
+  filter: brightness(1.08);
+  border-color: #fd6565;
+}
+
+.seat:active{
+  transform: translateY(1px);
+}
+
+.seat:focus-visible{
+  box-shadow: 0 0 0 3px rgba(229,9,20,.35);
+}
+
 
 .seat[data-state="booked"]{ background:var(--seat-booked) !important; border-color:#1D1F23; color:#BFC6CE; cursor:not-allowed; filter:saturate(.85); }
 .seat[data-state="selected"]{
@@ -124,9 +188,10 @@
   background:linear-gradient(180deg, var(--std-1), var(--std-2));
   border-color:#7EB8FF;
 }
-.seat[data-zone="economy"]:not([data-state="selected"]):not([data-state="booked"]){
-  background:linear-gradient(180deg, var(--eco-1), var(--eco-2));
-  border-color:#88E39E;
+.seat[data-zone="couple"]:not([data-state="selected"]):not([data-state="booked"]) {
+  background: linear-gradient(180deg, var(--couple-1), var(--couple-2));
+  border-color: #FF9EB9;
+  color: #581C30; /* Chữ màu tối cho dễ đọc trên nền hồng */
 }
 
 /* Tooltip + flip */
@@ -152,7 +217,7 @@
 .legend .booked{ background:var(--seat-booked); border-color:#1D1F23; }
 .legend .vip{ background:linear-gradient(180deg, var(--vip-1), var(--vip-2)); }
 .legend .std{ background:linear-gradient(180deg, var(--std-1), var(--std-2)); }
-.legend .eco{ background:linear-gradient(180deg, var(--eco-1), var(--eco-2)); }
+.legend .couple     { background: linear-gradient(180deg, var(--couple-1), var(--couple-2)); }
 .legend li{ display:inline-flex; align-items:center; gap:8px; } 
 .legend li > span:not(.chip-color){
   line-height:18px;                                   /* chữ cao đúng bằng chip -> giữa */
@@ -168,14 +233,16 @@
 .summary-head{ display:flex; align-items:center; justify-content:space-between; }
 .sel-list{ display:flex; flex-wrap:wrap; gap:8px; min-height:12px; }
 .sel-list .seat-chip{ padding:6px 8px; border-radius:999px; border:1px solid var(--stroke); background:#0F1013; font-weight:800; font-size:12px; color:#E7EAF0; }
-
+.sel-list .seat-chip.couple { border-color: var(--couple-2); color: var(--couple-1); }
+.sel-list .seat-chip.vip { border-color: #F7C948; color: #FFF4C2; }
+.sel-list .seat-chip.standard { border-color: #7EB8FF; color: #D6E9FF; }
 .price-matrix{ display:grid; grid-template-columns:100px repeat(3,1fr); gap:6px 8px; }
 .price-matrix .head{ color:#C9CED7; font-weight:800; }
 .price-matrix .z{ display:flex; align-items:center; gap:8px; }
 .price-matrix .dot{ width:14px; height:14px; border-radius:4px; border:1px solid var(--stroke); }
 .dot.vip{ background:linear-gradient(180deg, var(--vip-1), var(--vip-2)); }
 .dot.std{ background:linear-gradient(180deg, var(--std-1), var(--std-2)); }
-.dot.eco{ background:linear-gradient(180deg, var(--eco-1), var(--eco-2)); }
+.price-matrix .dot.couple { background: linear-gradient(180deg, var(--couple-1), var(--couple-2)); }
 .price-matrix .cell{
   display:flex; justify-content:space-between; align-items:center;
   background:var(--panel); border:1px solid var(--stroke); border-radius:10px; padding:6px 8px; font-weight:800;
@@ -388,3 +455,72 @@
   75%{ transform: translateX(-2px); }
 }
 .seat.shake{ animation: seat-shake .25s; }
+/* --- Couple Seat Styling (Sofa Effect v2) --- */
+
+/* Định vị icon trái tim */
+.seat .heart-icon {
+  font-size: 10px; opacity: 0.4; position: absolute; bottom: 3px;
+  transition: transform 0.2s;
+}
+/* Icon ghế trái nằm sát phải, Icon ghế phải nằm sát trái -> Tạo cảm giác gần nhau */
+.seat.couple-left .heart-icon { right: -2px; } 
+.seat.couple-right .heart-icon { left: -2px; }
+
+/* Styling ghế liền khối */
+.seat.couple-left {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none !important; /* Xóa tuyệt đối viền phải */
+  
+  /* Kéo ghế trái dài ra che lấp khoảng trống (Gap 10px + 1px dư để tránh khe hở) */
+  width: calc(var(--seat-size) + var(--gap) + 1px); 
+  
+  /* Kéo lùi margin để ghế sau dính vào */
+  margin-right: calc(var(--gap) * -1); 
+  
+  position: relative;
+  z-index: 2; /* Nổi lên trên ghế phải để che mối nối */
+  
+  /* Gradient ngang nhẹ để tạo cảm giác liền mạch hơn gradient dọc */
+  background: linear-gradient(90deg, var(--couple-1), var(--couple-2));
+}
+
+.seat.couple-right {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none !important; /* Xóa tuyệt đối viền trái */
+  margin-left: 0;
+  z-index: 1;
+  
+  /* Màu nền khớp với đuôi của gradient bên trái */
+  background: var(--couple-2);
+}
+
+/* Trạng thái Selected: Vẫn giữ khối liền mạch */
+.seat.couple-left[data-state="selected"] {
+  background: var(--accent) !important;
+  border-color: var(--accent-2);
+  box-shadow: 6px 0 10px -4px rgba(0,0,0,0.2); /* Bóng đổ nhẹ che mối nối */
+}
+.seat.couple-right[data-state="selected"] {
+  background: var(--accent) !important;
+}
+
+/* Hiệu ứng Hover: Sáng cả cặp */
+.seat[data-zone="couple"]:hover {
+  filter: brightness(1.15);
+  z-index: 5; /* Nổi lên cao nhất */
+}
+/* Ghế đang giữ tạm bởi người khác */
+.seat[data-state="held"] {
+  background: var(--seat-booked);
+  opacity: .6;
+  cursor: not-allowed;
+  filter: saturate(.85);
+}
+
+/* Nếu muốn có legend riêng */
+.legend .chip-color.held {
+  background: var(--seat-booked);
+  opacity: .6;
+}
