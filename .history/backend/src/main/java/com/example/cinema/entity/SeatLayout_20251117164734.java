@@ -1,0 +1,14 @@
+package com.example.cinema.entity;
+import jakarta.annotation.Generated;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+@Entity
+public class SeatLayout {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="seat_id", nullable = false)
+    private
+}
