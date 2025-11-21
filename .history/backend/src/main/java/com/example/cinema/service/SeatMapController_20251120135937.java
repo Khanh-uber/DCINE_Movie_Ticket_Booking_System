@@ -1,0 +1,12 @@
+package com.example.cinema.service;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class SeatMapController {
+    
+    private final SeatMapService seatMapService;
+    public SeatMapController (SeatMapService seatMap)
+}
