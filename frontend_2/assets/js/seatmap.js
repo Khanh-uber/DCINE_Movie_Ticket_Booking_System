@@ -232,33 +232,38 @@
         btn.dataset.state = st;
         btn.setAttribute('aria-selected', st === 'selected' ? 'true' : 'false');
 
-        // --- XỬ LÝ GIAO DIỆN GHẾ ĐÔI (COUPLE) + TOOLTIP ---
-        if (zone === 'couple') {
-          const isLeft = c % 2 !== 0; // cột lẻ = ghế trái
-          btn.classList.add(isLeft ? 'couple-left' : 'couple-right');
-          btn.innerHTML = `${c} <span class="heart-icon">♥</span>`;
+// --- XỬ LÝ GIAO DIỆN GHẾ ĐÔI (COUPLE) + TOOLTIP ---
+if (zone === 'couple') {
+  const isLeft = c % 2 !== 0;        // cột lẻ = ghế trái
+  const leftCol  = isLeft ? c : c - 1;
+  const rightCol = leftCol + 1;
 
-          // Label cặp: J3-J4, J5-J6, ...
-          const leftCol  = isLeft ? c : c - 1;
-          const pairLabel = `${r}${leftCol}-${r}${leftCol + 1}`;
+  const pairText  = `${leftCol}-${rightCol}`;       // text hiển thị trên ghế: 1-2, 3-4,...
+  const pairLabel = `${r}${leftCol}-${r}${rightCol}`; // label đầy đủ: J1-J2,...
 
-          const couplePrice = getDisplayPrice('couple', 'adult');
-          btn.dataset.tip = `${pairLabel} • Ghế đôi (Couple) • ${
-            couplePrice ? toVND(couplePrice) : '-'
-          }/ghế`;
-          btn.setAttribute('aria-label', `Ghế đôi ${pairLabel}`);
-        } else {
-          btn.textContent = c;
+  btn.classList.add(isLeft ? 'couple-left' : 'couple-right');
 
-          const pAdult = getDisplayPrice(zone, 'adult');
-          const pChild = getDisplayPrice(zone, 'child');
-          btn.dataset.tip = `${code} • ${zone.toUpperCase()} • Adult ${
-            pAdult ? toVND(pAdult) : '-'
-          } / Child ${
-            pChild ? toVND(pChild) : '-'
-          }`;
-          btn.setAttribute('aria-label', `Ghế ${code} — ${zone}`);
-        }
+  // Chỉ ghế trái hiển thị text, ghế phải để trống (chỉ là vùng click)
+  btn.textContent = isLeft ? pairText : '';
+
+  const couplePrice = getDisplayPrice('couple', 'adult');
+  btn.dataset.tip = `${pairLabel} • Ghế đôi (Couple) • ${
+    couplePrice ? toVND(couplePrice) : '-'
+  }/ghế`;
+  btn.setAttribute('aria-label', `Ghế đôi ${pairLabel}`);
+} else {
+  btn.textContent = c;
+
+  const pAdult = getDisplayPrice(zone, 'adult');
+  const pChild = getDisplayPrice(zone, 'child');
+  btn.dataset.tip = `${code} • ${zone.toUpperCase()} • Adult ${
+    pAdult ? toVND(pAdult) : '-'
+  } / Child ${
+    pChild ? toVND(pChild) : '-'
+  }`;
+  btn.setAttribute('aria-label', `Ghế ${code} — ${zone}`);
+}
+
 
         state.seats[code] = { zone, state: st };
         row.appendChild(btn);
@@ -330,7 +335,9 @@
       // Nếu BE chưa sẵn / lỗi, để tạm giá trị mặc định
       console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE, dùng placeholder.');
     }
-
+  if (!state.movie.trailerUrl) {
+    state.movie.trailerUrl = 'https://www.youtube.com/watch?v=U2Qp5pL3ovA';
+  }
     // Bind UI (giữ y nguyên logic cũ)
     $('#mvPoster').src = state.movie.posterUrl || 'https://picsum.photos/seed/poster/400/600';
     $('#mvTitle').textContent = state.movie.title || '—';
@@ -345,17 +352,28 @@
     $('#mvTime').textContent    = state.show.time || '--:--';
     $('#mvFormat').textContent  = state.show.format || '2D';
 
-    const tBtn = $('#btnTrailer');
+    const tBtn  = $('#btnTrailer');
+    const pPlay = $('#posterPlayBtn');
+
     if (state.movie.trailerUrl) {
-      tBtn.disabled = false;
-      tBtn.onclick  = () => (window.openTrailerModal
-        ? window.openTrailerModal(state.movie.trailerUrl)
-        : window.open(state.movie.trailerUrl, '_blank'));
+      const openTrailer = () => (
+        window.openTrailerModal
+          ? window.openTrailerModal(state.movie.trailerUrl)
+          : window.open(state.movie.trailerUrl, '_blank'));
+
+      if (tBtn) {
+        tBtn.disabled = false;
+        tBtn.onclick  = openTrailer;
+      }
+      if (pPlay) {
+        pPlay.hidden  = false;
+        pPlay.onclick = openTrailer;
+      }
     } else {
-      tBtn.remove();
+      if (tBtn)  tBtn.remove();
+      if (pPlay) pPlay.remove();
     }
   }
-
 async function loadSeatStatesFromApi() {
   const id = state.show.id;
   if (!id) return;
