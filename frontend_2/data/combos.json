@@ -1,61 +1,231 @@
-[
-  {
-    "id": "cb-m1",
-    "title": "Combo M1: 1 bắp + 1 nước",
-    "desc": "Bắp bơ + Coca 500ml",
-    "price": 49000,
-    "oldPrice": 65000,
-    "tag": "BEST VALUE",
-    "imageUrl": "https://picsum.photos/seed/pop1/420/280",
-    "variants": [
-      { "label": "M", "value": "M" },
-      { "label": "L (+6k)", "value": "L" }
-    ]
-  },
-  {
-    "id": "cb-m2",
-    "title": "Combo M2: 2 bắp + 2 nước",
-    "desc": "Tiết kiệm cho nhóm 2 người",
-    "price": 89000,
-    "oldPrice": 120000,
-    "imageUrl": "https://picsum.photos/seed/pop2/420/280",
-    "variants": []
-  },
-  {
-    "id": "cb-sweet",
-    "title": "Sweet Combo: Bắp caramel + Trà đào",
-    "desc": "Ngọt nhẹ, thơm béo",
-    "price": 99000,
-    "imageUrl": "https://picsum.photos/seed/pop3/420/280",
-    "variants": [{ "label": "L", "value": "L" }]
-  },
-  {
-    "id": "cb-max",
-    "title": "MAX Combo: 2 bắp phô mai + 2 nước lớn",
-    "desc": "Ăn đã cho nhóm 2-3 người",
-    "price": 139000,
-    "oldPrice": 169000,
-    "tag": "HOT",
-    "imageUrl": "https://picsum.photos/seed/pop4/420/280",
-    "variants": [
-      { "label": "L", "value": "L" },
-      { "label": "XL (+10k)", "value": "XL" }
-    ]
-  },
-  {
-    "id": "cb-student",
-    "title": "Student Combo",
-    "desc": "Bắp + Nước size M, giảm thêm cho SV",
-    "price": 45000,
-    "imageUrl": "https://picsum.photos/seed/pop5/420/280",
-    "variants": [{ "label": "M", "value": "M" }]
-  },
-  {
-    "id": "cb-couple",
-    "title": "Couple Set",
-    "desc": "1 bắp L + 2 nước L + snack",
-    "price": 159000,
-    "imageUrl": "https://picsum.photos/seed/pop6/420/280",
-    "variants": []
-  }
-]
+{
+  "items": [
+    {
+      "id": 1,
+      "code": "cb-m1",
+      "title": "Combo M1: 1 bắp + 1 nước",
+      "description": "Bắp bơ + Coca 500ml",
+      "price": 49000,
+      "oldPrice": 65000,
+      "tag": "BEST VALUE",
+      "imageUrl": "https://picsum.photos/seed/pop1/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": [
+        { "id": 1, "label": "M", "value": "M", "priceDiff": 0 },
+        { "id": 2, "label": "L (+6k)", "value": "L", "priceDiff": 6000 }
+      ]
+    },
+    {
+      "id": 2,
+      "code": "cb-m2",
+      "title": "Combo M2: 2 bắp + 2 nước",
+      "description": "Tiết kiệm cho nhóm 2 người",
+      "price": 89000,
+      "oldPrice": 120000,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/pop2/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": []
+    },
+    {
+      "id": 3,
+      "code": "cb-sweet",
+      "title": "Sweet Combo: Bắp caramel + Trà đào",
+      "description": "Ngọt nhẹ, thơm béo",
+      "price": 99000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/pop3/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": [
+        { "id": 3, "label": "L", "value": "L", "priceDiff": 0 }
+      ]
+    },
+    {
+      "id": 4,
+      "code": "cb-max",
+      "title": "MAX Combo: 2 bắp phô mai + 2 nước lớn",
+      "description": "Ăn đã cho nhóm 2-3 người",
+      "price": 139000,
+      "oldPrice": 169000,
+      "tag": "HOT",
+      "imageUrl": "https://picsum.photos/seed/pop4/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": [
+        { "id": 4, "label": "L", "value": "L", "priceDiff": 0 },
+        { "id": 5, "label": "XL (+10k)", "value": "XL", "priceDiff": 10000 }
+      ]
+    },
+    {
+      "id": 5,
+      "code": "cb-student",
+      "title": "Student Combo",
+      "description": "Bắp + Nước size M, giảm thêm cho SV",
+      "price": 45000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/pop5/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": [
+        { "id": 6, "label": "M", "value": "M", "priceDiff": 0 }
+      ]
+    },
+    {
+      "id": 6,
+      "code": "cb-couple",
+      "title": "Couple Set",
+      "description": "1 bắp L + 2 nước L + snack",
+      "price": 159000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/pop6/420/280",
+      "active": true,
+      "category": "combo",
+      "variants": []
+    },
+    {
+      "id": 7,
+      "code": "pp-caramel-m",
+      "title": "Bắp caramel M",
+      "description": "Bắp rang caramel size M",
+      "price": 39000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/popcorn1/420/280",
+      "active": true,
+      "category": "popcorn",
+      "variants": []
+    },
+    {
+      "id": 8,
+      "code": "pp-mix-l",
+      "title": "Bắp mix phô mai + caramel L",
+      "description": "Mix 2 vị phô mai và caramel",
+      "price": 59000,
+      "oldPrice": 69000,
+      "tag": "HOT",
+      "imageUrl": "https://picsum.photos/seed/popcorn2/420/280",
+      "active": true,
+      "category": "popcorn",
+      "variants": [
+        { "id": 7, "label": "L", "value": "L", "priceDiff": 0 },
+        { "id": 8, "label": "XL (+8k)", "value": "XL", "priceDiff": 8000 }
+      ]
+    },
+    {
+      "id": 9,
+      "code": "dr-coke",
+      "title": "Coca-Cola",
+      "description": "Ly nước ngọt có gas",
+      "price": 29000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/drink1/420/280",
+      "active": true,
+      "category": "beverage",
+      "variants": [
+        { "id": 9, "label": "M", "value": "M", "priceDiff": 0 },
+        { "id": 10, "label": "L (+5k)", "value": "L", "priceDiff": 5000 }
+      ]
+    },
+    {
+      "id": 10,
+      "code": "dr-peachtea",
+      "title": "Trà đào cam sả",
+      "description": "Trà đào mát lạnh, topping đào",
+      "price": 39000,
+      "oldPrice": null,
+      "tag": "BEST SELLER",
+      "imageUrl": "https://picsum.photos/seed/drink2/420/280",
+      "active": true,
+      "category": "beverage",
+      "variants": []
+    },
+    {
+      "id": 11,
+      "code": "hf-nuggets",
+      "title": "Gà nugget (6 miếng)",
+      "description": "Kèm sốt chấm BBQ",
+      "price": 59000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/hotfood1/420/280",
+      "active": true,
+      "category": "hot-food",
+      "variants": []
+    },
+    {
+      "id": 12,
+      "code": "hf-sausage",
+      "title": "Xúc xích phô mai",
+      "description": "Xúc xích phô mai nướng nóng hổi",
+      "price": 49000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/hotfood2/420/280",
+      "active": true,
+      "category": "hot-food",
+      "variants": []
+    },
+    {
+      "id": 13,
+      "code": "cf-latte",
+      "title": "Latte đá",
+      "description": "Cà phê latte béo nhẹ",
+      "price": 45000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/coffee1/420/280",
+      "active": true,
+      "category": "coffee",
+      "variants": []
+    },
+    {
+      "id": 14,
+      "code": "cf-coldbrew",
+      "title": "Cold Brew cam vàng",
+      "description": "Cold brew kết hợp nước cam",
+      "price": 52000,
+      "oldPrice": null,
+      "tag": "NEW",
+      "imageUrl": "https://picsum.photos/seed/coffee2/420/280",
+      "active": true,
+      "category": "coffee",
+      "variants": []
+    },
+    {
+      "id": 15,
+      "code": "ds-cheesecake",
+      "title": "Cheesecake dâu",
+      "description": "Bánh phô mai mềm, sốt dâu",
+      "price": 49000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/dessert1/420/280",
+      "active": true,
+      "category": "desserts",
+      "variants": []
+    },
+    {
+      "id": 16,
+      "code": "ds-icecream",
+      "title": "Kem ly 2 vị",
+      "description": "Kem vani + socola",
+      "price": 39000,
+      "oldPrice": null,
+      "tag": null,
+      "imageUrl": "https://picsum.photos/seed/dessert2/420/280",
+      "active": true,
+      "category": "desserts",
+      "variants": [
+        { "id": 11, "label": "Vani & Socola", "value": "vs", "priceDiff": 0 },
+        { "id": 12, "label": "Trà xanh & Dâu (+5k)", "value": "td", "priceDiff": 5000 }
+      ]
+    }
+  ]
+}
