@@ -1,0 +1,12 @@
+package com.example.cinema.dto;
+
+public class HoldSeatRequest {
+    private List<String> seats;
+    private String action; // "hold" hoặc "release"
+
+    public List<String> getSeats() { return seats; }
+    public void setSeats(List<String> seats) { this.seats = seats; }
+
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
+}

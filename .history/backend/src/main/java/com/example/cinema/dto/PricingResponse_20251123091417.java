@@ -1,0 +1,30 @@
+package com.example.cinema.dto;
+import java.util.*;
+
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
+public class PricingResponse {
+    private List<Item> items;
+    private int totalAmount;
+
+    public PricingResponse(){}
+    public PricingResponse(List<PricingItemDTO> items, int totalAmount) {
+        this.items = items;
+        this.totalAmount = totalAmount;
+    }
+
+    public List<item> getItems() {
+        return items;
+    }
+
+    public void setItems(List<PricingItemDTO> items) {
+        this.items = items;
+    }
+
+    public int getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(int totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+}

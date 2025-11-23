@@ -1,0 +1,18 @@
+package com.example.cinema.service;
+
+import org.springframework.stereotype.Service;
+
+import com.example.cinema.repository.MovieRepository;
+import com.example.cinema.repository.ShowTimeRepository;
+
+@Service
+public class ShowtimeDetailService {
+    private final ShowtimeRepository showtimeRepo;
+    private final MovieRepository movieRepo;
+
+    public ShowtimeDetailService(ShowtimeRepository showtimeRepo, MovieRepository movieRepo) {
+        this.showtimeRepo = showtimeRepo;
+        this.movieRepo = movieRepo;
+    }
+
+}
