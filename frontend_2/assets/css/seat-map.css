@@ -20,15 +20,25 @@
 
 /* ===== Left info ===== */
 .side.left .movie-card-info{
-  display:flex; gap:14px; align-items:flex-start;
-  padding:16px; border:1px solid var(--stroke);
-  background:var(--panel-2); border-radius:14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "poster"
+    "title"
+    "meta"
+    "show"
+    "cta";
+  gap: 14px;
+  padding: 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
 }
 .poster-wrap{ flex:0 0 32%; aspect-ratio:2/3; border-radius:14px; overflow:hidden; background:#0B0B0B; }
 .poster-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
 .mv-title{ color:var(--accent); font-weight:900; letter-spacing:.2px; line-height:1.2; margin:0 0 4px; }
 .mv-meta{ color:#DADDE2; opacity:.95; }
-.showtime-block{ display:grid; gap:6px; padding:12px; background:var(--panel); border:1px solid var(--stroke); border-radius:12px; margin-top:10px; }
+.showtime-block{ display:grid; gap:6px; padding:12px; background:var(--panel); border:1px solid var(--stroke); border-radius:0px; margin-top:10px; }
 .showtime-block .row{ display:flex; gap:8px; }
 .showtime-block .row span{ color:#9FA6B2; min-width:92px; }
 
@@ -140,7 +150,7 @@
   bottom: -10px;                 /* tụt xuống dưới một chút làm chân ghế */
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;                    /* ngắn hơn thân ghế một chút */
+  width: 100%;                    /* ngắn hơn thân ghế một chút */
   height: 6px;
   border-radius: 999px;
   background: #ffffff28;   /* gạch tối nhẹ */
@@ -228,7 +238,7 @@
 .summary{
   position:sticky; top:calc(var(--header-h,64px) + 12px);
   background:var(--panel-2); border:1px solid var(--stroke);
-  border-radius:16px; padding:14px; display:grid; gap:12px;
+  border-radius:6px; padding:14px; display:grid; gap:12px;
 }
 .summary-head{ display:flex; align-items:center; justify-content:space-between; }
 .sel-list{ display:flex; flex-wrap:wrap; gap:8px; min-height:12px; }
@@ -245,7 +255,7 @@
 .price-matrix .dot.couple { background: linear-gradient(180deg, var(--couple-1), var(--couple-2)); }
 .price-matrix .cell{
   display:flex; justify-content:space-between; align-items:center;
-  background:var(--panel); border:1px solid var(--stroke); border-radius:10px; padding:6px 8px; font-weight:800;
+  background:var(--panel); border:1px solid var(--stroke); border-radius:6px; padding:6px 8px; font-weight:800;
 }
 
 .breakdown{ display:grid; gap:8px; }
@@ -312,7 +322,7 @@
 .seatmap-page .btn:not(.outline):hover{ filter:brightness(1.06); transform:translateY(-1px); }
 
 .seatmap-page .btn.outline{
-  background:transparent; border:1px solid var(--accent); color:var(--accent);
+  background:transparent; border:2px solid var(--accent); color:var(--accent);
 }
 .seatmap-page .btn.outline:hover{
   background:var(--accent); color:#fff; transform:translateY(-1px);
@@ -375,34 +385,54 @@
 /* Cho phép các phần tử bên trong .info-wrap
    “nổi” ra trực tiếp theo grid-area */
 .side.left .movie-card-info .info-wrap{ display:contents; }
-
-.poster-wrap{ grid-area:poster; width:140px; aspect-ratio:2/3; border-radius:14px; overflow:hidden; background:#0B0B0B; }
-.poster-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-.mv-title{ grid-area:title; color:var(--accent); font-weight:900; letter-spacing:.2px; line-height:1.15; margin:0; font-size:clamp(22px,2.2vw,32px); }
-.mv-meta{  grid-area:meta;  color:#DADDE2; opacity:.95; font-weight:700; }
-
-.showtime-block{
-  grid-area:show;
-  display:grid;
-  gap:8px 12px;
-  padding:12px;
-  background:var(--panel);
-  border:1px solid var(--stroke);
-  border-radius:12px;
+.poster-wrap{
+  grid-area: poster;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0B0B0B;
+}
+.poster-wrap img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
+.mv-title{
+  grid-area: title;
+  margin: 4px 0 0;
+  text-align: center;
+  color: var(--accent);
+  font-weight: 900;
+  line-height: 1.15;
+  font-size: clamp(22px,3vw,36px);
+}
+.mv-meta{
+  grid-area: meta;
+  text-align: center;
+  color: #DADDE2;
+  font-weight: 700;
+}
+
+.showtime-block{ grid-area: show; }
+.side.left .movie-card-info .cta-row{
+  grid-area: cta;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 /* Mỗi hàng 2 cột: nhãn | giá trị (gọn, ít chiếm chiều dọc) */
 .showtime-block .row{ display:grid; grid-template-columns:110px 1fr; align-items:center; }
 .showtime-block .row span{ color:#9FA6B2; }
-.side.left .movie-card-info .cta-row{ grid-area:cta; align-self:end; gap:10px; flex-wrap:wrap; }
-
 .mv-title{
   display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
 }
 /* Card thông tin phim: 1 cột */
 .side.left .movie-card-info{
-  display:grid;
+  display: grid;
   grid-template-columns: 1fr;
   grid-template-areas:
     "poster"
@@ -410,14 +440,67 @@
     "meta"
     "show"
     "cta";
-  gap:14px;
-  padding:16px;
+  gap: 14px;
+  padding: 0 0 16px;  /* TOP = 0, trái/phải = 0, bottom = 16px */
+  background: var(--panel-2);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
 }
 
 .side.left .movie-card-info .info-wrap{ display:contents; }
 
-.poster-wrap{ grid-area:poster; width:220px; aspect-ratio:2/3; margin:0 auto; border-radius:14px; overflow:hidden; }
-.poster-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
+.poster-wrap{
+  grid-area: poster;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2/3;
+  margin: 0;
+  border-radius: 6px 6px 0 0;   /* trên bo, dưới vuông */
+  overflow: visible;            /* ⚠ bỏ ẩn để glow không bị cắt */
+  background: #0B0B0B;
+}
+
+
+.poster-wrap img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Nút play – clone style .book .left .play */
+.poster-play{
+  position: absolute;
+  left: 50%;
+  bottom: -18px;                 /* hơi tràn xuống dưới giống bên book */
+  transform: translateX(-50%);
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #E50914;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #fff;
+  box-shadow: 0 0 20px #E50914;   /* glow đỏ giống book */
+  transition: .3s linear;
+  z-index: 2;
+}
+
+.poster-play img{
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Hover giống .book .left .play */
+.poster-play:hover{
+  transform: translateX(-50%) rotate(360deg);
+}
+
 
 .mv-title{ grid-area:title; margin:4px 0 0; text-align:center;
   color:var(--accent); font-weight:900; line-height:1.15; font-size:clamp(22px,3vw,36px); }
@@ -426,10 +509,10 @@
 .showtime-block{ grid-area:show; }
 .showtime-block .row{ display:grid; grid-template-columns:110px 1fr; align-items:center; }
 .side.left .movie-card-info .cta-row{ grid-area:cta; justify-content:center; gap:10px; flex-wrap:wrap; }
-.container.seatmap-page{ max-width: 1400px; } 
+.container.seatmap-page{ max-width: 1320px; } 
 .seat-layout{
-  grid-template-columns: minmax(300px, 400px) 1fr; 
-  gap: 20px;
+  grid-template-columns: minmax(260px, 300px) 1fr; 
+  gap: 24px;
 }
 
 .auditorium{ max-width: none; }
@@ -455,57 +538,36 @@
   75%{ transform: translateX(-2px); }
 }
 .seat.shake{ animation: seat-shake .25s; }
-/* --- Couple Seat Styling (Sofa Effect v2) --- */
 
-/* Định vị icon trái tim */
-.seat .heart-icon {
-  font-size: 10px; opacity: 0.4; position: absolute; bottom: 3px;
-  transition: transform 0.2s;
-}
-/* Icon ghế trái nằm sát phải, Icon ghế phải nằm sát trái -> Tạo cảm giác gần nhau */
-.seat.couple-left .heart-icon { right: -2px; } 
-.seat.couple-right .heart-icon { left: -2px; }
-
-/* Styling ghế liền khối */
 .seat.couple-left {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  border-right: none !important; /* Xóa tuyệt đối viền phải */
-  
-  /* Kéo ghế trái dài ra che lấp khoảng trống (Gap 10px + 1px dư để tránh khe hở) */
-  width: calc(var(--seat-size) + var(--gap) + 1px); 
-  
-  /* Kéo lùi margin để ghế sau dính vào */
-  margin-right: calc(var(--gap) * -1); 
-  
-  position: relative;
-  z-index: 2; /* Nổi lên trên ghế phải để che mối nối */
-  
-  /* Gradient ngang nhẹ để tạo cảm giác liền mạch hơn gradient dọc */
-  background: linear-gradient(90deg, var(--couple-1), var(--couple-2));
+  width: calc(var(--seat-size) * 2 + var(--gap));   /* rộng luôn 2 ghế + gap */
+  margin-right: calc(-1 * var(--seat-size));        /* kéo ghế phải chồng lên */
+  border-radius: 10px;                              /* bo tròn 2 đầu */
+  border-right: 1.5px solid var(--seat-border);
+  background: linear-gradient(180deg, var(--couple-1), var(--couple-2));
+  z-index: 2;
 }
 
 .seat.couple-right {
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
-  border-left: none !important; /* Xóa tuyệt đối viền trái */
-  margin-left: 0;
-  z-index: 1;
-  
-  /* Màu nền khớp với đuôi của gradient bên trái */
-  background: var(--couple-2);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  pointer-events: none; 
+  opacity: 0;   
 }
 
+.seat.couple-right::before {
+  content: none;
+}
+.seat.couple-left::before {
+  width: 100%;
+}
 /* Trạng thái Selected: Vẫn giữ khối liền mạch */
 .seat.couple-left[data-state="selected"] {
   background: var(--accent) !important;
   border-color: var(--accent-2);
   box-shadow: 6px 0 10px -4px rgba(0,0,0,0.2); /* Bóng đổ nhẹ che mối nối */
 }
-.seat.couple-right[data-state="selected"] {
-  background: var(--accent) !important;
-}
-
 /* Hiệu ứng Hover: Sáng cả cặp */
 .seat[data-zone="couple"]:hover {
   filter: brightness(1.15);

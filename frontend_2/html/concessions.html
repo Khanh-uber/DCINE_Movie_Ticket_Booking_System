@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="vi">
 <head>
@@ -21,52 +20,120 @@
   <link rel="stylesheet" href="../assets/css/footer.css?v=9" />
 
   <!-- Page style -->
-  <link rel="stylesheet" href="../assets/css/concessions.css?v=1" />
+  <link rel="stylesheet" href="../assets/css/concessions.css?v=3" />
+
 </head>
 <body class="theme-dcine with-fixed-header">
   <!-- Header include -->
   <div id="hdr-include"></div>
 
-  <main class="container section">
+  <main class="container section concessions-layout">
     <!-- Breadcrumb -->
     <nav id="bc" class="breadcrumb" aria-label="Bạn đang ở đây"></nav>
 
-    <!-- Ticket summary (compact) -->
-    <section id="ticketWrap" class="ticket sticky-card" aria-live="polite"></section>
-
     <!-- Categories -->
     <nav id="catTabs" class="cat-tabs" aria-label="Danh mục món ăn">
-      <button class="cat is-active" data-cat="all">Tất cả</button>
-      <button class="cat" data-cat="Popcorn">Popcorn</button>
-      <button class="cat" data-cat="Beverage">Beverage</button>
-      <button class="cat" data-cat="Coffee">Coffee</button>
-      <button class="cat" data-cat="Hot Food">Hot Food</button>
-      <button class="cat" data-cat="Desserts">Desserts</button>
-      <button class="cat" data-cat="Combo">Combo</button>
+      <!-- JS sẽ render lại tabs, phần này chỉ là fallback -->
+      <button class="cat is-active" data-cat="combo">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-ticket-star.svg" alt="">
+        </span>
+        <span class="cat-label">Combo</span>
+      </button>
+
+      <button class="cat" data-cat="popcorn">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-popcorn.svg" alt="">
+        </span>
+        <span class="cat-label">Popcorn</span>
+      </button>
+
+      <button class="cat" data-cat="beverage">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-drink.svg" alt="">
+        </span>
+        <span class="cat-label">Beverage</span>
+      </button>
+
+      <button class="cat" data-cat="hot-food">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-menu.svg" alt="">
+        </span>
+        <span class="cat-label">Hot Food</span>
+      </button>
+
+      <button class="cat" data-cat="coffee">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-drink.svg" alt="">
+        </span>
+        <span class="cat-label">Coffee</span>
+      </button>
+
+      <button class="cat" data-cat="desserts">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-star.svg" alt="">
+        </span>
+        <span class="cat-label">Desserts</span>
+      </button>
+
+      <button class="cat" data-cat="all">
+        <span class="cat-icon">
+          <img src="../assets/icons/ic-menu.svg" alt="">
+        </span>
+        <span class="cat-label">Tất cả</span>
+      </button>
     </nav>
 
     <!-- Product grid -->
-    <section>
-      <header class="section-head"><h2>Chọn món</h2></header>
+    <section id="productSection" class="concessions-products">
+      <header class="section-head">
+        <h2>Chọn bắp nước & combo</h2>
+        <p>Thêm bắp nước, đồ ăn kèm để hoàn thiện trải nghiệm xem phim.</p>
+      </header>
       <div id="combosGrid" class="combos-grid"></div>
       <div id="pager" class="pagination"></div>
     </section>
 
-    <!-- Cart panel -->
+    <!-- Cart / Tổng cộng -->
     <section id="cartPanel" class="cart-panel" aria-live="polite">
       <div class="cp-left">
-        <h3>Giỏ hàng tạm</h3>
-        <div class="cp-ticket-fee">
-          <div class="line"><span>Tổng tiền vé</span><strong id="ticketFee">0₫</strong></div>
+        <h3>Tổng cộng</h3>
+
+        <!-- Tóm tắt vé (chỉ text, không còn thẻ ticket riêng) -->
+        <div class="cp-ticket-info">
+          <div class="cp-ticket-meta" id="ticketMeta">
+            <!-- JS sẽ fill: Tên phim • Ngày giờ • Ghế -->
+          </div>
+          <div class="cp-ticket-fee">
+            <div class="line">
+              <span>Tiền vé</span>
+              <strong id="ticketFee">0₫</strong>
+            </div>
+          </div>
         </div>
-        <div id="cartList" class="cp-list"></div>
+
+        <!-- Danh sách bắp nước / combo -->
+        <div class="cp-list-wrap">
+          <div class="cp-list-head">
+            <span>Món đã chọn</span>
+          </div>
+          <div id="cartList" class="cp-list"></div>
+        </div>
+
+        <!-- Tổng tiền -->
         <div class="cp-total">
-          <div class="line"><span>Tổng cộng</span><strong id="grandTotal">0₫</strong></div>
+          <div class="line">
+            <span>Tổng cộng (vé + bắp nước)</span>
+            <strong id="grandTotal">0₫</strong>
+          </div>
         </div>
       </div>
+
       <div class="cp-right">
         <button id="btnCheckout" class="btn xl gold">Tiếp tục thanh toán</button>
-        <a id="btnBackSeats" class="btn outline xl gold-outline" href="seat-map.html">Quay lại chọn ghế</a>
+        <a id="btnBackSeats" class="btn outline xl gold-outline" href="seat-map.html">
+          Quay lại chọn ghế
+        </a>
       </div>
     </section>
   </main>
@@ -79,6 +146,6 @@
   <script src="../assets/js/header.js" defer></script>
   <script src="../assets/js/main.js" defer></script>
   <script src="../assets/js/footer.js" defer></script>
-  <script src="../assets/js/concessions.js?v=1" defer></script>
+  <script src="../assets/js/concessions.js?v=3" defer></script>
 </body>
 </html>

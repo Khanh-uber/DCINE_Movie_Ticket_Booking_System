@@ -2,95 +2,121 @@
   const $  = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => [...r.querySelectorAll(s)];
   const toVND = (n) => (Math.round(Number(n)||0)).toLocaleString('vi-VN') + 'đ';
-// ===== Config =====
-let ROWS = 'ABCDEFGHIJ'.split('');
-let COLS = Array.from({length:16}, (_,i)=>i+1);
-let AISLES_AFTER = [4, 12];
 
-// 1. Định nghĩa vùng: A-C là VIP, D-I là Standard, J (hàng cuối) là Couple
-const ZONES = { 
-  vip: new Set(['A','B','C']), 
-  standard: new Set(['D','E','F','G','H','I']), 
-  couple: new Set(['J']) // Thay thế economy bằng couple
-};
+  // ===== Config =====
+  let ROWS = 'ABCDEFGHIJ'.split('');
+  let COLS = Array.from({length:16}, (_,i)=>i+1);
+  let AISLES_AFTER = [4, 12];
 
-// 2. Bảng giá GỐC theo loại ghế
-let SEAT_PRICE = { 
-  standard: 90000, 
-  vip: 110000, 
-  couple: 180000 
-};
+  // 1. Định nghĩa vùng: A-C là VIP, D-I là Standard, J (hàng cuối) là Couple
+  const ZONES = { 
+    vip: new Set(['A','B','C']), 
+    standard: new Set(['D','E','F','G','H','I']), 
+    couple: new Set(['J']) // Thay thế economy bằng couple
+  };
 
-// 3. Hệ số theo độ tuổi (Adult giữ nguyên, Child giảm còn 0.8)
-let AGE_FACTOR = { adult: 1.0, child: 0.8 };
-// ===== API BASE + helpers =====
-const API = window.API_BASE || '/api';
+  // 2. Bảng giá GỐC theo loại ghế (fallback)
+  let SEAT_PRICE = { 
+    standard: 90000, 
+    vip: 110000, 
+    couple: 180000 
+  };
 
-// Throttle để tránh spam API hold khi user click nhanh
-let lastHoldCall = 0;
-const HOLD_THROTTLE_MS = 300;
+  // 3. Hệ số theo độ tuổi (Adult giữ nguyên, Child giảm còn 0.8) – chỉ dùng fallback
+  let AGE_FACTOR = { adult: 1.0, child: 0.8 };
 
-// Timer để auto-refresh trạng thái ghế
-let seatPollTimer = null;
+  // ===== Pricing from BE (FE chỉ hiển thị) =====
+  const PRICING = {
+    byZone: {
+      standard: { adult: null, child: null },
+      vip:      { adult: null, child: null },
+      couple:   { adult: null, child: null }
+    }
+  };
 
-async function apiGet(path) {
-  try {
-    const res = await fetch(API + path, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  } catch (err) {
-    console.error('[seatmap] GET', path, err);
-    return null;
+  // Lấy giá hiển thị (ưu tiên giá BE, fallback dùng SEAT_PRICE * AGE_FACTOR)
+  function getDisplayPrice(zone, type) {
+    const z = PRICING.byZone[zone] || {};
+    const v = z[type];
+    if (typeof v === 'number') return v;
+
+    const base   = SEAT_PRICE[zone] || 0;
+    const factor = AGE_FACTOR[type] || 1;
+    return base * factor;
   }
-}
 
-async function apiPost(path, body) {
-  try {
-    const res = await fetch(API + path, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify(body || {})
+  // Lưu lần preview giá gần nhất từ BE
+  let lastPricingPreview = null;
+
+  // ===== API BASE + helpers =====
+  const API = window.API_BASE || '/api';
+
+  // Throttle để tránh spam API hold khi user click nhanh
+  let lastHoldCall = 0;
+  const HOLD_THROTTLE_MS = 300;
+
+  async function apiGet(path) {
+    try {
+      const res = await fetch(API + path, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } catch (err) {
+      console.error('[seatmap] GET', path, err);
+      return null;
+    }
+  }
+
+  async function apiPost(path, body) {
+    try {
+      const res = await fetch(API + path, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json().catch(() => null);
+    } catch (err) {
+      console.error('[seatmap] POST', path, err);
+      return null;
+    }
+  }
+
+  async function sendSeatHold(codes, action) {
+    const id = state.show.id || showtimeId();
+    if (!id || !codes || !codes.length) return;
+
+    const now = Date.now();
+    if (action === 'hold' && now - lastHoldCall < HOLD_THROTTLE_MS) {
+      // tránh spam khi user click nhanh
+      return;
+    }
+    lastHoldCall = now;
+
+    await apiPost(`/showtimes/${encodeURIComponent(id)}/holds`, {
+      seats: codes,              // ["A1","A2"]
+      action: action || 'hold'   // 'hold' | 'release'
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json().catch(() => null);
-  } catch (err) {
-    console.error('[seatmap] POST', path, err);
-    return null;
   }
-}
-async function sendSeatHold(codes, action) {
-  const id = state.show.id || showtimeId();
-  if (!id || !codes || !codes.length) return;
 
-  const now = Date.now();
-  if (action === 'hold' && now - lastHoldCall < HOLD_THROTTLE_MS) {
-    // tránh spam khi user click nhanh
-    return;
-  }
-  lastHoldCall = now;
+  const state = {
+    seats:{},                      // { "A1": {zone, state} }
+    selected:new Set(),            // Set<"A1">
+    assigned:new Map(),            // Map<"A1","adult"|"child">
+    show:{ id:null, theater:'D-Cine', date:'', time:'', format:'' },
+    movie:{ id:null, title:'—', posterUrl:'', trailerUrl:'', year:'', genres:[], duration:'' }
+  };
 
-  await apiPost(`/showtimes/${encodeURIComponent(id)}/holds`, {
-    seats: codes,              // ["A1","A2"]
-    action: action || 'hold'   // 'hold' | 'release'
-  });
-}
+  // ===== Helpers =====
 
-const state = {
-  seats:{},                      // { "A1": {zone, state} }
-  selected:new Set(),            // Set<"A1">
-  assigned:new Map(),            // Map<"A1","adult"|"child">
-  show:{ id:null, theater:'D-Cine', date:'', time:'', format:'' },
-  movie:{ id:null, title:'—', posterUrl:'', trailerUrl:'', year:'', genres:[], duration:'' }
-};
+  // Hàm xác định loại ghế dựa trên tên Hàng (Row)
+  const zoneOf = (row) => {
+    if (ZONES.vip.has(row)) return 'vip';
+    if (ZONES.couple.has(row)) return 'couple';
+    return 'standard';
+  };
 
-
-  // ===== Helpers =====// Hàm xác định loại ghế dựa trên tên Hàng (Row)
-const zoneOf = (row) => {
-  if (ZONES.vip.has(row)) return 'vip';
-  if (ZONES.couple.has(row)) return 'couple';
-  return 'standard';
-};
   const codeOf = (r,c)=> `${r}${c}`;
+
   const showtimeId = () =>
     state.show.id ||
     [state.movie.id || 'mv', state.show.theater, state.show.date, state.show.time]
@@ -99,11 +125,25 @@ const zoneOf = (row) => {
 
   const bookingKey = () => `booking::${showtimeId()}`;
 
-  function rowChunks(){ const a=[]; let cur=[]; for(const c of COLS){ cur.push(c); if (AISLES_AFTER.includes(c)){ a.push(cur); cur=[]; } } if(cur.length)a.push(cur); return a; }
+  function rowChunks(){
+    const a=[]; let cur=[];
+    for(const c of COLS){
+      cur.push(c);
+      if (AISLES_AFTER.includes(c)){ a.push(cur); cur=[]; }
+    }
+    if(cur.length)a.push(cur);
+    return a;
+  }
+
   function violatesSingleGap(rowLetter, colNumber, willSelect){
     const rowStates = {};
-    COLS.forEach(c=>{ const el = $(`#s-${rowLetter}${c}`); rowStates[c] = el ? el.dataset.state : 'available'; });
-    const cur = rowStates[colNumber]; rowStates[colNumber] = (willSelect ? 'selected' : (cur==='selected' ? 'available' : cur));
+    COLS.forEach(c=>{
+      const el = $(`#s-${rowLetter}${c}`);
+      rowStates[c] = el ? el.dataset.state : 'available';
+    });
+    const cur = rowStates[colNumber];
+    rowStates[colNumber] = (willSelect ? 'selected' : (cur==='selected' ? 'available' : cur));
+
     for (const chunk of rowChunks()){
       for (let i=0;i<chunk.length;i++){
         const c = chunk[i], l = chunk[i-1], r = chunk[i+1];
@@ -130,33 +170,41 @@ const zoneOf = (row) => {
     const ok = state.selected.size > 0 && [...state.selected].every(code => state.assigned.has(code));
     $('#btnContinue').disabled = $('#btnPay').disabled = !ok;
   }
-function showSeatWarning(seatEl, msg){
-  // xóa tip cũ nếu có
-  const old = document.getElementById('seatWarn');
-  if (old) old.remove();
 
-  const tip = document.createElement('div');
-  tip.id = 'seatWarn';
-  tip.className = 'inline-hint';
-  tip.textContent = msg;
-  document.body.appendChild(tip);
+  function showSeatWarning(seatEl, msg){
+    // xóa tip cũ nếu có
+    const old = document.getElementById('seatWarn');
+    if (old) old.remove();
 
-  // định vị ngay trên ghế
-  const r = seatEl.getBoundingClientRect(); 
-  const x = r.left + r.width/2 - tip.offsetWidth/2;
-  const y = r.top - tip.offsetHeight - 8;
-  tip.style.left = Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, x)) + 'px';
-  tip.style.top  = Math.max(8, y) + 'px';
+    const tip = document.createElement('div');
+    tip.id = 'seatWarn';
+    tip.className = 'inline-hint';
+    tip.textContent = msg;
+    document.body.appendChild(tip);
 
-  // fade-in và tự ẩn
-  requestAnimationFrame(()=> tip.classList.add('show'));
-  setTimeout(()=> tip.remove(), 1800);
-}
+    // định vị ngay trên ghế
+    const r = seatEl.getBoundingClientRect();
+    const x = r.left + r.width/2 - tip.offsetWidth/2;
+    const y = r.top - tip.offsetHeight - 8;
+    tip.style.left = Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, x)) + 'px';
+    tip.style.top  = Math.max(8, y) + 'px';
+
+    // fade-in và tự ẩn
+    requestAnimationFrame(()=> tip.classList.add('show'));
+    setTimeout(()=> tip.remove(), 1800);
+  }
 
   // ===== Render grid =====
-  function addAisle(container){ const gap=document.createElement('div'); gap.className='aisle'; gap.setAttribute('aria-hidden','true'); container.appendChild(gap); }
+  function addAisle(container){
+    const gap=document.createElement('div');
+    gap.className='aisle';
+    gap.setAttribute('aria-hidden','true');
+    container.appendChild(gap);
+  }
+
   function renderHeadOrFoot(){
-    const row = document.createElement('div'); row.className = 'col-grid';
+    const row = document.createElement('div');
+    row.className = 'col-grid';
     row.appendChild(Object.assign(document.createElement('div'), {className:'col-spacer'}));
     COLS.forEach(c => { 
       row.appendChild(Object.assign(document.createElement('div'), {className:'col-label', textContent:String(c)})); 
@@ -165,133 +213,167 @@ function showSeatWarning(seatEl, msg){
     row.appendChild(Object.assign(document.createElement('div'), {className:'col-spacer'}));
     return row;
   }
-function renderGrid(){
-  const wrap = $('#seatGrid'); wrap.innerHTML = '';
-  wrap.appendChild(renderHeadOrFoot());
-  ROWS.forEach((r) => {
-    const row = document.createElement('div'); row.className = 'grid';
-    row.appendChild(Object.assign(document.createElement('div'), {className:'row-label', textContent:r}));
 
-    COLS.forEach(c => {
-      const code = codeOf(r,c), zone = zoneOf(r);
-      const btn = document.createElement('button');
-      btn.type='button'; btn.className='seat'; btn.id=`s-${code}`;
-      btn.dataset.zone=zone; btn.setAttribute('role','gridcell'); btn.setAttribute('aria-label', `Ghế ${code} — ${zone}`);
-      
-      const st = state.seats[code]?.state || 'available';
-      btn.dataset.state = st;
-      btn.setAttribute('aria-selected', st === 'selected' ? 'true' : 'false');
+  function renderGrid(){
+    const wrap = $('#seatGrid'); wrap.innerHTML = '';
+    wrap.appendChild(renderHeadOrFoot());
+    ROWS.forEach((r) => {
+      const row = document.createElement('div'); row.className = 'grid';
+      row.appendChild(Object.assign(document.createElement('div'), {className:'row-label', textContent:r}));
+
+      COLS.forEach(c => {
+        const code = codeOf(r, c);
+        const zone = state.seats[code]?.zone || zoneOf(r); 
+        const btn = document.createElement('button');
+        btn.type='button'; btn.className='seat'; btn.id=`s-${code}`;
+        btn.dataset.zone=zone; btn.setAttribute('role','gridcell'); btn.setAttribute('aria-label', `Ghế ${code} — ${zone}`);
+        
+        const st = state.seats[code]?.state || 'available';
+        btn.dataset.state = st;
+        btn.setAttribute('aria-selected', st === 'selected' ? 'true' : 'false');
+
 // --- XỬ LÝ GIAO DIỆN GHẾ ĐÔI (COUPLE) + TOOLTIP ---
 if (zone === 'couple') {
-  const isLeft = c % 2 !== 0; // cột lẻ = ghế trái
-  btn.classList.add(isLeft ? 'couple-left' : 'couple-right');
-  btn.innerHTML = `${c} <span class="heart-icon">♥</span>`;
-
-  // Label cặp: J3-J4, J5-J6, ...
+  const isLeft = c % 2 !== 0;        // cột lẻ = ghế trái
   const leftCol  = isLeft ? c : c - 1;
-  const pairLabel = `${r}${leftCol}-${r}${leftCol + 1}`;
+  const rightCol = leftCol + 1;
 
-  btn.dataset.tip = `${pairLabel} • Ghế đôi (Couple) • ${toVND(SEAT_PRICE.couple)}/ghế`;
+  const pairText  = `${leftCol}-${rightCol}`;       // text hiển thị trên ghế: 1-2, 3-4,...
+  const pairLabel = `${r}${leftCol}-${r}${rightCol}`; // label đầy đủ: J1-J2,...
+
+  btn.classList.add(isLeft ? 'couple-left' : 'couple-right');
+
+  // Chỉ ghế trái hiển thị text, ghế phải để trống (chỉ là vùng click)
+  btn.textContent = isLeft ? pairText : '';
+
+  const couplePrice = getDisplayPrice('couple', 'adult');
+  btn.dataset.tip = `${pairLabel} • Ghế đôi (Couple) • ${
+    couplePrice ? toVND(couplePrice) : '-'
+  }/ghế`;
   btn.setAttribute('aria-label', `Ghế đôi ${pairLabel}`);
 } else {
   btn.textContent = c;
 
-  const pAdult = SEAT_PRICE[zone] * AGE_FACTOR.adult;
-  const pChild = SEAT_PRICE[zone] * AGE_FACTOR.child;
-  btn.dataset.tip = `${code} • ${zone.toUpperCase()} • Adult ${toVND(pAdult)} / Child ${toVND(pChild)}`;
+  const pAdult = getDisplayPrice(zone, 'adult');
+  const pChild = getDisplayPrice(zone, 'child');
+  btn.dataset.tip = `${code} • ${zone.toUpperCase()} • Adult ${
+    pAdult ? toVND(pAdult) : '-'
+  } / Child ${
+    pChild ? toVND(pChild) : '-'
+  }`;
   btn.setAttribute('aria-label', `Ghế ${code} — ${zone}`);
 }
 
 
-      state.seats[code] = { zone, state: st };
-      row.appendChild(btn);
-      if (AISLES_AFTER.includes(c)) addAisle(row);
-    });
+        state.seats[code] = { zone, state: st };
+        row.appendChild(btn);
+        if (AISLES_AFTER.includes(c)) addAisle(row);
+      });
 
-    row.appendChild(Object.assign(document.createElement('div'), {className:'row-label', textContent:r}));
-    wrap.appendChild(row);
-  });
-  wrap.appendChild(renderHeadOrFoot());
-}
+      row.appendChild(Object.assign(document.createElement('div'), {className:'row-label', textContent:r}));
+      wrap.appendChild(row);
+    });
+    wrap.appendChild(renderHeadOrFoot());
+  }
 
   // ===== Load movie/showtime (đọc localStorage + query; merge an toàn) =====
-  const pick = (...xs) => xs.find(v => v !== undefined && v !== null && v !== "");
 
- async function loadShowAndMovie() {
-  const q = new URLSearchParams(location.search);
+  async function loadShowAndMovie() {
+    const q = new URLSearchParams(location.search);
 
-  // Ưu tiên lấy id suất chiếu từ query: ?showtimeId=... hoặc ?st=...
-  const stId = q.get('showtimeId') || q.get('st') || q.get('showtime') || null;
+    // Ưu tiên lấy id suất chiếu từ query: ?showtimeId=... hoặc ?st=...
+    const stId = q.get('showtimeId') || q.get('st') || q.get('showtime') || null;
 
-  let detail = null;
-  if (stId) {
-    detail = await apiGet(`/showtimes/${encodeURIComponent(stId)}`);
-  }
-
-  if (detail) {
-    // Tuỳ BE đặt tên, cố gắng map linh hoạt
-    const st = detail.showtime || detail;
-    const mv = detail.movie || st.movie || {};
-    const th = detail.theater || st.theater || {};
-
-    // Lưu id showtime để dùng cho API ghế & bookingKey
-    state.show.id      = st.id || st.showtimeId || st.code || stId;
-    state.show.theater = st.theaterName || th.name || th.title || st.theater || 'D-Cine';
-    state.show.date    = st.date || st.showDate || st.day || '';
-    state.show.time    = st.time || st.showTime || st.startTime || '';
-    state.show.format  = st.format || st.screenFormat || st.version || '2D';
-
-    // Movie
-    const mvId = q.get('movie') || q.get('mv') || null;
-    state.movie.id        = mv.id || mvId || null;
-    state.movie.title     = mv.title || mv.name || state.movie.title;
-    state.movie.posterUrl = mv.posterUrl || mv.poster || state.movie.posterUrl || '';
-    state.movie.trailerUrl= mv.trailerUrl || mv.trailer || state.movie.trailerUrl || '';
-    state.movie.year      = mv.year || (mv.releaseDate || mv.premiereDate || '').slice(0, 4) || '';
-    state.movie.genres    = mv.genres || (mv.genre ? [mv.genre] : []);
-    state.movie.duration  = mv.duration || mv.runtime || '';
-    if (detail.pricing && detail.pricing.byZone) {
-      const p = detail.pricing.byZone;
-
-      if (p.standard && typeof p.standard.adult === 'number') {
-        SEAT_PRICE.standard = p.standard.adult;
-      }
-      if (p.vip && typeof p.vip.adult === 'number') {
-        SEAT_PRICE.vip = p.vip.adult;
-      }
-      if (p.couple && typeof p.couple.adult === 'number') {
-        SEAT_PRICE.couple = p.couple.adult;
-      }
+    let detail = null;
+    if (stId) {
+      detail = await apiGet(`/showtimes/${encodeURIComponent(stId)}`);
     }
-  } else {
-    // Nếu BE chưa sẵn / lỗi, để tạm giá trị mặc định
-    console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE, dùng placeholder.');
+
+    if (detail) {
+      // Tuỳ BE đặt tên, cố gắng map linh hoạt
+      const st = detail.showtime || detail;
+      const mv = detail.movie || st.movie || {};
+      const th = detail.theater || st.theater || {};
+
+      // Lưu id showtime để dùng cho API ghế & bookingKey
+      state.show.id      = st.id || st.showtimeId || st.code || stId;
+      state.show.theater = st.theaterName || th.name || th.title || st.theater || 'D-Cine';
+      state.show.date    = st.date || st.showDate || st.day || '';
+      state.show.time    = st.time || st.showTime || st.startTime || '';
+      state.show.format  = st.format || st.screenFormat || st.version || '2D';
+
+      // Movie
+      const mvId = q.get('movie') || q.get('mv') || null;
+      state.movie.id        = mv.id || mvId || null;
+      state.movie.title     = mv.title || mv.name || state.movie.title;
+      state.movie.posterUrl = mv.posterUrl || mv.poster || state.movie.posterUrl || '';
+      state.movie.trailerUrl= mv.trailerUrl || mv.trailer || state.movie.trailerUrl || '';
+      state.movie.year      = mv.year || (mv.releaseDate || mv.premiereDate || '').slice(0, 4) || '';
+      state.movie.genres    = mv.genres || (mv.genre ? [mv.genre] : []);
+      state.movie.duration  = mv.duration || mv.runtime || '';
+
+      // Map pricing từ BE sang PRICING (FE chỉ dùng hiển thị)
+      if (detail.pricing && detail.pricing.byZone) {
+        const p = detail.pricing.byZone;
+
+        ['standard', 'vip', 'couple'].forEach((zone) => {
+          const z = p[zone];
+          if (!z) return;
+
+          const adult = typeof z.adult === 'number' ? z.adult : null;
+          const child = typeof z.child === 'number' ? z.child : null;
+
+          PRICING.byZone[zone] = { adult, child };
+
+          // Fallback: nếu chỉ có adult, dùng cho tooltip/bảng giá
+          if (adult != null) {
+            SEAT_PRICE[zone] = adult;
+          }
+        });
+      }
+    } else {
+      // Nếu BE chưa sẵn / lỗi, để tạm giá trị mặc định
+      console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE, dùng placeholder.');
+    }
+  if (!state.movie.trailerUrl) {
+    state.movie.trailerUrl = 'https://www.youtube.com/watch?v=U2Qp5pL3ovA';
   }
+    // Bind UI (giữ y nguyên logic cũ)
+    $('#mvPoster').src = state.movie.posterUrl || 'https://picsum.photos/seed/poster/400/600';
+    $('#mvTitle').textContent = state.movie.title || '—';
+    $('#mvMeta').textContent = [
+      state.movie.year && String(state.movie.year),
+      (state.movie.genres || []).join(', '),
+      state.movie.duration && `${state.movie.duration} phút`
+    ].filter(Boolean).join(' • ') || '—';
 
-  // Bind UI (giữ y nguyên logic cũ)
-  $('#mvPoster').src = state.movie.posterUrl || 'https://picsum.photos/seed/poster/400/600';
-  $('#mvTitle').textContent = state.movie.title || '—';
-  $('#mvMeta').textContent = [
-    state.movie.year && String(state.movie.year),
-    (state.movie.genres || []).join(', '),
-    state.movie.duration && `${state.movie.duration} phút`
-  ].filter(Boolean).join(' • ') || '—';
+    $('#mvTheater').textContent = state.show.theater || 'D-Cine';
+    $('#mvDate').textContent    = state.show.date || '--/--/----';
+    $('#mvTime').textContent    = state.show.time || '--:--';
+    $('#mvFormat').textContent  = state.show.format || '2D';
 
-  $('#mvTheater').textContent = state.show.theater || 'D-Cine';
-  $('#mvDate').textContent    = state.show.date || '--/--/----';
-  $('#mvTime').textContent    = state.show.time || '--:--';
-  $('#mvFormat').textContent  = state.show.format || '2D';
+    const tBtn  = $('#btnTrailer');
+    const pPlay = $('#posterPlayBtn');
 
-  const tBtn = $('#btnTrailer');
-  if (state.movie.trailerUrl) {
-    tBtn.disabled = false;
-    tBtn.onclick  = () => (window.openTrailerModal
-      ? window.openTrailerModal(state.movie.trailerUrl)
-      : window.open(state.movie.trailerUrl, '_blank'));
-  } else {
-    tBtn.remove();
+    if (state.movie.trailerUrl) {
+      const openTrailer = () => (
+        window.openTrailerModal
+          ? window.openTrailerModal(state.movie.trailerUrl)
+          : window.open(state.movie.trailerUrl, '_blank'));
+
+      if (tBtn) {
+        tBtn.disabled = false;
+        tBtn.onclick  = openTrailer;
+      }
+      if (pPlay) {
+        pPlay.hidden  = false;
+        pPlay.onclick = openTrailer;
+      }
+    } else {
+      if (tBtn)  tBtn.remove();
+      if (pPlay) pPlay.remove();
+    }
   }
-}
 async function loadSeatStatesFromApi() {
   const id = state.show.id;
   if (!id) return;
@@ -299,202 +381,256 @@ async function loadSeatStatesFromApi() {
   const data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
   if (!data) return;
 
-  const bookedArr = data.bookedSeats || [];
-  const bookedSet = new Set(bookedArr);
-  const heldArr   = data.heldSeats   || [];
-  const heldSet   = new Set(heldArr);
-
-  const seats = Array.isArray(data.seats) ? data.seats : null;
-
-  if (seats && seats.length) {
-    seats.forEach((s) => {
-      const code = s.code || (s.row && s.col ? `${s.row}${s.col}` : null);
-      if (!code) return;
-      const row  = String(code)[0];
-      const zone = s.zone || zoneOf(row);
-
-      const raw = (s.status || '').toLowerCase();
-      let st;
-      if (raw === 'booked' || s.booked) st = 'booked';
-      else if (raw === 'held' || raw === 'holding') st = 'held';
-      else st = 'available';
-
-      state.seats[code] = { zone, state: st };
-    });
-  } else if (bookedSet.size || heldSet.size) {
-    ROWS.forEach((r) => {
-      COLS.forEach((c) => {
-        const code = codeOf(r, c);
-        const zone = zoneOf(r);
-
-        let st = 'available';
-        if (bookedSet.has(code)) st = 'booked';
-        else if (heldSet.has(code)) st = 'held';
-
-        state.seats[code] = { zone, state: st };
-      });
-    });
+  // ----- layout từ BE -----
+  if (Array.isArray(data.rows) && data.rows.length) {
+    ROWS = data.rows;                   // ["A","B","C",...]
   }
+  if (Array.isArray(data.aislesAfter)) {
+    AISLES_AFTER = data.aislesAfter;    // [4, 9, ...]
+  }
+  if (typeof data.cols === 'number' && data.cols > 0) {
+    COLS = Array.from({ length: data.cols }, (_, i) => i + 1);
+  }
+
+  // ----- seats từ BE -----
+  const seats = Array.isArray(data.seats) ? data.seats : [];
+  state.seats = {}; // clear trước cho sạch
+
+  seats.forEach((s) => {
+    const code = s.code || (s.row && s.col ? `${s.row}${s.col}` : null);
+    if (!code) return;
+
+    const row  = s.row || String(code[0]);
+    let status = (s.status || '').toLowerCase();
+
+    // Cho phép BE dùng flag boolean
+    if (s.booked) status = 'booked';
+
+    if (!['booked','held','holding','available'].includes(status)) {
+      status = 'available';
+    }
+    if (status === 'holding') status = 'held';
+
+    state.seats[code] = {
+      zone: s.zone || zoneOf(row),   // nếu BE không gửi zone thì fallback theo row
+      state: status                  // "booked" / "held" / "available"
+    };
+  });
 }
 
 
   // ===== Popover chọn loại vé =====
   const pop = { el:null, seatEl:null, code:'', zone:'' };
 
-function openSeatPopover(seatEl, code){
-  if (!pop.el) pop.el = document.getElementById('seatPopover');
-  pop.seatEl = seatEl;
-  pop.code   = code;
-  pop.zone   = state.seats[code]?.zone || 'standard';
+  function openSeatPopover(seatEl, code){
+    if (!pop.el) pop.el = document.getElementById('seatPopover');
+    pop.seatEl = seatEl;
+    pop.code   = code;
+    pop.zone   = state.seats[code]?.zone || 'standard';
 
-  // Lấy giá gốc của ghế đó
-  const basePrice = SEAT_PRICE[pop.zone]; 
+    const adPrice = getDisplayPrice(pop.zone, 'adult');
+    const chPrice = getDisplayPrice(pop.zone, 'child');
 
-  $('#popoverTitle').textContent = `Chọn vé cho ghế ${code} (${pop.zone.toUpperCase()})`;
-  
-  // Tính giá hiển thị: Giá ghế * Hệ số
-  const adPrice = basePrice * AGE_FACTOR.adult;
-  const chPrice = basePrice * AGE_FACTOR.child;
+    $('#popoverTitle').textContent = `Chọn vé cho ghế ${code} (${pop.zone.toUpperCase()})`;
+    
+    $('#labelAdult').textContent = `Người lớn (${
+      adPrice ? toVND(adPrice) : '-'
+    })`;
+    $('#labelChild').textContent = `Trẻ em (${
+      chPrice ? toVND(chPrice) : '-'
+    })`; // Sẽ rẻ hơn
 
-  $('#labelAdult').textContent   = `Người lớn (${toVND(adPrice)})`;
-  $('#labelChild').textContent   = `Trẻ em (${toVND(chPrice)})`; // Sẽ rẻ hơn
-
-  pop.el.hidden = false;
-  setTimeout(()=> document.getElementById('pickAdult').focus(), 0);
-}
+    pop.el.hidden = false;
+    setTimeout(()=> document.getElementById('pickAdult').focus(), 0);
+  }
 
   function closeSeatPopover(){
     if (pop.el) pop.el.hidden = true;
     pop.seatEl = null; pop.code = ''; pop.zone = '';
   }
 
-function assignSeat(type){
-  if (!pop.seatEl || !pop.code) return;
+  function assignSeat(type){
+    if (!pop.seatEl || !pop.code) return;
 
-  state.assigned.set(pop.code, type);
-  state.selected.add(pop.code);
-  pop.seatEl.dataset.state = 'selected';
-  pop.seatEl.setAttribute('aria-selected','true');
-  sendSeatHold([pop.code], 'hold');
+    state.assigned.set(pop.code, type);
+    state.selected.add(pop.code);
+    pop.seatEl.dataset.state = 'selected';
+    pop.seatEl.setAttribute('aria-selected','true');
+    sendSeatHold([pop.code], 'hold');
 
-  closeSeatPopover();
-  syncSummary();
-}
+    closeSeatPopover();
+    syncSummary();
+  }
 
   // ===== Price matrix & summary =====
-function renderPriceMatrix(){
-  const m = $('#priceMatrix');
-  // Tính giá tĩnh hiển thị trên bảng
-  const vipA = toVND(SEAT_PRICE.vip * AGE_FACTOR.adult);
-  const stdA = toVND(SEAT_PRICE.standard * AGE_FACTOR.adult);
-  const cplA = toVND(SEAT_PRICE.couple * AGE_FACTOR.adult);
+  function renderPriceMatrix(){
+    const m = $('#priceMatrix');
+    // Tính giá tĩnh hiển thị trên bảng (ưu tiên giá từ PRICING)
+    const vipA = getDisplayPrice('vip', 'adult');
+    const stdA = getDisplayPrice('standard', 'adult');
+    const cplA = getDisplayPrice('couple', 'adult');
 
-  const vipC = toVND(SEAT_PRICE.vip * AGE_FACTOR.child);
-  const stdC = toVND(SEAT_PRICE.standard * AGE_FACTOR.child);
-  const cplC = toVND(SEAT_PRICE.couple * AGE_FACTOR.child);
+    const vipC = getDisplayPrice('vip', 'child');
+    const stdC = getDisplayPrice('standard', 'child');
+    const cplC = getDisplayPrice('couple', 'child');
 
-  // Render HTML: Cột cuối sửa thành Couple (màu hồng)
-  m.innerHTML = `
-    <div class="head"></div>
-    <div class="head z"><span class="dot vip"></span>VIP</div>
-    <div class="head z"><span class="dot std"></span>Standard</div>
-    <div class="head z"><span class="dot couple"></span>Couple</div>
+    // Render HTML: Cột cuối sửa thành Couple (màu hồng)
+    m.innerHTML = `
+      <div class="head"></div>
+      <div class="head z"><span class="dot vip"></span>VIP</div>
+      <div class="head z"><span class="dot std"></span>Standard</div>
+      <div class="head z"><span class="dot couple"></span>Couple</div>
 
-    <div class="head">Adult</div>
-    <div class="cell"><span>x0</span><span>${vipA}</span></div>
-    <div class="cell"><span>x0</span><span>${stdA}</span></div>
-    <div class="cell"><span>x0</span><span>${cplA}</span></div>
+      <div class="head">Adult</div>
+      <div class="cell"><span>x0</span><span>${vipA ? toVND(vipA) : '-'}</span></div>
+      <div class="cell"><span>x0</span><span>${stdA ? toVND(stdA) : '-'}</span></div>
+      <div class="cell"><span>x0</span><span>${cplA ? toVND(cplA) : '-'}</span></div>
 
-    <div class="head">Child</div>
-    <div class="cell"><span>x0</span><span>${vipC}</span></div>
-    <div class="cell"><span>x0</span><span>${stdC}</span></div>
-    <div class="cell"><span>x0</span><span>${cplC}</span></div>
-  `;
-}
-function syncSummary(){
-  // 1. Cập nhật tổng số ghế (vẫn tính theo số chỗ ngồi thật)
-  $('#selCount').textContent = `${state.selected.size} ghế được chọn`;
+      <div class="head">Child</div>
+      <div class="cell"><span>x0</span><span>${vipC ? toVND(vipC) : '-'}</span></div>
+      <div class="cell"><span>x0</span><span>${stdC ? toVND(stdC) : '-'}</span></div>
+      <div class="cell"><span>x0</span><span>${cplC ? toVND(cplC) : '-'}</span></div>
+    `;
+  }
 
-  let total = 0;
+  // ===== Gọi BE tính giá =====
+  async function requestPricingPreview() {
+    const id = state.show.id || showtimeId();
+    if (!id || !state.selected.size) {
+      lastPricingPreview = null;
+      return;
+    }
+
+    const seatsPayload = [...state.selected].map((code) => ({
+      code,
+      type: state.assigned.get(code) || 'adult'
+    }));
+
+    const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
+      seats: seatsPayload
+    });
+
+    if (!res) return;
+
+    lastPricingPreview = res;
+    applyPreviewToSummary(res);
+  }
+
+  function applyPreviewToSummary(preview) {
+    const items = Array.isArray(preview.items) ? preview.items : [];
+    const total = typeof preview.totalAmount === 'number'
+      ? preview.totalAmount
+      : items.reduce((sum, it) => sum + (it.price || 0), 0);
+
+    // Tổng ghế
+    $('#selCount').textContent = `${items.length} ghế được chọn`;
+    $('#grandTotal').textContent = toVND(total);
+
   const count = {
-    adult:   { vip:0, standard:0, couple:0 },
-    child:   { vip:0, standard:0, couple:0 }
+    adult:   { vip: 0, standard: 0, couple: 0 },
+    child:   { vip: 0, standard: 0, couple: 0 }
   };
 
-  for (const code of state.selected){
-    const who  = state.assigned.get(code) || 'adult';
-    const zone = state.seats[code]?.zone || zoneOf(code[0]);
+  let adultTotal = 0;
+  let childTotal = 0;
 
-    const price = SEAT_PRICE[zone] * AGE_FACTOR[who];
-    total += price;
+  items.forEach((it) => {
+    const who  = it.type === 'child' ? 'child' : 'adult';
+    const zone = it.zone || state.seats[it.code]?.zone || zoneOf(it.code[0]);
+    const price = it.price || 0;   // giá BE trả
 
-    if (count[who] && count[who][zone] !== undefined){
-      count[who][zone]++;
-    }
-  }
+    if (count[who][zone] === undefined) return;
+    count[who][zone]++;
 
-  $('#adTotal').textContent    = '';
-  $('#chTotal').textContent    = '';
-  $('#grandTotal').textContent = toVND(total);
+    if (who === 'child') childTotal += price;
+    else                 adultTotal += price;
+  });
 
-  const adNum = count.adult.vip + count.adult.standard + count.adult.couple;
-  const chNum = count.child.vip + count.child.standard + count.child.couple;
-  $('#adCount').textContent = `(x${adNum})`;
-  $('#chCount').textContent = `(x${chNum})`;
+    const adNum = count.adult.vip + count.adult.standard + count.adult.couple;
+    const chNum = count.child.vip + count.child.standard + count.child.couple;
+    $('#adTotal').textContent = toVND(adultTotal);
+    $('#chTotal').textContent = toVND(childTotal);
+    $('#adCount').textContent = `(x${adNum})`;
+    $('#chCount').textContent = `(x${chNum})`;
 
-  const cells = $$('#priceMatrix .cell');
-  if (cells.length >= 6){
-    // Adult: VIP - Standard - Couple
-    cells[0].firstElementChild.textContent = `x${count.adult.vip}`;
-    cells[1].firstElementChild.textContent = `x${count.adult.standard}`;
-    cells[2].firstElementChild.textContent = `x${count.adult.couple}`;
-    // Child: VIP - Standard - Couple
-    cells[3].firstElementChild.textContent = `x${count.child.vip}`;
-    cells[4].firstElementChild.textContent = `x${count.child.standard}`;
-    cells[5].firstElementChild.textContent = `x${count.child.couple}`;
-  }
-
-  // 2. Render list ghế: gộp ghế couple thành 1 chip J3-J4
-  const arr = [...state.selected].sort((a,b) =>
-    a[0] === b[0] ? (+a.slice(1)) - (+b.slice(1)) : a[0].localeCompare(b[0])
-  );
-
-  const chips = [];
-  const seenCouple = new Set();   // để không vẽ trùng 2 lần 1 cặp
-
-  for (const code of arr){
-    const who  = state.assigned.get(code);
-    const zone = state.seats[code]?.zone || zoneOf(code[0]);
-
-    // Ghế thường → hiển thị như cũ
-    if (zone !== 'couple'){
-      chips.push(
-        `<span class="seat-chip ${zone}">${code} <small>${who==='child'?'(Child)':''}</small></span>`
-      );
-      continue;
+    // Update bảng matrix
+    const cells = $$('#priceMatrix .cell');
+    if (cells.length >= 6) {
+      // Adult: VIP - Standard - Couple
+      cells[0].firstElementChild.textContent = `x${count.adult.vip}`;
+      cells[1].firstElementChild.textContent = `x${count.adult.standard}`;
+      cells[2].firstElementChild.textContent = `x${count.adult.couple}`;
+      // Child: VIP - Standard - Couple
+      cells[3].firstElementChild.textContent = `x${count.child.vip}`;
+      cells[4].firstElementChild.textContent = `x${count.child.standard}`;
+      cells[5].firstElementChild.textContent = `x${count.child.couple}`;
     }
 
-    // Ghế couple → gom thành 1 label J3-J4
-    const row = code[0];
-    const col = Number(code.slice(1));
-    const leftCol  = col % 2 === 0 ? col - 1 : col; // cột trái của cặp
-    const rightCol = leftCol + 1;
-    const pairLabel = `${row}${leftCol}-${row}${rightCol}`;
+    // Render chip ghế (giữ logic gộp couple như cũ, nhưng dựa vào items)
+    const arr = [...items].sort((a, b) => {
+      const ca = a.code; const cb = b.code;
+      if (ca[0] === cb[0]) return (+ca.slice(1)) - (+cb.slice(1));
+      return ca[0].localeCompare(cb[0]);
+    });
 
-    if (seenCouple.has(pairLabel)) continue; // đã vẽ chip cho cặp này rồi
-    seenCouple.add(pairLabel);
+    const chips = [];
+    const seenCouple = new Set();
 
-    chips.push(`<span class="seat-chip couple">${pairLabel}</span>`);
+    for (const it of arr) {
+      const code = it.code;
+      const zone = it.zone || state.seats[code]?.zone || zoneOf(code[0]);
+      const who  = it.type;
+
+      if (zone !== 'couple') {
+        chips.push(
+          `<span class="seat-chip ${zone}">${code} <small>${who === 'child' ? '(Child)' : ''}</small></span>`
+        );
+        continue;
+      }
+
+      const row = code[0];
+      const col = Number(code.slice(1));
+      const leftCol  = col % 2 === 0 ? col - 1 : col;
+      const rightCol = leftCol + 1;
+      const pairLabel = `${row}${leftCol}-${row}${rightCol}`;
+
+      if (seenCouple.has(pairLabel)) continue;
+      seenCouple.add(pairLabel);
+
+      chips.push(`<span class="seat-chip couple">${pairLabel}</span>`);
+    }
+
+    $('#selList').innerHTML = chips.join('');
   }
 
-  $('#selList').innerHTML = chips.join('');
+  function syncSummary(){
+    if (!state.selected.size) {
+      $('#selCount').textContent   = '0 ghế được chọn';
+      $('#grandTotal').textContent = toVND(0);
+      $('#adCount').textContent    = '(x0)';
+      $('#chCount').textContent    = '(x0)';
+      $('#selList').innerHTML      = '';
+      $('#adTotal').textContent    = toVND(0);
+      $('#chTotal').textContent    = toVND(0);
 
-  $('#hint').textContent = state.selected.size
-    ? ''
-    : 'Hãy chọn ghế để tiếp tục.';
-  gateCTA();
-}
+      const cells = $$('#priceMatrix .cell');
+      cells.forEach((cell) => {
+        const span = cell.firstElementChild;
+        if (span) span.textContent = 'x0';
+      });
 
+      $('#hint').textContent = 'Hãy chọn ghế để tiếp tục.';
+      gateCTA();
+      lastPricingPreview = null;
+      return;
+    }
+
+    $('#hint').textContent = '';
+    gateCTA();
+
+    // Gọi BE tính giá & cập nhật summary
+    requestPricingPreview();
+  }
 
   // ===== Booking (khôi phục & lưu) =====
   function loadBooking(){
@@ -507,7 +643,10 @@ function syncSummary(){
           state.selected.add(code);
           state.assigned.set(code, who);
           const el = document.getElementById(`s-${code}`);
-          if (el && el.dataset.state!=='booked'){ el.dataset.state='selected'; el.setAttribute('aria-selected','true'); }
+          if (el && el.dataset.state!=='booked'){
+            el.dataset.state='selected';
+            el.setAttribute('aria-selected','true');
+          }
         }
       } else {
         // Fallback: nếu chỉ có số Adult thì gán lần lượt
@@ -516,133 +655,165 @@ function syncSummary(){
           state.selected.add(code);
           state.assigned.set(code, i<ad ? 'adult' : 'child');
           const el = document.getElementById(`s-${code}`);
-          if (el && el.dataset.state!=='booked'){ el.dataset.state='selected'; el.setAttribute('aria-selected','true'); }
+          if (el && el.dataset.state!=='booked'){
+            el.dataset.state='selected';
+            el.setAttribute('aria-selected','true');
+          }
         });
       }
     }catch{}
   }
 
-function onContinue(goTo='concessions.html'){
-  let total = 0;
-  const seatsData = [...state.selected].map(code => {
-    const who = state.assigned.get(code);
-    const zone = state.seats[code]?.zone;
-    const finalPrice = SEAT_PRICE[zone] * AGE_FACTOR[who];
-    total += finalPrice;
-    
-    return {
+  async function onContinue(goTo='concessions.html'){
+    if (!state.selected.size) return;
+
+    const id = state.show.id || showtimeId();
+    const seatsPayload = [...state.selected].map(code => ({
       code,
-      zone,
-      type: who, // adult/child
-      price: finalPrice
-    };
-  });
+      type: state.assigned.get(code) || 'adult'
+    }));
 
-  // Lưu vào localStorage
-  localStorage.setItem('booking_cart', JSON.stringify({
-    items: seatsData,
-    totalAmount: total
-  }));
-  
-  location.href = goTo;
-}
+    // Gọi BE tính giá lần nữa để chắc chắn
+    const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
+      seats: seatsPayload
+    });
+
+    const preview = res || lastPricingPreview;
+    if (!preview) {
+      alert('Không tính được giá vé. Vui lòng thử lại.');
+      return;
+    }
+
+    const items = Array.isArray(preview.items) && preview.items.length
+      ? preview.items
+      : seatsPayload.map((s) => ({
+          code: s.code,
+          zone: state.seats[s.code]?.zone || zoneOf(s.code[0]),
+          type: s.type,
+          price: 0
+        }));
+
+    const total = typeof preview.totalAmount === 'number'
+      ? preview.totalAmount
+      : items.reduce((sum, it) => sum + (it.price || 0), 0);
+
+    // Lưu vào localStorage cho trang Concessions / Payment
+    localStorage.setItem('booking_cart', JSON.stringify({
+      showtimeId: id,
+      items,
+      totalAmount: total,
+      meta: {
+        theater: state.show.theater,
+        date:    state.show.date,
+        time:    state.show.time,
+        movieId: state.movie.id,
+        movieTitle: state.movie.title
+      }
+    }));
+
+    location.href = goTo;
+  }
+
   // ===== Events =====
-function onSeatGridClick(e){
-  const seat = e.target.closest('.seat'); 
-  if (!seat || !$('#seatGrid').contains(seat)) return;
-  if (seat.dataset.state === 'booked' || seat.dataset.state === 'held') return;
-  const code = seat.id.slice(2);
-  const rowL = code[0], colN = Number(code.slice(1));
-  const isSelected = seat.dataset.state === 'selected';
-const zone = state.seats[code]?.zone; 
+  function onSeatGridClick(e){
+    const seat = e.target.closest('.seat'); 
+    if (!seat || !$('#seatGrid').contains(seat)) return;
+    if (seat.dataset.state === 'booked' || seat.dataset.state === 'held') return;
 
-if (zone === 'couple') {
-  const isLeft   = colN % 2 !== 0;
-  const pairNum  = isLeft ? colN + 1 : colN - 1;
-  const pairCode = `${rowL}${pairNum}`;
-  const pairEl   = document.getElementById(`s-${pairCode}`);
+    const code = seat.id.slice(2);
+    const rowL = code[0], colN = Number(code.slice(1));
+    const isSelected = seat.dataset.state === 'selected';
+    const zone = state.seats[code]?.zone; 
 
-  if (!pairEl || pairEl.dataset.state === 'booked' || pairEl.dataset.state === 'held') {
-    alert("Ghế đôi này không bán lẻ hoặc 1 bên đã được đặt!");
-    return;
-  }
+    if (zone === 'couple') {
+      const isLeft   = colN % 2 !== 0;
+      const pairNum  = isLeft ? colN + 1 : colN - 1;
+      const pairCode = `${rowL}${pairNum}`;
+      const pairEl   = document.getElementById(`s-${pairCode}`);
 
-  const changed = [code, pairCode];
-
-  if (isSelected) {
-    // Bỏ chọn cả 2 + release hold
-    changed.forEach(c => {
-      state.selected.delete(c);
-      state.assigned.delete(c);
-      const el = document.getElementById(`s-${c}`);
-      if (el) {
-        el.dataset.state = 'available';
-        el.setAttribute('aria-selected','false');
+      if (!pairEl || pairEl.dataset.state === 'booked' || pairEl.dataset.state === 'held') {
+        alert("Ghế đôi này không bán lẻ hoặc 1 bên đã được đặt!");
+        return;
       }
-    });
-    sendSeatHold(changed, 'release');
-  } else {
-    // Chọn cả 2 (mặc định Adult) + hold
-    changed.forEach(c => {
-      state.selected.add(c);
-      state.assigned.set(c, 'adult');
-      const el = document.getElementById(`s-${c}`);
-      if (el) {
-        el.dataset.state = 'selected';
-        el.setAttribute('aria-selected','true');
+
+      const changed = [code, pairCode];
+
+      if (isSelected) {
+        // Bỏ chọn cả 2 + release hold
+        changed.forEach(c => {
+          state.selected.delete(c);
+          state.assigned.delete(c);
+          const el = document.getElementById(`s-${c}`);
+          if (el) {
+            el.dataset.state = 'available';
+            el.setAttribute('aria-selected','false');
+          }
+        });
+        sendSeatHold(changed, 'release');
+      } else {
+        // Chọn cả 2 (mặc định Adult) + hold
+        changed.forEach(c => {
+          state.selected.add(c);
+          state.assigned.set(c, 'adult');
+          const el = document.getElementById(`s-${c}`);
+          if (el) {
+            el.dataset.state = 'selected';
+            el.setAttribute('aria-selected','true');
+          }
+        });
+        sendSeatHold(changed, 'hold');
       }
-    });
-    sendSeatHold(changed, 'hold');
+
+      syncSummary();
+      return;
+    }
+
+    if (isSelected){
+      state.selected.delete(code);
+      state.assigned.delete(code);
+      seat.dataset.state = 'available';
+      seat.setAttribute('aria-selected','false');
+      sendSeatHold([code], 'release');
+
+      syncSummary();
+      return;
+    }
+
+    // ⛔ Chưa chọn → kiểm tra rule rồi mở popover
+    if (violatesSingleGap(rowL, colN, true)) {
+      const msg = 'Quy tắc rạp: không để lại 1 ghế trống kẹp giữa. Hãy chọn liền kề.';
+      $('#hint').textContent = msg;               // hiện ở panel Summary
+      showSeatWarning(seat, msg);                 // hiện ngay cạnh ghế
+      seat.classList.add('shake'); 
+      setTimeout(()=> seat.classList.remove('shake'), 250);
+      return;
+    }
+
+    openSeatPopover(seat, code);
   }
 
-  syncSummary();
-  return;
-}
-
-if (isSelected){
-  state.selected.delete(code);
-  state.assigned.delete(code);
-  seat.dataset.state = 'available';
-  seat.setAttribute('aria-selected','false');
-  sendSeatHold([code], 'release');
-
-  syncSummary();
-  return;
-}
-
-
-  // ⛔ Chưa chọn → kiểm tra rule rồi mở popover
-  if (violatesSingleGap(rowL, colN, true)) {
-    const msg = 'Quy tắc rạp: không để lại 1 ghế trống kẹp giữa. Hãy chọn liền kề.';
-    $('#hint').textContent = msg;               // hiện ở panel Summary
-    showSeatWarning(seat, msg);                 // hiện ngay cạnh ghế
-    seat.classList.add('shake'); 
-    setTimeout(()=> seat.classList.remove('shake'), 250);
-    return;
+  function onSeatMouseEnter(e){
+    const seat = e.target.closest('.seat');
+    if (seat) flipTooltip(seat);
   }
-
-  openSeatPopover(seat, code);
-}
-
-  function onSeatMouseEnter(e){ const seat = e.target.closest('.seat'); if (seat) flipTooltip(seat); }
 
   // ===== Boot =====
-document.addEventListener('DOMContentLoaded', async () => {
-  try { if (window.mountHeader)      mountHeader('#hdr-include'); } catch {}
-  try { if (window.mountFooter)      mountFooter('#footer-include'); } catch {}
-  try { if (window.mountBreadcrumb)  mountBreadcrumb(); } catch {}
+  document.addEventListener('DOMContentLoaded', async () => {
+    try { if (window.mountHeader)      mountHeader('#hdr-include'); } catch {}
+    try { if (window.mountFooter)      mountFooter('#footer-include'); } catch {}
+    try { if (window.mountBreadcrumb)  mountBreadcrumb(); } catch {}
 
-  // 1. Lấy thông tin suất chiếu + phim từ BE
-  await loadShowAndMovie();
+    // 1. Lấy thông tin suất chiếu + phim từ BE
+    await loadShowAndMovie();
 
-  // 2. Lấy trạng thái ghế từ BE
-  await loadSeatStatesFromApi();
+    // 2. Lấy trạng thái ghế từ BE
+    await loadSeatStatesFromApi();
 
-  // 3. Vẽ ghế + summary như cũ
-  renderGrid();
-  renderPriceMatrix();
-  loadBooking();   // vẫn cho phép restore selection từ localStorage nếu bạn muốn
-  syncSummary();
+    // 3. Vẽ ghế + summary
+    renderGrid();
+    renderPriceMatrix();
+    loadBooking();   // restore selection nếu có
+    syncSummary();
 
     // seat events
     const grid = $('#seatGrid');
@@ -654,6 +825,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!seat || seat.dataset.state !== 'selected') return;
       openSeatPopover(seat, seat.id.slice(2));
     }); 
+
     // popover events (single set)
     const popEl = $('#seatPopover');
     $('#pickAdult').addEventListener('click', () => assignSeat('adult'));
@@ -664,11 +836,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !popEl.hidden) closeSeatPopover();
     });
+
     // CTA
     $('#btnContinue').addEventListener('click', () => onContinue('concessions.html'));
     $('#btnPay').addEventListener('click', () => onContinue('payment.html'));
   });
-
 
   // Dọn dẹp (trang success gọi)
   window.clearSeatBookingState = () => {

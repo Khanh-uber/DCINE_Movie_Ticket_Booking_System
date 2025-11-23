@@ -28,38 +28,40 @@
 
     <div class="seat-layout">
       <!-- Cột trái: Thông tin phim -->
-      <aside class="side left">
-        <div class="movie-card-info">
-          <div class="poster-wrap">
-            <img id="mvPoster" alt="Poster phim" />
-          </div>
+<aside class="side left">
+  <div class="movie-card-info">
+    <div class="poster-wrap">
+      <img id="mvPoster" alt="Poster phim" />
 
-          <div class="info-wrap">
-            <h1 id="mvTitle" class="mv-title">—</h1>
-            <div id="mvMeta" class="mv-meta small">—</div>
+      <!-- Nút play overlay -->
+      <button class="poster-play" id="posterPlayBtn" type="button" hidden>
+        <img src="../assets/icons/ic-play.svg" alt="Xem trailer">
+      </button>
+    </div>
 
-            <div class="showtime-block" id="showBlock">
-              <div class="row"><span>Rạp:</span><strong id="mvTheater">—</strong></div>
-              <div class="row"><span>Ngày:</span><strong id="mvDate">—</strong></div>
-              <div class="row"><span>Suất:</span><strong id="mvTime">—</strong></div>
-              <div class="row"><span>Định dạng:</span><strong id="mvFormat">—</strong></div>
-            </div>
 
-            <div class="cta-row">
-              <!-- SVG, không dùng emoji -->
-              <button id="btnTrailer" class="btn outline" type="button">
-                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-                <span>Xem trailer</span>
-              </button>
 
-              <a class="btn outline back" href="showtime.html">
-                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
-                <span>Quay lại lịch chiếu</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div class="info-wrap">
+      <h1 id="mvTitle" class="mv-title">—</h1>
+      <div id="mvMeta" class="mv-meta small">—</div>
+
+      <div class="showtime-block" id="showBlock">
+        <div class="row"><span>Rạp:</span><strong id="mvTheater">—</strong></div>
+        <div class="row"><span>Ngày:</span><strong id="mvDate">—</strong></div>
+        <div class="row"><span>Suất:</span><strong id="mvTime">—</strong></div>
+        <div class="row"><span>Định dạng:</span><strong id="mvFormat">—</strong></div>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn outline back" href="showtime.html">
+          <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
+          <span>Quay lại lịch chiếu</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</aside>
+
 
       <!-- Cột phải: Sơ đồ ghế -->
       <section class="side right" aria-label="Sơ đồ ghế">
