@@ -214,7 +214,8 @@
       fullName: (fullname?.value || '').trim(),
       username: (username?.value || '').trim(),
       email, phone,
-      password: (password?.value || '')
+      password: (password?.value || ''),
+      confirmPassword: (confirmPw?.value || '')
     };
 
     signUpBtn?.classList.add('loading');
