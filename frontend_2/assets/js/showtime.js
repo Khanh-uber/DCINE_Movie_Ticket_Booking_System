@@ -426,7 +426,10 @@
       state.theaters = normTheaters(thRaw);
 
       // showtimes for movie
-      const stRaw = await getJSON(`${API}/showtimes?movie=${encodeURIComponent(state.movie?.id||'')}`, '../data/showtimes.json');
+      const stRaw = await getJSON(
+  `${API}/showtimes/movie/${encodeURIComponent(state.movie?.id || '')}`,
+  '../data/showtimes.json'
+);
       state.showtimes = normShowtimes(stRaw, state.movie?.id);
       reconcileShowtimesWithTheaters();
 
