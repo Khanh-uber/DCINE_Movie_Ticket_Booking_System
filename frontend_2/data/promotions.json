@@ -1,59 +1,88 @@
-[
-  {
-    "id": "d1",
-    "title": "Combo Bắp + Nước -50%",
-    "desc": "Áp dụng khi đặt vé online khung giờ vàng.",
-    "imageUrl": "https://picsum.photos/seed/deal1/1280/720",
-    "badge": "-50%",
-    "validUntil": "31/12/2025",
-    "href": "promotions.html#d1",
-    "ctaText": "Nhận ưu đãi",
-    "tag": "ƯU ĐÃI HOT"
-  },
-  {
-    "id": "d2",
-    "title": "Tặng 1 vé khi tích 5 vé",
-    "desc": "Áp dụng hạng Gold trở lên, tự động cộng vào ví.",
-    "imageUrl": "https://picsum.photos/seed/deal2/1280/720",
-    "href": "promotions.html#d2",
-    "ctaText": "Xem chi tiết",
-    "tag": "THÀNH VIÊN"
-  },
-  {
-    "id": "d3",
-    "title": "Ưu đãi Sinh viên -20%",
-    "desc": "Giảm 20% giá vé cho SV có thẻ còn hiệu lực (T2–T6).",
-    "imageUrl": "https://picsum.photos/seed/deal3/1280/720",
-    "href": "promotions.html#d3",
-    "ctaText": "Áp dụng ngay",
-    "tag": "SINH VIÊN",
-    "validUntil": "30/06/2026"
-  },
-  {
-    "id": "d4",
-    "title": "Crazy Tuesday",
-    "desc": "Thứ Ba đồng giá 70K (2D) tại tất cả rạp.",
-    "imageUrl": "https://picsum.photos/seed/deal4/1280/720",
-    "href": "promotions.html#d4",
-    "ctaText": "Đặt vé",
-    "tag": "HÀNG TUẦN"
-  },
-  {
-    "id": "d5",
-    "title": "IMAX Week",
-    "desc": "Giảm 30K/vé IMAX trong tuần lễ IMAX.",
-    "imageUrl": "https://picsum.photos/seed/deal5/1280/720",
-    "href": "promotions.html#d5",
-    "ctaText": "Săn vé IMAX",
-    "tag": "SỰ KIỆN"
-  },
-  {
-    "id": "d6",
-    "title": "Happy Hour",
-    "desc": "Mua combo trước 17:00 giảm thêm 10K.",
-    "imageUrl": "https://picsum.photos/seed/deal6/1280/720",
-    "href": "promotions.html#d6",
-    "ctaText": "Mua ngay",
-    "tag": "FOOD & DRINK"
-  }
-]
+{
+  "items": [
+    {
+      "id": "pr-dcine10",
+      "code": "DCINE10",
+      "name": "Giảm 10% toàn bộ hóa đơn",
+      "description": "Ưu đãi 10% cho mọi đơn hàng từ 200.000đ.",
+      "discountType": "percent",
+      "discountValue": 10,
+      "minOrder": 200000,
+      "maxDiscount": 50000,
+      "appliesTo": "all",
+      "isActive": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "pr-dcine20k",
+      "code": "DCINE20K",
+      "name": "Giảm 20.000đ",
+      "description": "Giảm thẳng 20.000đ cho đơn từ 150.000đ.",
+      "discountType": "flat",
+      "discountValue": 20000,
+      "minOrder": 150000,
+      "maxDiscount": 20000,
+      "appliesTo": "all",
+      "isActive": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "pr-combo50",
+      "code": "COMBO50",
+      "name": "Giảm 50% tiền combo",
+      "description": "Giảm 50% giá trị combo khi mua kèm vé.",
+      "discountType": "percent",
+      "discountValue": 50,
+      "minOrder": 80000,
+      "maxDiscount": 60000,
+      "appliesTo": "combo",
+      "isActive": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "pr-member15",
+      "code": "MEMBER15",
+      "name": "Thành viên D-cine -15%",
+      "description": "Ưu đãi 15% cho thành viên đã đăng nhập.",
+      "discountType": "percent",
+      "discountValue": 15,
+      "minOrder": 0,
+      "maxDiscount": 70000,
+      "appliesTo": "all",
+      "isActive": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "pr-tuesday",
+      "code": "TUESDAY20",
+      "name": "Thứ 3 vui vẻ -20%",
+      "description": "Ưu đãi 20% cho các suất chiếu thứ 3 (demo, FE không check thứ).",
+      "discountType": "percent",
+      "discountValue": 20,
+      "minOrder": 0,
+      "maxDiscount": 80000,
+      "appliesTo": "all",
+      "isActive": true,
+      "validFrom": null,
+      "validTo": null
+    },
+    {
+      "id": "pr-expired",
+      "code": "OLD2020",
+      "name": "Mã cũ đã hết hạn",
+      "description": "Dùng để test thông báo mã không hợp lệ/hết hạn.",
+      "discountType": "flat",
+      "discountValue": 30000,
+      "minOrder": 100000,
+      "maxDiscount": 30000,
+      "appliesTo": "all",
+      "isActive": true,
+      "validFrom": "2019-01-01",
+      "validTo": "2020-12-31"
+    }
+  ]
+}

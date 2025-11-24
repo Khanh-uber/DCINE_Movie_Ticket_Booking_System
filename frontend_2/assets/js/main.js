@@ -558,38 +558,94 @@ function breadcrumbFrom(items){
   return el;
 }
 
-/* Render tiện lợi:
-   mountBreadcrumb({ mountId:'bc', items:[{label:'Trang chủ',href:'index.html'},{label:'Phim'}] })
-   hoặc auto từ pathname nếu bỏ 'items'
-*/
-async function mountBreadcrumb({ mountId='bc', items=null } = {}){
-  const mount = document.getElementById(mountId); if (!mount) return;
-  await ensureBreadcrumbTemplate();
+// ===== Breadcrumb config dùng chung =====
+(function () {
+  'use strict';
 
-  // auto build nếu không truyền items
-  if (!items){
-    const map = {
-      'index.html':'Trang chủ',
-      'movies.html':'Phim',
-      'movie-detail.html':'Chi tiết phim',
-      'showtime.html':'Lịch chiếu',
-      'seat-map.html':'Chọn ghế',
-      'concessions.html':'Combo bắp nước',
-      'cart.html':'Giỏ hàng',
-      'payment.html':'Thanh toán',
-      'confirmation.html':'Xác nhận',
-      'promotions.html':'Khuyến mãi',
-      'theaters.html':'Rạp',
-      'profile.html':'Hồ sơ',
-      'notifications.html':'Thông báo'
-    };
-    const path = location.pathname.split('/').pop() || 'index.html';
-    const label = map[path] || document.title || 'Trang hiện tại';
-    items = [{ label:'Trang chủ', href:'index.html' }, { label }];
+  const $ = (s, r = document) => r.querySelector(s);
+
+  // Config cho từng page-key
+  const BC_CONFIG = {
+    // Trang lịch chiếu
+    showtime: [
+      { label: 'Trang chủ', href: 'index.html' },
+      { label: 'Chọn suất chiếu' }
+    ],
+
+    // Trang chọn ghế
+    seatmap: [
+      { label: 'Trang chủ', href: 'index.html' },
+      { label: 'Chọn suất chiếu', href: 'showtime.html' },
+      { label: 'Chọn ghế' }
+    ],
+
+    // Trang bắp nước & combo
+    concessions: [
+      { label: 'Trang chủ', href: 'index.html' },
+      { label: 'Chọn suất chiếu', href: 'showtime.html' },
+      { label: 'Chọn ghế', href: 'seat-map.html' },
+      { label: 'Bắp nước & Combo' }
+    ],
+
+    // Trang thanh toán
+    payment: [
+      { label: 'Trang chủ', href: 'index.html' },
+      { label: 'Chọn suất chiếu', href: 'showtime.html' },
+      { label: 'Chọn ghế', href: 'seat-map.html' },
+      { label: 'Bắp nước & Combo', href: 'concessions.html' },
+      { label: 'Thanh toán' }
+    ],
+
+    // Fallback chung
+    default: [
+      { label: 'Trang chủ', href: 'index.html' }
+    ]
+  };
+
+  function detectPageKey() {
+    const body = document.body;
+    if (body && body.dataset.page) return body.dataset.page;
+
+    // Fallback theo tên file nếu quên gắn data-page
+    const path = location.pathname.toLowerCase();
+    if (path.includes('concessions')) return 'concessions';
+    if (path.includes('seat-map'))    return 'seatmap';
+    if (path.includes('showtime'))    return 'showtime';
+    if (path.includes('payment'))     return 'payment';
+    return 'default';
   }
 
-  mount.replaceChildren(breadcrumbFrom(items));
-}
+  function mountBreadcrumb(selector = '#bc') {
+    const bc = $(selector);
+    if (!bc) return;
+
+    const key = bc.dataset.bc || detectPageKey();
+    const items = BC_CONFIG[key] || BC_CONFIG.default;
+
+    // Đảm bảo style đồng bộ .breadcrumb (giống concessions)
+    bc.classList.remove('breadcrumb-wrap');
+    bc.classList.add('breadcrumb');
+    bc.setAttribute('aria-label', 'Bạn đang ở đây');
+
+    // Render HTML
+    const parts = [];
+    items.forEach((it, idx) => {
+      const isLast = idx === items.length - 1;
+      const content = isLast || !it.href
+        ? `<span>${it.label}</span>`
+        : `<a href="${it.href}">${it.label}</a>`;
+
+      parts.push(content);
+      if (!isLast) parts.push('<span class="sep">/</span>');
+    });
+
+    bc.innerHTML = parts.join('');
+  }
+
+  // Expose ra global cho tất cả page dùng
+  window.mountBreadcrumb = mountBreadcrumb;
+})();
+
 
 // xuất ra window để trang gọi
 Object.assign(window, { mountBreadcrumb });

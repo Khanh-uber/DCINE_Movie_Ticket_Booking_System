@@ -80,6 +80,16 @@
       return null;
     }
   }
+async function createBooking(showtimeId, seatsPayload) {
+  // seatsPayload: [{ code, type }]
+  return await apiPost('/bookings', {
+    showtimeId,
+    seats: seatsPayload.map(s => ({
+      code: s.code,
+      type: s.type || 'adult'
+    }))
+  });
+}
 
   async function sendSeatHold(codes, action) {
     const id = state.show.id || showtimeId();
@@ -122,8 +132,6 @@
     [state.movie.id || 'mv', state.show.theater, state.show.date, state.show.time]
       .join('|')
       .replace(/\s+/g, '_');
-
-  const bookingKey = () => `booking::${showtimeId()}`;
 
   function rowChunks(){
     const a=[]; let cur=[];
@@ -632,87 +640,59 @@ async function loadSeatStatesFromApi() {
     requestPricingPreview();
   }
 
-  // ===== Booking (khôi phục & lưu) =====
-  function loadBooking(){
-    try{
-      const b = JSON.parse(localStorage.getItem(bookingKey())||'null');
-      if(!b || !Array.isArray(b.seats)) return;
-      // Khôi phục mapping nếu có
-      if (b.assign && typeof b.assign === 'object'){
-        for (const [code, who] of Object.entries(b.assign)){
-          state.selected.add(code);
-          state.assigned.set(code, who);
-          const el = document.getElementById(`s-${code}`);
-          if (el && el.dataset.state!=='booked'){
-            el.dataset.state='selected';
-            el.setAttribute('aria-selected','true');
-          }
-        }
-      } else {
-        // Fallback: nếu chỉ có số Adult thì gán lần lượt
-        const ad = b.tickets?.adult|0;
-        b.seats.forEach((code,i)=>{
-          state.selected.add(code);
-          state.assigned.set(code, i<ad ? 'adult' : 'child');
-          const el = document.getElementById(`s-${code}`);
-          if (el && el.dataset.state!=='booked'){
-            el.dataset.state='selected';
-            el.setAttribute('aria-selected','true');
-          }
-        });
-      }
-    }catch{}
+async function onContinue(goTo = 'concessions.html') {
+  if (!state.selected.size) return;
+
+  const id = state.show.id || showtimeId();
+  const seatsPayload = [...state.selected].map(code => ({
+    code,
+    type: state.assigned.get(code) || 'adult'
+  }));
+
+  // 1. Gọi API tạo booking PENDING
+  const booking = await createBooking(id, seatsPayload);
+
+  if (!booking) {
+    alert('Không tạo được booking, vui lòng thử lại.');
+    return;
   }
 
-  async function onContinue(goTo='concessions.html'){
-    if (!state.selected.size) return;
+  // 2. Lấy items + total từ BE, fallback nếu BE chưa trả đủ
+  const items = Array.isArray(booking.items) && booking.items.length
+    ? booking.items
+    : seatsPayload.map(s => ({
+        code: s.code,
+        zone: state.seats[s.code]?.zone || zoneOf(s.code[0]),
+        type: s.type,
+        price: 0
+      }));
 
-    const id = state.show.id || showtimeId();
-    const seatsPayload = [...state.selected].map(code => ({
-      code,
-      type: state.assigned.get(code) || 'adult'
-    }));
+  const total = typeof booking.totalAmount === 'number'
+    ? booking.totalAmount
+    : items.reduce((sum, it) => sum + (it.price || 0), 0);
 
-    // Gọi BE tính giá lần nữa để chắc chắn
-    const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
-      seats: seatsPayload
-    });
+  const bookingId = booking.bookingId || booking.id || booking.bookingCode;
 
-    const preview = res || lastPricingPreview;
-    if (!preview) {
-      alert('Không tính được giá vé. Vui lòng thử lại.');
-      return;
+  // 3. Lưu vào localStorage cho trang sau dùng
+  localStorage.setItem('booking_cart', JSON.stringify({
+    bookingId,          // << QUAN TRỌNG: khoá chính để làm việc với BE
+    showtimeId: id,
+    items,
+    totalAmount: total,
+    status: booking.status || 'PENDING',
+    meta: {
+      theater:    state.show.theater,
+      date:       state.show.date,
+      time:       state.show.time,
+      movieId:    state.movie.id,
+      movieTitle: state.movie.title
     }
+  }));
 
-    const items = Array.isArray(preview.items) && preview.items.length
-      ? preview.items
-      : seatsPayload.map((s) => ({
-          code: s.code,
-          zone: state.seats[s.code]?.zone || zoneOf(s.code[0]),
-          type: s.type,
-          price: 0
-        }));
+  // 4. Điều hướng sang trang tiếp theo
+  location.href = goTo;
+}
 
-    const total = typeof preview.totalAmount === 'number'
-      ? preview.totalAmount
-      : items.reduce((sum, it) => sum + (it.price || 0), 0);
-
-    // Lưu vào localStorage cho trang Concessions / Payment
-    localStorage.setItem('booking_cart', JSON.stringify({
-      showtimeId: id,
-      items,
-      totalAmount: total,
-      meta: {
-        theater: state.show.theater,
-        date:    state.show.date,
-        time:    state.show.time,
-        movieId: state.movie.id,
-        movieTitle: state.movie.title
-      }
-    }));
-
-    location.href = goTo;
-  }
 
   // ===== Events =====
   function onSeatGridClick(e){
@@ -812,7 +792,6 @@ async function loadSeatStatesFromApi() {
     // 3. Vẽ ghế + summary
     renderGrid();
     renderPriceMatrix();
-    loadBooking();   // restore selection nếu có
     syncSummary();
 
     // seat events
@@ -842,8 +821,10 @@ async function loadSeatStatesFromApi() {
     $('#btnPay').addEventListener('click', () => onContinue('payment.html'));
   });
 
-  // Dọn dẹp (trang success gọi)
-  window.clearSeatBookingState = () => {
-    localStorage.removeItem(bookingKey());
-  };
+// Dọn dẹp (trang success gọi) – xoá data giỏ vé mới
+window.clearSeatBookingState = () => {
+  localStorage.removeItem('booking_cart');
+  localStorage.removeItem('orderCombos');
+};
+
 })();

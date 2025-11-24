@@ -1,0 +1,32 @@
+/* Icon container chung */
+.icon,
+.nav-icon,
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG bên trong icon */
+.icon svg,
+.nav-icon svg,
+.btn-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Làm icon “fill” – đầy đặn */
+.icon svg *,
+.nav-icon svg *,
+.btn-icon svg * {
+  stroke: currentColor;       /* viền cùng màu text */
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: currentColor;         /* quan trọng: tô fill */
+}
+
+/* Nếu có chỗ nào bạn MUỐN outline mỏng lại:
+   tạo class riêng, ví dụ .icon-outline svg * { fill: none; } */

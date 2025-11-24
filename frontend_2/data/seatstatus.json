@@ -1,0 +1,26 @@
+{
+  "showtimeId": "st-dune2-ct-2024-06-01-1900-2d-vn",
+  "seats": [
+    {
+      "code": "A1",
+      "row": "A",
+      "col": 1,
+      "zone": "vip",
+      "status": "available" 
+    },
+    {
+      "code": "A2",
+      "row": "A",
+      "col": 2,
+      "zone": "vip",
+      "status": "booked"
+    },
+    {
+      "code": "A3",
+      "row": "A",
+      "col": 3,
+      "zone": "vip",
+      "status": "held"
+    }
+  ]
+}
