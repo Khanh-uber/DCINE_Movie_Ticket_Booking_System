@@ -1,0 +1,17 @@
+package com.example.cinema.service;
+
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+
+import com.example.cinema.dto.ConcessionResponse;
+
+@Service
+public class ConcessionService {
+    private ShowTimeRepository showtimeRepo;
+    public ConcessionService(Showtime)
+    ConcessionResponse res = new ConcessionResponse();
+    
+    
+    
+}
