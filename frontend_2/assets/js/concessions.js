@@ -317,19 +317,42 @@ const CAT_CONFIG = {
     ticketFeeEl.textContent = toVND(ticketAmount);
   }
 
-  function buildBreadcrumb() {
-    const bc = $('#bc');
-    if (!bc) return;
-    bc.innerHTML = `
-      <a href="index.html">Trang chủ</a>
-      <span class="sep">/</span>
-      <a href="showtime.html">Chọn suất chiếu</a>
-      <span class="sep">/</span>
-      <a href="seat-map.html">Chọn ghế</a>
-      <span class="sep">/</span>
-      <span>Bắp nước &amp; Combo</span>
-    `;
+function safeParseBooking() {
+  try {
+    return JSON.parse(localStorage.getItem('booking_cart') || '{}');
+  } catch {
+    return {};
   }
+}
+
+function buildBreadcrumb() {
+  const wrap = document.getElementById('bc');
+  if (!wrap) return;
+
+  const cart      = safeParseBooking();
+  const movieId   = cart.meta && cart.meta.movieId;
+  const showtimeId = cart.showtimeId;
+
+  const showtimeHref = movieId
+    ? `showtime.html?movie=${encodeURIComponent(movieId)}`
+    : 'showtime.html';
+
+  const seatHref = showtimeId
+    ? `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`
+    : 'seat-map.html';
+
+  wrap.innerHTML = `
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="index.html">Trang chủ</a></li>
+        <li><a href="${showtimeHref}">Chọn suất chiếu</a></li>
+        <li><a href="${seatHref}">Chọn ghế</a></li>
+        <li><span class="current">Chọn bắp nước</span></li>
+      </ol>
+    </nav>
+  `;
+}
+
 
   // ===== Categories =====
 
@@ -683,6 +706,18 @@ const CAT_CONFIG = {
 
   async function init() {
     buildBreadcrumb();
+      const btnBackSeat = document.getElementById('btnBackSeat');
+  if (btnBackSeat) {
+    btnBackSeat.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cart = safeParseBooking();
+      const stId = cart.showtimeId;
+      const href = stId
+        ? `seat-map.html?showtimeId=${encodeURIComponent(stId)}`
+        : 'seat-map.html';
+      location.href = href;
+    });
+  }
 
     // 1) Load ticket + cart từ BE (summary) trước, lỗi thì fallback localStorage
     await loadTicketAndCart();

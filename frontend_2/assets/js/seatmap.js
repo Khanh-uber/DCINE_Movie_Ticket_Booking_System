@@ -49,7 +49,7 @@
   let lastPricingPreview = null;
 
   // ===== API BASE + helpers =====
-  const API = "http://localhost:8080/api";
+  const API = window.API_BASE || '/api';
 
   // Throttle để tránh spam API hold khi user click nhanh
   let lastHoldCall = 0;
@@ -700,7 +700,7 @@ async function onContinue(goTo = 'concessions.html') {
     if (!seat || !$('#seatGrid').contains(seat)) return;
     if (seat.dataset.state === 'booked' || seat.dataset.state === 'held') return;
 
-    const code = seat.id.slice(2); 
+    const code = seat.id.slice(2);
     const rowL = code[0], colN = Number(code.slice(1));
     const isSelected = seat.dataset.state === 'selected';
     const zone = state.seats[code]?.zone; 
@@ -785,7 +785,36 @@ async function onContinue(goTo = 'concessions.html') {
 
     // 1. Lấy thông tin suất chiếu + phim từ BE
     await loadShowAndMovie();
+    // 1. Lấy thông tin từ state sau khi đã load BE
+    const movieId    = state.movie.id;
+    const showtimeId = state.show.id;
 
+    const showtimeUrl = movieId
+      ? `showtime.html?movie=${encodeURIComponent(movieId)}`
+      : 'showtime.html';
+
+    const movieUrl = movieId
+      ? `movie-detail.html?movie=${encodeURIComponent(movieId)}`
+      : 'index.html';
+
+    // 2. Nút back trên header + trong summary
+    const btnBackShow = document.getElementById('btnBackShowtime');
+    if (btnBackShow) btnBackShow.href = showtimeUrl;
+
+    const btnBackMovie = document.getElementById('btnBackMovie');
+    if (btnBackMovie) btnBackMovie.href = movieUrl;
+
+    // 3. Cập nhật breadcrumb (nếu có)
+    const bc = document.querySelector('nav.breadcrumb');
+    if (bc) {
+      const linkShow = bc.querySelector('a[href*="showtime.html"]');
+      if (linkShow) linkShow.href = showtimeUrl;
+
+      const linkSeat = bc.querySelector('a[href*="seat-map.html"]');
+      if (linkSeat && showtimeId) {
+        linkSeat.href = `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`;
+      }
+    }
     // 2. Lấy trạng thái ghế từ BE
     await loadSeatStatesFromApi();
 
