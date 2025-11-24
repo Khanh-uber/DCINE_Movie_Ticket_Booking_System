@@ -16,7 +16,8 @@
       "synopsis": "Paul Atreides liên minh với người Fremen để trả thù những kẻ đã phá hủy gia tộc mình.",
       "director": "Denis Villeneuve",
       "cast": ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"],
-      "href": "showtime.html?movie=mv-dune2"
+      "href": "showtime.html?movie=mv-dune2",
+      "status": "now"
     },
     {
       "id": "mv-insideout2",
@@ -34,7 +35,8 @@
       "synopsis": "Riley bước vào tuổi teen với những cảm xúc mới đầy hỗn loạn.",
       "director": "Kelsey Mann",
       "cast": ["Amy Poehler", "Maya Hawke", "Kaitlyn Dias"],
-      "href": "showtime.html?movie=mv-insideout2"
+      "href": "showtime.html?movie=mv-insideout2",
+      "status": "now"
     },
     {
       "id": "mv-venom3",
@@ -52,11 +54,13 @@
       "synopsis": "Eddie Brock và Venom đối mặt lựa chọn sinh tồn sau cùng.",
       "director": "Kelly Marcel",
       "cast": ["Tom Hardy", "Chiwetel Ejiofor"],
-      "href": "showtime.html?movie=mv-venom3"
+      "href": "showtime.html?movie=mv-venom3",
+      "status": "now"
     },
     {
       "id": "mv-joker2",
       "title": "Joker: Folie à Deux",
+      "originalTitle": "Joker: Folie à Deux",
       "posterUrl": "https://picsum.photos/seed/joker2/520/720",
       "backdropUrl": "https://picsum.photos/seed/joker2b/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=xy8aJw1vYHo",
@@ -69,11 +73,13 @@
       "synopsis": "Arthur Fleck tiếp tục cuộc hành trình đen tối với Harley trong thế giới méo mó của danh vọng.",
       "director": "Todd Phillips",
       "cast": ["Joaquin Phoenix", "Lady Gaga"],
-      "href": "showtime.html?movie=mv-joker2"
+      "href": "showtime.html?movie=mv-joker2",
+      "status": "now"
     },
     {
       "id": "mv-godzkong",
       "title": "Godzilla x Kong: The New Empire",
+      "originalTitle": "Godzilla x Kong: The New Empire",
       "posterUrl": "https://picsum.photos/seed/gxk/520/720",
       "backdropUrl": "https://picsum.photos/seed/gxkb/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=qqrpMRDuPfc",
@@ -86,11 +92,13 @@
       "synopsis": "Bộ đôi quái thú hợp lực trước mối đe dọa cổ xưa.",
       "director": "Adam Wingard",
       "cast": ["Rebecca Hall", "Brian Tyree Henry"],
-      "href": "showtime.html?movie=mv-godzkong"
+      "href": "showtime.html?movie=mv-godzkong",
+      "status": "now"
     },
     {
       "id": "mv-oppenheimer",
       "title": "Oppenheimer (Re-release)",
+      "originalTitle": "Oppenheimer (Re-release)",
       "posterUrl": "https://picsum.photos/seed/opp/520/720",
       "backdropUrl": "https://picsum.photos/seed/oppb/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=uYPbbksJxIg",
@@ -103,7 +111,8 @@
       "synopsis": "Câu chuyện về cha đẻ bom nguyên tử.",
       "director": "Christopher Nolan",
       "cast": ["Cillian Murphy", "Emily Blunt", "Matt Damon"],
-      "href": "showtime.html?movie=mv-oppenheimer"
+      "href": "showtime.html?movie=mv-oppenheimer",
+      "status": "now"
     },
     {
       "id": "mv-furiosa",
@@ -121,7 +130,8 @@
       "synopsis": "Nguồn gốc của Furiosa, bị bắt cóc và phải tìm đường trở về nhà.",
       "director": "George Miller",
       "cast": ["Anya Taylor-Joy", "Chris Hemsworth"],
-      "href": "showtime.html?movie=mv-furiosa"
+      "href": "showtime.html?movie=mv-furiosa",
+      "status": "now"
     },
     {
       "id": "mv-quietplace1",
@@ -139,7 +149,8 @@
       "synopsis": "Chứng kiến ngày đầu tiên thế giới chìm vào im lặng.",
       "director": "Michael Sarnoski",
       "cast": ["Lupita Nyong'o", "Joseph Quinn"],
-      "href": "showtime.html?movie=mv-quietplace1"
+      "href": "showtime.html?movie=mv-quietplace1",
+      "status": "now"
     },
     {
       "id": "mv-twisters",
@@ -157,7 +168,8 @@
       "synopsis": "Một cựu thợ săn bão quay trở lại cuộc chơi để thử nghiệm hệ thống cảnh báo mới.",
       "director": "Lee Isaac Chung",
       "cast": ["Daisy Edgar-Jones", "Glen Powell"],
-      "href": "showtime.html?movie=mv-twisters"
+      "href": "showtime.html?movie=mv-twisters",
+      "status": "now"
     },
     {
       "id": "mv-apes",
@@ -175,7 +187,8 @@
       "synopsis": "Nhiều thế hệ sau Caesar, một con tinh tinh trẻ bắt đầu hành trình định hình tương lai.",
       "director": "Wes Ball",
       "cast": ["Owen Teague", "Freya Allan", "Kevin Durand"],
-      "href": "showtime.html?movie=mv-apes"
+      "href": "showtime.html?movie=mv-apes",
+      "status": "now"
     },
     {
       "id": "mv-garfield",
@@ -193,7 +206,8 @@
       "synopsis": "Sau cuộc hội ngộ bất ngờ với người cha đã mất, Garfield bị cuốn vào một vụ cướp.",
       "director": "Mark Dindal",
       "cast": ["Chris Pratt", "Samuel L. Jackson"],
-      "href": "showtime.html?movie=mv-garfield"
+      "href": "showtime.html?movie=mv-garfield",
+      "status": "now"
     },
     {
       "id": "mv-fallguy",
@@ -211,7 +225,8 @@
       "synopsis": "Một diễn viên đóng thế trở lại làm việc và phát hiện ngôi sao của bộ phim đã biến mất.",
       "director": "David Leitch",
       "cast": ["Ryan Gosling", "Emily Blunt"],
-      "href": "showtime.html?movie=mv-fallguy"
+      "href": "showtime.html?movie=mv-fallguy",
+      "status": "now"
     },
     {
       "id": "mv-despicable4",
@@ -229,13 +244,15 @@
       "synopsis": "Gru và gia đình phải chạy trốn khi đối mặt với kẻ thù mới, Maxime Le Mal.",
       "director": "Chris Renaud",
       "cast": ["Steve Carell", "Kristen Wiig", "Will Ferrell"],
-      "href": "showtime.html?movie=mv-despicable4"
+      "href": "showtime.html?movie=mv-despicable4",
+      "status": "now"
     }
   ],
   "soon": [
     {
       "id": "mv-deadpool3",
       "title": "Deadpool & Wolverine",
+      "originalTitle": "Deadpool & Wolverine",
       "posterUrl": "https://picsum.photos/seed/dp3/520/720",
       "backdropUrl": "https://picsum.photos/seed/dp3b/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=73_1biulkYk",
@@ -248,11 +265,13 @@
       "synopsis": "Bộ đôi lầy lội đột phá đa vũ trụ.",
       "director": "Shawn Levy",
       "cast": ["Ryan Reynolds", "Hugh Jackman"],
-      "href": "movie-detail.html?movie=mv-deadpool3"
+      "href": "movie-detail.html?movie=mv-deadpool3",
+      "status": "soon"
     },
     {
       "id": "mv-kimetsu",
       "title": "Demon Slayer: Infinity Train (Re-release)",
+      "originalTitle": "Demon Slayer: Infinity Train (Re-release)",
       "posterUrl": "https://picsum.photos/seed/kny/520/720",
       "backdropUrl": "https://picsum.photos/seed/knyb/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=bFwdl2PDAFM",
@@ -265,11 +284,13 @@
       "synopsis": "Tanjirou cùng Hashira đối đầu Thượng huyền.",
       "director": "Haruo Sotozaki",
       "cast": ["Natsuki Hanae", "Akari Kitō"],
-      "href": "movie-detail.html?movie=mv-kimetsu"
+      "href": "movie-detail.html?movie=mv-kimetsu",
+      "status": "soon"
     },
     {
       "id": "mv-avatar3",
       "title": "Avatar 3",
+      "originalTitle": "Avatar 3",
       "posterUrl": "https://picsum.photos/seed/ava3/520/720",
       "backdropUrl": "https://picsum.photos/seed/ava3b/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=5PSNL1qE6VY",
@@ -282,11 +303,13 @@
       "synopsis": "Hành trình mới tại Pandora.",
       "director": "James Cameron",
       "cast": ["Sam Worthington", "Zoe Saldana"],
-      "href": "movie-detail.html?movie=mv-avatar3"
+      "href": "movie-detail.html?movie=mv-avatar3",
+      "status": "soon"
     },
     {
       "id": "mv-onepiece-red",
       "title": "One Piece Film: Red (Re-release)",
+      "originalTitle": "One Piece Film: Red (Re-release)",
       "posterUrl": "https://picsum.photos/seed/opred/520/720",
       "backdropUrl": "https://picsum.photos/seed/opredb/1280/720",
       "trailerUrl": "https://www.youtube.com/watch?v=89JWRYEIG-s",
@@ -299,7 +322,8 @@
       "synopsis": "Sân khấu của Uta cùng băng Mũ Rơm.",
       "director": "Goro Taniguchi",
       "cast": ["Kaori Nazuka", "Ado"],
-      "href": "movie-detail.html?movie=mv-onepiece-red"
+      "href": "movie-detail.html?movie=mv-onepiece-red",
+      "status": "soon"
     },
     {
       "id": "mv-gladiator2",
@@ -317,7 +341,8 @@
       "synopsis": "Lucius, cháu trai của Commodus, bước vào đấu trường La Mã.",
       "director": "Ridley Scott",
       "cast": ["Paul Mescal", "Denzel Washington", "Pedro Pascal"],
-      "href": "movie-detail.html?movie=mv-gladiator2"
+      "href": "movie-detail.html?movie=mv-gladiator2",
+      "status": "soon"
     },
     {
       "id": "mv-wicked",
@@ -335,7 +360,8 @@
       "synopsis": "Câu chuyện chưa kể về Phù thủy xứ Oz, Elphaba và Glinda.",
       "director": "Jon M. Chu",
       "cast": ["Cynthia Erivo", "Ariana Grande", "Jonathan Bailey"],
-      "href": "movie-detail.html?movie=mv-wicked"
+      "href": "movie-detail.html?movie=mv-wicked",
+      "status": "soon"
     },
     {
       "id": "mv-mufasa",
@@ -353,7 +379,8 @@
       "synopsis": "Rafiki kể lại huyền thoại về Mufasa cho Kiara, con gái của Simba.",
       "director": "Barry Jenkins",
       "cast": ["Aaron Pierre", "Kelvin Harrison Jr.", "Donald Glover"],
-      "href": "movie-detail.html?movie=mv-mufasa"
+      "href": "movie-detail.html?movie=mv-mufasa",
+      "status": "soon"
     },
     {
       "id": "mv-superman",
@@ -371,7 +398,8 @@
       "synopsis": "Siêu Nhân cân bằng di sản Krypton của mình với cuộc sống con người ở Smallville.",
       "director": "James Gunn",
       "cast": ["David Corenswet", "Rachel Brosnahan", "Nicholas Hoult"],
-      "href": "movie-detail.html?movie=mv-superman"
+      "href": "movie-detail.html?movie=mv-superman",
+      "status": "soon"
     },
     {
       "id": "mv-sonic3",
@@ -389,7 +417,8 @@
       "synopsis": "Sonic và Tails hợp tác với Knuckles để đối đầu với Shadow the Hedgehog.",
       "director": "Jeff Fowler",
       "cast": ["Ben Schwartz", "James Marsden", "Jim Carrey"],
-      "href": "movie-detail.html?movie=mv-sonic3"
+      "href": "movie-detail.html?movie=mv-sonic3",
+      "status": "soon"
     },
     {
       "id": "mv-karatekid",
@@ -407,7 +436,8 @@
       "synopsis": "Một thiếu niên Trung Quốc chuyển đến Bờ Đông và tìm thấy sự hướng dẫn từ một võ sư.",
       "director": "Jonathan Entwistle",
       "cast": ["Ben Wang", "Jackie Chan", "Ralph Macchio"],
-      "href": "movie-detail.html?movie=mv-karatekid"
+      "href": "movie-detail.html?movie=mv-karatekid",
+      "status": "soon"
     },
     {
       "id": "mv-howtotrain4",
@@ -425,7 +455,8 @@
       "synopsis": "Câu chuyện live-action về cậu bé Viking trẻ tuổi Hiccup và con rồng Toothless.",
       "director": "Dean DeBlois",
       "cast": ["Mason Thames", "Nico Parker", "Gerard Butler"],
-      "href": "movie-detail.html?movie=mv-howtotrain4"
+      "href": "movie-detail.html?movie=mv-howtotrain4",
+      "status": "soon"
     },
     {
       "id": "mv-moana2",
@@ -443,7 +474,8 @@
       "synopsis": "Moana và Maui tái hợp trong một hành trình mới sau khi nhận được lời kêu gọi từ tổ tiên.",
       "director": "David G. Derrick Jr.",
       "cast": ["Auli'i Cravalho", "Dwayne Johnson"],
-      "href": "movie-detail.html?movie=mv-moana2"
+      "href": "movie-detail.html?movie=mv-moana2",
+      "status": "soon"
     },
     {
       "id": "mv-zootopia2",
@@ -461,7 +493,8 @@
       "synopsis": "Judy Hopps và Nick Wilde trở lại với một vụ án mới trong thành phố Zootopia.",
       "director": "Byron Howard",
       "cast": ["Ginnifer Goodwin", "Jason Bateman"],
-      "href": "movie-detail.html?movie=mv-zootopia2"
+      "href": "movie-detail.html?movie=mv-zootopia2",
+      "status": "soon"
     }
   ]
 }

@@ -693,6 +693,29 @@ async function onContinue(goTo = 'concessions.html') {
   location.href = goTo;
 }
 
+<<<<<<< HEAD
+    const total = typeof preview.totalAmount === 'number'
+      ? preview.totalAmount
+      : items.reduce((sum, it) => sum + (it.price || 0), 0);
+
+    // Lưu vào localStorage cho trang Concessions / Payment
+    localStorage.setItem('booking_cart', JSON.stringify({
+      showtimeId: id,
+      items,
+      totalAmount: total,
+      meta: {
+        theater: state.show.theater,
+        date:    state.show.date,
+        time:    state.show.time,
+        movieId: state.movie.id,
+        movieTitle: state.movie.title
+      }
+    }));
+ 
+    location.href = goTo;
+  }
+=======
+>>>>>>> 775007c2192971bcdfcbbb5fb9b4839d4a8eb761
 
   // ===== Events =====
   function onSeatGridClick(e){

@@ -12,72 +12,92 @@
   <link rel="stylesheet" href="../assets/css/header.css?v=8">
   <link rel="stylesheet" href="../assets/css/main.css?v=8">
   <link rel="stylesheet" href="../assets/css/components.css?v=8">
-  <link rel="stylesheet" href="../assets/css/movie-detail.css?v=1">
+  <link rel="stylesheet" href="../assets/css/movie-detail.css?v=4">
   <link rel="stylesheet" href="../assets/css/footer.css?v=9">
 </head>
 <body>
   <!-- Header include -->
   <div id="hdr-include"></div>
 
-  <main class="container">
-    <!-- Breadcrumb -->
-    <nav id="bc" class="breadcrumb" aria-label="Bạn đang ở đây"></nav>
+  <!-- HERO: backdrop + breadcrumb + title + CTA -->
+  <section id="mdHero" class="md-hero reveal" aria-label="Giới thiệu phim">
+    <div class="md-hero__bg" id="mdBackdrop"></div>
+    <div class="md-hero__overlay">
+      <div class="container md-hero__inner">
+        <!-- Breadcrumb nổi trên banner -->
+        <nav id="bc" class="breadcrumb md-bc" aria-label="Bạn đang ở đây"></nav>
 
-    <!-- HERO: backdrop + title + CTA -->
-    <section id="mdHero" class="md-hero reveal" aria-label="Giới thiệu phim">
-      <div class="md-hero__bg" id="mdBackdrop"></div>
-      <div class="md-hero__inner">
         <h1 id="mdTitle">Movie title</h1>
 
-        <div id="mdMeta" class="md-hero__meta">
-          <!-- ví dụ: 2025 • Action/Sci-fi • 2h 13m • C13 -->
-        </div>
-
         <div class="md-cta">
-          <button id="watchTrailerBtn" class="btn outline" type="button">▶ Xem trailer</button>
-          <a id="buyTicketsBtn" class="btn" href="showtime.html">🎟 Đặt vé</a>
+          <button id="watchTrailerBtn" class="btn outline" type="button">
+            ▶ Xem trailer
+          </button>
+          <!-- href sẽ được JS gắn thêm ?movie={id} -->
+          <a id="buyTicketsBtn" class="btn primary" href="showtime.html">
+            🎟 Đặt vé
+          </a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- BODY: 2 cột -->
-    <section class="md-grid">
-      <article class="md-col">
-        <h2 class="md-h2">Story line</h2>
+  <main class="container md-page">
+    <!-- BODY -->
+    <section class="md-main">
+      <!-- Dòng meta: 2024 • Animation, Family • 1h 40m • P • ★ 8.1 -->
+      <div id="mdMeta" class="md-meta-row"></div>
+
+      <!-- STORYLINE + FACTS -->
+      <article class="md-section">
+        <h2 class="md-h2">Nội dung phim</h2>
         <p id="mdDesc" class="md-desc"></p>
 
-        <ul class="md-facts">
-          <li><b>Ngôn ngữ:</b> <span id="mdLang">–</span></li>
-          <li><b>Đạo diễn:</b> <span id="mdDirector">–</span></li>
+        <ul class="md-facts md-facts--inline">
+          <li><b>Ngôn ngữ:</b> <span id="mdLang">—</span></li>
+          <li><b>Đạo diễn:</b> <span id="mdDirector">—</span></li>
         </ul>
 
-        <h3 class="md-h3">Cast</h3>
-        <div id="mdCast" class="md-cast"></div>
-
-        <h3 class="md-h3">Team</h3>
-        <ul id="mdTeam" class="md-team"></ul>
+        <div class="md-facts-wrap">
+          <h3 class="md-h3">Thông tin phim</h3>
+          <ul class="md-facts md-facts--grid">
+            <li>
+              <span class="label">Tên gốc</span>
+              <span id="mdOriginal" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Ngày khởi chiếu</span>
+              <span id="mdRelease" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Trạng thái</span>
+              <span id="mdStatus" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Thời lượng</span>
+              <span id="mdDuration" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Thể loại</span>
+              <span id="mdGenres" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Giới hạn tuổi</span>
+              <span id="mdRated" class="value">—</span>
+            </li>
+            <li>
+              <span class="label">Điểm đánh giá</span>
+              <span id="mdRating" class="value">—</span>
+            </li>
+          </ul>
+        </div>
       </article>
 
-      <!-- BOOKING PANEL -->
-      <aside class="md-col md-book">
-        <h3 class="md-h3">Chọn rạp & ngày chiếu</h3>
-
-        <label class="md-field">
-          <span>Rạp</span>
-          <select id="selTheater" aria-label="Chọn rạp"></select>
-        </label>
-
-        <label class="md-field">
-          <span>Ngày</span>
-          <select id="selDate" aria-label="Chọn ngày"></select>
-        </label>
-
-        <div id="timeWrap" class="md-times" aria-live="polite"></div>
-
-        <a id="goShowtime" class="btn md-go" href="showtime.html">Tiếp tục chọn suất</a>
-
-        <small class="md-note">Nhấn 1 giờ chiếu để đi thẳng tới trang suất chiếu.</small>
-      </aside>
+      <!-- CAST -->
+      <article class="md-section">
+        <h3 class="md-h3">Diễn viên</h3>
+        <div id="mdCast" class="md-cast"></div>
+      </article>
     </section>
   </main>
 

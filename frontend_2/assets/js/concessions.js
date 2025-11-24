@@ -14,23 +14,16 @@
 
   const CAT_ORDER = ['combo', 'popcorn', 'beverage', 'hot-food', 'coffee', 'desserts'];
 
-  const CAT_CONFIG = {
-    combo:    { label: 'Combo',    icon: 'ic-ticket-star' },
-    popcorn:  { label: 'Popcorn',  icon: 'ic-popcorn' },
-    beverage: { label: 'Beverage', icon: 'ic-drink' },
-    'hot-food': { label: 'Hot Food', icon: 'ic-menu' },
-    coffee:   { label: 'Coffee',   icon: 'ic-drink' },
-    desserts: { label: 'Desserts', icon: 'ic-star' },
-    all:      { label: 'Tất cả',   icon: 'ic-menu' }
-  };
+const CAT_CONFIG = {
+  combo:    { label: 'Combo',    icon: 'ic-ticket-star' },
+  popcorn:  { label: 'Popcorn',  icon: 'ic-popcorn' },
+  beverage: { label: 'Beverage', icon: 'ic-beverage' },
+  'hot-food': { label: 'Hot Food', icon: 'ic-hot-food' },
+  coffee:   { label: 'Coffee',   icon: 'ic-drink' },
+  desserts: { label: 'Desserts', icon: 'ic-desserts' },
+  all:      { label: 'Tất cả',   icon: 'ic-menu' }
+};
 
-  /**
-   * Global state
-   *
-   * BE-first:
-   *  - backend.enabled = true  -> FE cố gắng dùng /concessions/summary & /concessions/cart
-   *  - khi BE lỗi -> enabled = false, FE fallback sang local JSON + localStorage
-   */
   const state = {
     combos: [],
     currentCat: 'combo',
@@ -48,11 +41,6 @@
   };
 
   // ===== Helpers =====
-
-  /**
-   * Gọi API BE trước, nếu lỗi thì fallback sang JSON local.
-   * Dùng cho danh sách combos (data menu).
-   */
   async function getJSON(apiPath, localPath) {
     if (apiPath) {
       try {

@@ -37,6 +37,10 @@
     locationsById: {},
     provincesById: {}
   };
+  // ánh xạ (theaterId + date + format + lang + time) -> showtimeId (từ BE)
+  const showtimeIdMap = new Map();
+  const makeShowtimeKey = (theaterId, date, formatLabel, lang, time) =>
+    [String(theaterId || ''), String(date || ''), String(formatLabel || ''), String(lang || ''), String(time || '')].join('|');
 
   // ---------- normalizers ----------
   function normTheaters(data){
@@ -57,39 +61,100 @@
       return id ? { id, name, city, _slug: slug(name + '-' + id) } : null;
     }).filter(Boolean);
   }
-
-  function normFormats(fmts, times){
-    if (!Array.isArray(fmts) || !fmts.length) {
-      const ts = Array.isArray(times) ? times : [];
-      return ts.length ? [{ label:'2D', lang:'', times:ts }] : [];
-    }
-    return fmts.map(f => ({
-      label: f.label || f.format || f.type || '2D',
-      lang:  f.lang || f.language || f.sub || '',
-      times: Array.isArray(f.times) ? f.times : (Array.isArray(f.slots) ? f.slots : [])
-    })).filter(x=>x.times.length);
-  }
-
   function normShowtimes(data, movieId){
     const base = Array.isArray(data) ? data : (data.items || data.showtimes || []);
-    let list = base;
-    if (list.length && list[0]?.dates) {
-      list = list.flatMap(s => (s.dates||[]).map(d => ({
-        movieId: s.movieId ?? movieId,
-        theaterId: s.theaterId ?? s.theater_id ?? s.tid ?? '',
-        date: String(d.date||'').slice(0,10),
-        formats: d.formats
-      })));
-    }
-    return list
-      .filter(x => String(x.movieId ?? x.movie) === String(movieId))
-      .map(x => ({
-        movieId: String(x.movieId ?? movieId),
-        theaterId: String(x.theaterId ?? x.theater ?? x.tid ?? ''),
-        date: (x.date || x.showDate || '').slice(0,10),
-        formats: normFormats(x.formats, x.times)
-      }))
-      .filter(s => s.theaterId && s.date && s.formats.length);
+    const out = [];
+
+    // clear mapping trước khi build lại
+    showtimeIdMap.clear();
+
+    base.forEach(s => {
+      const movie = String(s.movieId ?? s.movie ?? movieId ?? '');
+      const theaterId = String(s.theaterId ?? s.theater_id ?? s.theater ?? s.tid ?? '').trim();
+      if (!movie || !theaterId) return;
+
+      // ---- Case 1: mỗi object = 1 suất chiếu (có "time") ----
+      if (s.time || s.showTime || s.startTime) {
+        const date = String(s.date || s.showDate || '').slice(0, 10);
+        const time = s.time || s.showTime || s.startTime || '';
+        if (!date || !time) return;
+
+        const formatLabel = s.format || s.screenFormat || s.version || '2D';
+        const lang = s.lang || s.language || s.audio || '';
+
+        const id = String(s.id ?? s.showtimeId ?? s.code ?? '').trim();
+        const key = makeShowtimeKey(theaterId, date, formatLabel, lang, time);
+        showtimeIdMap.set(key, id || key);
+
+        out.push({ movieId: movie, theaterId, date, time, format: formatLabel, lang });
+        return;
+      }
+
+      // ---- Case 2: có mảng dates -> formats -> times ----
+      const dates = s.dates || s.days || [];
+      if (Array.isArray(dates) && dates.length) {
+        dates.forEach(d => {
+          const date = String(d.date || d.showDate || '').slice(0, 10);
+          if (!date) return;
+
+          const fmts = d.formats || d.versions || [];
+          (fmts || []).forEach(f => {
+            const formatLabel = f.label || f.format || f.type || '2D';
+            const lang = f.lang || f.language || f.sub || '';
+            const times = f.times || f.slots || [];
+            (times || []).forEach(t => {
+              const time = typeof t === 'string'
+                ? t
+                : (t.time || t.showTime || t.startTime || '');
+              if (!time) return;
+
+              const id = typeof t === 'object' && t
+                ? String(t.id ?? t.showtimeId ?? '').trim()
+                : String(s.id ?? s.showtimeId ?? '').trim();
+
+              const key = makeShowtimeKey(theaterId, date, formatLabel, lang, time);
+              showtimeIdMap.set(key, id || key);
+
+              out.push({ movieId: movie, theaterId, date, time, format: formatLabel, lang });
+            });
+          });
+        });
+        return;
+      }
+
+      // ---- Case 3: có formats/times ngay trên object ----
+      const date = String(s.date || s.showDate || '').slice(0, 10);
+      const fmts = s.formats || [];
+      if (date && Array.isArray(fmts) && fmts.length) {
+        fmts.forEach(f => {
+          const formatLabel = f.label || f.format || f.type || '2D';
+          const lang = f.lang || f.language || f.sub || '';
+          const times = f.times || f.slots || [];
+          (times || []).forEach(t => {
+            const time = typeof t === 'string'
+              ? t
+              : (t.time || t.showTime || t.startTime || '');
+            if (!time) return;
+
+            const id = typeof t === 'object' && t
+              ? String(t.id ?? t.showtimeId ?? '').trim()
+              : String(s.id ?? s.showtimeId ?? '').trim();
+
+            const key = makeShowtimeKey(theaterId, date, formatLabel, lang, time);
+            showtimeIdMap.set(key, id || key);
+
+            out.push({ movieId: movie, theaterId, date, time, format: formatLabel, lang });
+          });
+        });
+      }
+    });
+
+    return out.filter(s =>
+      String(s.movieId) === String(movieId) &&
+      s.theaterId &&
+      s.date &&
+      s.time
+    );
   }
 
   // reconcile showtimes.theaterId ↔ theaters.id (handle different prefixes)
@@ -232,69 +297,103 @@
   function renderShowtimes(){
     const box = $('#showtimesWrap'); box.innerHTML = '';
 
-    const th = state.theaters.find(t=>t.id===state.selectedTheaterId);
-    if (!th) { box.innerHTML = `<div class="st-empty">Chưa có rạp khả dụng trong khu vực này.</div>`; return; }
+    const th = state.theaters.find(t => t.id === state.selectedTheaterId);
+    if (!th) {
+      box.innerHTML = `<div class="st-empty">Chưa có rạp khả dụng trong khu vực này.</div>`;
+      return;
+    }
 
-    const entry = state.showtimes.find(s => s.theaterId===th.id && s.date===state.selectedDate);
+    const list = state.showtimes.filter(s => s.theaterId === th.id && s.date === state.selectedDate);
 
     const root  = document.createElement('div'); root.className = 'st-theater';
     const title = document.createElement('h3');  title.className = 'st-title'; title.textContent = th.name.toUpperCase();
     root.appendChild(title);
 
-    if (!entry) {
+    if (!list.length) {
       root.appendChild(elEmpty(`Không có suất chiếu vào ${fmtVNDate(state.selectedDate)}. Vui lòng chọn ngày khác.`));
-      box.appendChild(root); return;
+      box.appendChild(root);
+      return;
     }
 
-    entry.formats.forEach(f => {
+    // group theo định dạng + ngôn ngữ
+    const groups = new Map();
+    list.forEach(s => {
+      const fmtLabel = s.format || '2D';
+      const lang = s.lang || '';
+      const key = fmtLabel + '|' + lang;
+      if (!groups.has(key)) {
+        groups.set(key, { format: fmtLabel, lang, items: [] });
+      }
+      groups.get(key).items.push(s);
+    });
+
+    groups.forEach(group => {
       const row = document.createElement('div'); row.className = 'st-row';
       const fmt = document.createElement('div'); fmt.className = 'st-format';
-      fmt.textContent = `${f.label}${f.lang ? ' • ' + f.lang : ''}`;
+      fmt.textContent = group.lang
+        ? `${group.format} • ${group.lang}`
+        : group.format;
 
       const times = document.createElement('div'); times.className = 'times';
-      f.times.forEach(t => {
-        const b = document.createElement('button');
-        b.type='button'; b.className='time-btn'; b.textContent=t;
 
-        // disable nếu đã qua giờ (ngày hôm nay)
-        if (isPastForSelectedDay(t)) {
-          b.classList.add('is-disabled');
-          b.disabled = true;
-          b.title = 'Suất đã qua giờ chiếu';
-        } else {
-          b.addEventListener('click', () => {
-            // UX: highlight 150ms trước khi chuyển trang
-            b.classList.add('is-active');
-            setTimeout(() => confirmShowtime({ time:t, format:f.label, lang:f.lang||'' }), 120);
-          });
-        }
-        times.appendChild(b);
-      });
+      group.items
+        .slice()
+        .sort((a,b) => {
+          const am = strTimeToMinutes(a.time) ?? 0;
+          const bm = strTimeToMinutes(b.time) ?? 0;
+          return am - bm;
+        })
+        .forEach(st => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'time-btn';
+          b.textContent = st.time;
 
-      row.appendChild(fmt); row.appendChild(times); root.appendChild(row);
+          if (isPastForSelectedDay(st.time)) {
+            b.classList.add('is-disabled');
+            b.disabled = true;
+            b.title = 'Suất đã qua giờ chiếu';
+          } else {
+            b.addEventListener('click', () => {
+              b.classList.add('is-active');
+              setTimeout(() => confirmShowtime(st), 120);
+            });
+          }
+          times.appendChild(b);
+        });
+
+      row.appendChild(fmt);
+      row.appendChild(times);
+      root.appendChild(row);
     });
 
     box.appendChild(root);
   }
 
+
   function elEmpty(text){ const d=document.createElement('div'); d.className='st-empty'; d.textContent=text; return d; }
   function fmtVNDate(iso){ try{ const d=new Date(iso); return d.toLocaleDateString('vi-VN',{weekday:'short', day:'2-digit', month:'2-digit', year:'numeric'}); }catch{ return iso; } }
 
   // ---------- choose time -> save + go ----------
-  function confirmShowtime({ time, format, lang }) {
-    const m  = state.movie;
-    const th = state.theaters.find(x => x.id === state.selectedTheaterId);
-    const payload = { movieId:String(m.id||''), theaterId:String(th?.id||''), theaterName:th?.name||'', date:state.selectedDate, time, format, lang };
-    localStorage.setItem('selectedShowtime', JSON.stringify(payload));
-    localStorage.setItem('selectedMovie', JSON.stringify({
-      id:m.id, title:m.title, posterUrl:m.posterUrl || m.poster || '',
-      trailerUrl:m.trailerUrl || m.trailer || '', year:(m.releaseDate||'').slice(0,4) || m.year || '',
-      genres:Array.isArray(m.genres)?m.genres:(m.genre?[m.genre]:[]), duration:m.duration || m.runtime || ''
-    }));
+  function confirmShowtime(show) {
+    if (!show) return;
+
+    // Tìm id "thật" từ BE (nếu có), fallback = key tổng hợp
+    const key = makeShowtimeKey(show.theaterId, show.date, show.format, show.lang, show.time);
+    const mapped = showtimeIdMap.get(key);
+    const showtimeId = (typeof mapped === 'string' && mapped) ? mapped : key;
+
+    // FE chỉ giữ ID, không giữ object phim / suất chiếu
+    localStorage.removeItem('selectedShowtime');
+    localStorage.removeItem('selectedMovie');
     localStorage.removeItem('selectedSeats');
     localStorage.removeItem('orderCombos');
-    location.href = 'seat-map.html';
+
+    // Điều hướng sang trang seat-map với showtimeId trên URL
+    const href = `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`;
+    location.href = href;
   }
+
 
   // ---------- boot ----------
   document.addEventListener('DOMContentLoaded', async () => {

@@ -14,19 +14,22 @@
     <div class="t-body">
       <div class="poster"><img data-poster alt="Poster" loading="lazy" decoding="async"></div>
 
-      <div class="meta">
+    <div class="meta">
         <h3 class="title" data-movie>Movie Title</h3>
-        <div class="row">
-          <span data-format>2D</span> • <span data-lang>Phụ đề</span> • <span data-rated>–</span>
+        
+        <div class="row" data-format-row hidden>
+          • <span data-format>2D</span><span data-lang-sep hidden> • </span><span data-lang>Phụ đề</span><span data-rated-sep hidden> • </span><span data-rated>–</span>
         </div>
-        <div class="row" data-theater>Rạp D-cine Quận 1 — Phòng 3</div>
-        <div class="row">
-          <span data-showdate>07/11/2025</span> • <span data-showtime>19:45</span>
+        <div class="row" data-theater-row hidden>• <span data-theater>Rạp D-cine Quận 1</span></div>
+        <div class="row" data-showdate-row hidden>• <span data-showdate>07/11/2025</span></div>
+        <div class="row" data-showtime-row hidden>• <span data-showtime>19:45</span></div>
+        <div class="row" data-seats-row hidden>
+          • Ghế: <span data-seats>A5, A6</span>
         </div>
-        <div class="row">
-          Ghế: <span data-seats>A5, A6</span> • <span data-qty>2 vé</span>
+        <div class="row" data-qty-row hidden>
+          • <span data-qty>2 vé</span>
         </div>
-      </div>
+        </div>
 
       <div class="code">
         <!-- QR từ BE (png/svg/base64) -->
