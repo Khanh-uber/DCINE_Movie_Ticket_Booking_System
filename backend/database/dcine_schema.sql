@@ -43,7 +43,7 @@ CREATE TABLE `theater` (
 
 CREATE TABLE `location` (
   `location_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `area` varchar(100) NOT NULL,
+  `city_name` varchar(100) NOT NULL,
   `province_id` bigint NOT NULL
 );
 
@@ -54,9 +54,9 @@ CREATE TABLE `province` (
 
 CREATE TABLE `hall` (
   `hall_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
   `theater_id` bigint NOT NULL,
-  `seat_layout_id` BIGINT NOT NULL,
-  `name` varchar(50) NOT NULL
+  `seat_layout_id` bigint NOT NULL
 );
 
 CREATE TABLE `seat_type` (
@@ -73,6 +73,20 @@ CREATE TABLE `seat` (
   `seat_type_id` bigint
 );
 
+CREATE TABLE `room_type` (
+  `room_type_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) UNIQUE NOT NULL,
+  `description` text DEFAULT null
+);
+
+CREATE TABLE `seat_layout` (
+  `seat_layout_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `room_type_id` bigint NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `capacity` int NOT NULL,
+  `layout_map` json DEFAULT null
+);
+
 CREATE TABLE `movie` (
   `movie_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `title` varchar(150) NOT NULL,
@@ -80,16 +94,16 @@ CREATE TABLE `movie` (
   `synopsis` text DEFAULT null,
   `duration_min` int DEFAULT null,
   `rating` varchar(10) DEFAULT null,
-  `age_limit` varchar(100) DEFAULT null,
+  `age_limit` varchar(100),
   `release_date` date DEFAULT null,
-  `end_showing_date` date DEFAULT null,
-  `early_screening_date` date DEFAULT null,
+  `end_showing_date` date,
+  `early_screening_date` date,
   `poster_url` varchar(255) DEFAULT null,
   `banner_url` varchar(255) DEFAULT null,
   `trailer_url` varchar(255) DEFAULT null,
-  `active` tinyint(1) DEFAULT 1,
-  `status` enum('soon', 'now' ,'ended') DEFAULT 'soon',
-  `language` varchar(50) DEFAULT null
+  `active` tinyint DEFAULT 1,
+  `status` enum('soon','now','ended') DEFAULT 'soon',
+  `language` varchar(50)
 );
 
 CREATE TABLE `genre` (
@@ -111,7 +125,8 @@ CREATE TABLE `cast_person` (
 
 CREATE TABLE `movie_cast` (
   `movie_id` bigint NOT NULL,
-  `cast_id` bigint NOT NULL
+  `cast_id` bigint NOT NULL,
+  PRIMARY KEY (`movie_id`, `cast_id`)
 );
 
 CREATE TABLE `showtime` (
@@ -121,7 +136,7 @@ CREATE TABLE `showtime` (
   `start_at` datetime NOT NULL,
   `end_at` datetime NOT NULL,
   `base_price` decimal(10,2) NOT NULL,
-  `is_early_screening` boolean default false
+  `is_early_screening` boolean DEFAULT false COMMENT '1 = suất chiếu sớm'
 );
 
 CREATE TABLE `booking` (
@@ -172,75 +187,46 @@ CREATE TABLE `booking_voucher` (
 );
 
 CREATE TABLE `combo` (
-  `combo_id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-  `code` VARCHAR(50) UNIQUE,
-  `title` VARCHAR(255) NOT NULL,
-  `description` TEXT,
-  `price` DECIMAL(10,2) NOT NULL,
-  `old_price` DECIMAL(10,2) DEFAULT NULL,
-  `tag` VARCHAR(50) DEFAULT NULL,
-  `combo_url` VARCHAR(255) DEFAULT NULL,
-  `active` BOOLEAN DEFAULT TRUE
+  `combo_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) UNIQUE NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `price` decimal(10,2) NOT NULL,
+  `old_price` decimal(10,2),
+  `tag` varchar(50),
+  `image_url` varchar(255),
+  `active` boolean DEFAULT true
 );
 
 CREATE TABLE `combo_variant` (
-  `variant_id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-  `combo_id` BIGINT NOT NULL,
-  `label` VARCHAR(100) NOT NULL,       
-  `value` VARCHAR(50) NOT NULL,        
-  `price_diff` DECIMAL(10,2) DEFAULT 0,
-  FOREIGN KEY (combo_id) REFERENCES combo(combo_id)
+  `variant_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `combo_id` bigint NOT NULL,
+  `label` varchar(100) NOT NULL,
+  `value` varchar(50) NOT NULL,
+  `price_diff` decimal(10,2) DEFAULT 0
 );
 
 CREATE TABLE `booking_combo` (
-  `booking_id` BIGINT,
-  `combo_id` BIGINT,
-  `quantity` INT DEFAULT 1,
-  `total_price` DECIMAL(10,2),
-  PRIMARY KEY (booking_id, combo_id),
-  FOREIGN KEY (booking_id) REFERENCES booking(booking_id),
-  FOREIGN KEY (combo_id) REFERENCES combo(combo_id)
+  `booking_id` bigint NOT NULL,
+  `combo_id` bigint NOT NULL,
+  `quantity` int NOT NULL DEFAULT 1,
+  `total_price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (booking_id,combo_id)
 );
 
 CREATE TABLE `otp_record` (
-  `id` BIGINT PRIMARY KEY AUTO_INCREMENT,
-  `account_id` BIGINT NULL,
-  `identifier` VARCHAR(100) NOT NULL,      
-  `code` VARCHAR(50) NOT NULL,            
-  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `expires_at` DATETIME NOT NULL,
-  `verified` TINYINT(1) DEFAULT 0,         
-  `request_id` VARCHAR(100) DEFAULT NULL,
-  `token` VARCHAR(100) DEFAULT NULL,
-
-  CONSTRAINT `fk_otp_account`
-    FOREIGN KEY (`account_id`) REFERENCES `account`(`account_id`),
-
-  CONSTRAINT `uq_identifier_verified`
-    UNIQUE (`identifier`, `verified`)
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `account_id` bigint,
+  `identifier` varchar(100) NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
+  `expires_at` datetime NOT NULL,
+  `verified` boolean DEFAULT false,
+  `request_id` varchar(100),
+  `token` varchar(100)
 );
 
--- 🔹 EXTENSION: ROOM TYPE & SEAT LAYOUT TABLES
-
--- Bảng quản lý loại phòng chiếu
-CREATE TABLE `room_type` (
-  `room_type_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) UNIQUE NOT NULL,           -- 2D, 4DX, BEDOM, SUPER CLASS, DEXP,...
-  `description` TEXT DEFAULT NULL
-);
-
--- Bảng mô tả sơ đồ ghế cho từng loại phòng
-CREATE TABLE `seat_layout` (
-  `seat_layout_id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `room_type_id` BIGINT NOT NULL,
-  `name` VARCHAR(50) NOT NULL,                  -- 2D-A, 2D-B, 2D-C, Default,...
-  `capacity` INT NOT NULL,
-  `layout_map` json DEFAULT NULL
-);
-
-ALTER TABLE `hall` ADD FOREIGN KEY (`seat_layout_id`) REFERENCES `seat_layout`(`seat_layout_id`);
-
-ALTER TABLE `seat_layout` ADD FOREIGN KEY (`room_type_id`) REFERENCES `room_type`(`room_type_id`);
+CREATE UNIQUE INDEX `otp_record_index_0` ON `otp_record` (`identifier`, `verified`);
 
 ALTER TABLE `account` ADD FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`);
 
@@ -252,9 +238,13 @@ ALTER TABLE `location` ADD FOREIGN KEY (`province_id`) REFERENCES `province` (`p
 
 ALTER TABLE `hall` ADD FOREIGN KEY (`theater_id`) REFERENCES `theater` (`theater_id`);
 
+ALTER TABLE `hall` ADD FOREIGN KEY (`seat_layout_id`) REFERENCES `seat_layout` (`seat_layout_id`);
+
 ALTER TABLE `seat` ADD FOREIGN KEY (`hall_id`) REFERENCES `hall` (`hall_id`);
 
 ALTER TABLE `seat` ADD FOREIGN KEY (`seat_type_id`) REFERENCES `seat_type` (`seat_type_id`);
+
+ALTER TABLE `seat_layout` ADD FOREIGN KEY (`room_type_id`) REFERENCES `room_type` (`room_type_id`);
 
 ALTER TABLE `movie_genre` ADD FOREIGN KEY (`movie_id`) REFERENCES `movie` (`movie_id`);
 
@@ -284,6 +274,10 @@ ALTER TABLE `booking_voucher` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking
 
 ALTER TABLE `booking_voucher` ADD FOREIGN KEY (`voucher_id`) REFERENCES `voucher` (`voucher_id`);
 
-ALTER TABLE `booking_concession` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking` (`booking_id`);
+ALTER TABLE `combo_variant` ADD FOREIGN KEY (`combo_id`) REFERENCES `combo` (`combo_id`);
 
-ALTER TABLE `booking_concession` ADD FOREIGN KEY (`concession_id`) REFERENCES `concession` (`concession_id`);
+ALTER TABLE `booking_combo` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking` (`booking_id`);
+
+ALTER TABLE `booking_combo` ADD FOREIGN KEY (`combo_id`) REFERENCES `combo` (`combo_id`);
+
+ALTER TABLE `otp_record` ADD FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`);
