@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Thành Công | D-cine</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-main: #0D0D0D;
+            --bg-panel: #1A1A1A;
+            --primary-red: #E50914;
+            --accent-gold: #FFD700;
+            --accent-cyan: #00E5FF; /* Màu xanh 3D */
+            --text-white: #FFFFFF;
+            --text-gray: #B3B3B3;
+            --glow-red: 0 0 15px rgba(229, 9, 20, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-white);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
+        .text-gold { color: var(--accent-gold); }
+        .text-red { color: var(--primary-red); }
+
+        /* --- HEADER & FOOTER --- */
+        header, footer { background: #000; padding: 20px; border-bottom: 1px solid #333; }
+        .logo { color: var(--primary-red); font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+
+        /* --- MAIN CONTAINER --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* --- SUCCESS BANNER (3D EFFECT) --- */
+        .success-banner {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        
+        .page-title {
+            font-family: "Montserrat", sans-serif;
+            font-size: clamp(2rem, 3.2vw, 2.7rem);
+            letter-spacing: 0.1rem;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 15px;
+            
+            /* Hiệu ứng 3D Anaglyph (Cấp độ 1) */
+            text-shadow: 
+                -2px -2px 0 var(--primary-red), 
+                2px 2px 0 var(--accent-cyan),  
+                0 0 20px rgba(229, 9, 20, 0.4);
+        }
+
+        .success-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+        }
+
+        /* --- CONFIRMATION GRID --- */
+        .conf-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 30px;
+        }
+
+        /* --- LEFT: TICKET DETAILS --- */
+        .ticket-box {
+            background: rgba(17, 17, 17, 0.9);
+            border: 1px solid var(--primary-red);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            animation: fadeInLeft 0.8s ease-out;
+        }
+
+        /* QR Section */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px dashed #444;
+        }
+        .qr-frame {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px var(--accent-gold);
+            margin-bottom: 15px;
+        }
+        .btn-download-qr {
+            background: transparent;
+            border: 1px solid #444;
+            color: var(--text-gray);
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .btn-download-qr:hover {
+            border-color: var(--text-white);
+            color: var(--text-white);
+        }
+
+        /* Ticket Info List */
+        .ticket-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 8px;
+        }
+        .ticket-info-row span:first-child { color: var(--text-gray); }
+        .ticket-info-row span:last-child { font-weight: 600; text-align: right; }
+        .highlight-movie { color: var(--text-white); font-size: 1.2rem; font-family: 'Montserrat'; text-transform: uppercase; }
+
+        /* --- RIGHT: INVOICE & ACTIONS --- */
+        .invoice-box {
+            background: var(--bg-panel);
+            border-top: 4px solid var(--primary-red);
+            border-radius: 0 0 8px 8px;
+            padding: 30px;
+            height: fit-content;
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.1);
+            animation: fadeInRight 0.8s ease-out;
+            position: sticky;
+            top: 20px;
+        }
+
+        .invoice-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .invoice-details p {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .invoice-details strong { color: #fff; }
+
+        .total-payment {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #555;
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .btn-primary {
+            background: linear-gradient(90deg, #E50914 0%, #FF284D 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            box-shadow: var(--glow-red);
+            transition: 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(229, 9, 20, 0.6); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-red);
+            color: var(--text-white);
+            padding: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .btn-outline:hover { background: rgba(229, 9, 20, 0.1); border-color: var(--accent-gold); color: var(--accent-gold); }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .conf-grid { grid-template-columns: 1fr; }
+            .page-title { font-size: 1.8rem; }
+        }
+
+        @keyframes fadeInDown { from { opacity:0; transform: translateY(-20px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes fadeInLeft { from { opacity:0; transform: translateX(-20px); } to { opacity:1; transform: translateX(0); } }
+        @keyframes fadeInRight { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="max-width: 1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <div class="logo">D-CINE</div>
+            <nav style="display:flex; gap:20px; color:white; font-size:0.9rem;">
+                <a href="index.html" style="color:white; text-decoration:none;">TRANG CHỦ</a>
+                <a href="#" style="color:#E50914; font-weight:bold; text-decoration:none;">VÉ CỦA TÔI</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="success-banner">
+            <h1 class="page-title">🎉 THANH TOÁN THÀNH CÔNG</h1>
+            <p class="success-subtitle">Cảm ơn bạn đã đặt vé tại D-cine! Vé điện tử của bạn đã sẵn sàng.</p>
+        </div>
+
+        <div class="conf-grid">
+            
+            <div class="ticket-box">
+                <div class="qr-section">
+                    <div class="qr-frame" id="qr-code-container">
+                        </div>
+                    <button class="btn-download-qr" onclick="downloadQR()">
+                        <i class="fa-solid fa-download"></i> Tải mã QR
+                    </button>
+                    <p style="margin-top:10px; font-size:0.8rem; color:#666;">
+                        *Quét mã này tại quầy để nhận vé giấy hoặc vào rạp.
+                    </p>
+                </div>
+
+                <div class="ticket-details">
+                    <div class="ticket-info-row">
+                        <span>Phim:</span>
+                        <span class="highlight-movie" id="tk-movie">Loading...</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span>Rạp:</span>
+                        <span id="tk-theater">Loading...</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span>Suất chiếu:</span>
+                        <span id="tk-showtime" class="text-gold">Loading...</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span>Ghế:</span>
+                        <span id="tk-seats" style="font-size:1.1rem; color:var(--primary-red);">Loading...</span>
+                    </div>
+                    <div class="ticket-info-row">
+                        <span>Combo:</span>
+                        <span id="tk-combos">Không có</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="invoice-box">
+                <h3 class="invoice-title">HÓA ĐƠN THANH TOÁN</h3>
+                
+                <div class="invoice-details">
+                    <p>
+                        <span>Mã đơn hàng:</span>
+                        <strong id="inv-id" style="font-family:monospace; color:#ccc;">...</strong>
+                    </p>
+                    <p>
+                        <span>Thời gian:</span>
+                        <strong id="inv-date">...</strong>
+                    </p>
+                    <p>
+                        <span>Phương thức:</span>
+                        <strong id="inv-method">...</strong>
+                    </p>
+                    <p>
+                        <span>Khuyến mãi:</span>
+                        <strong class="text-gold">DCINE10 (-0đ)</strong>
+                    </p>
+                </div>
+
+                <div class="total-payment">
+                    <span>TỔNG CỘNG</span>
+                    <span id="inv-total">0đ</span>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="goHome()">
+                        <i class="fa-solid fa-film"></i> Tiếp tục mua vé khác
+                    </button>
+                    <button class="btn-outline" onclick="goToHistory()">
+                        <i class="fa-solid fa-user"></i> Xem lịch sử vé
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer style="margin-top:auto; text-align:center; color:#666; font-size:0.8rem;">
+        &copy; 2025 D-cine Cinema Management System. All rights reserved.
+    </footer>
+
+    <script>
+        // --- 1. Giả lập Database (Giống payment.html để map tên phim) ---
+        const db = {
+            movies: { "mv-dune2": "Dune: Part Two", "mv-mai": "Mai" },
+            theaters: { "th-hcm-bitexco": "D-cine Bitexco - Rạp 3", "th-hn-cgv": "D-cine Royal City" },
+            combos: { "cb01": "Bắp + 2 Nước", "cb02": "Pepsi 600ml" }
+        };
+
+        const paymentMethodMap = {
+            "credit-card": "Thẻ Tín Dụng / Ghi Nợ",
+            "wallet": "Ví Điện Tử (Momo/ZaloPay)",
+            "bank": "Chuyển Khoản Ngân Hàng"
+        };
+
+        // --- 2. Load Dữ liệu & Render ---
+        window.onload = function() {
+            // Lấy dữ liệu vé đã thanh toán
+            const confirmedOrder = localStorage.getItem('orderConfirmed');
+            
+            if (!confirmedOrder) {
+                // Fallback nếu không có dữ liệu (Dev mode: tạo dữ liệu giả để test giao diện)
+                console.warn("Không tìm thấy đơn hàng, sử dụng dữ liệu mẫu.");
+                const dummyData = {
+                    orderId: "DCINE-TEST-9999",
+                    movieId: "mv-dune2",
+                    theaterId: "th-hcm-bitexco",
+                    showtimeId: "st-20251109-1930",
+                    seats: ["A5", "A6"],
+                    combos: [{id: "cb01", qty: 1}],
+                    paymentMethod: "wallet",
+                    total: 504000,
+                    date: new Date().toISOString()
+                };
+                renderPage(dummyData);
+            } else {
+                renderPage(JSON.parse(confirmedOrder));
+            }
+        };
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function renderPage(order) {
+            // --- Map Data ---
+            const movieName = db.movies[order.movieId] || order.movieId;
+            const theaterName = db.theaters[order.theaterId] || order.theaterId;
+            // Xử lý showtime display (giả sử showtimeId chứa thông tin ngày giờ hoặc lấy từ DB)
+            // Ở đây fix cứng display cho đẹp theo yêu cầu, thực tế sẽ parse từ ID
+            const showtimeDisplay = "19:30, 09/11/2025"; 
+            
+            let comboString = "Không có";
+            if(order.combos && order.combos.length > 0) {
+                comboString = order.combos.map(c => {
+                    return `${db.combos[c.id] || c.id} (x${c.qty})`;
+                }).join(", ");
+            }
+
+            // --- Render Vé (Cột trái) ---
+            document.getElementById('tk-movie').innerText = movieName;
+            document.getElementById('tk-theater').innerText = theaterName;
+            document.getElementById('tk-showtime').innerText = showtimeDisplay;
+            document.getElementById('tk-seats').innerText = order.seats.join(", ");
+            document.getElementById('tk-combos').innerText = comboString;
+
+            // --- Render QR Code ---
+            // Xóa QR cũ nếu có
+            document.getElementById("qr-code-container").innerHTML = "";
+            new QRCode(document.getElementById("qr-code-container"), {
+                text: order.orderId,
+                width: 180,
+                height: 180,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // --- Render Hóa Đơn (Cột phải) ---
+            document.getElementById('inv-id').innerText = order.orderId;
+            document.getElementById('inv-date').innerText = formatDate(order.date);
+            document.getElementById('inv-method').innerText = paymentMethodMap[order.paymentMethod] || order.paymentMethod;
+            document.getElementById('inv-total').innerText = formatCurrency(order.total);
+        }
+
+        // --- 3. Chức năng Action ---
+
+        function downloadQR() {
+            // Lấy thẻ canvas do thư viện QRCode tạo ra
+            const qrCanvas = document.querySelector('#qr-code-container canvas');
+            if(qrCanvas) {
+                const imgUrl = qrCanvas.toDataURL("image/png");
+                const downloadLink = document.createElement("a");
+                downloadLink.href = imgUrl;
+                downloadLink.download = "DCINE-Ticket-QR.png";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            } else {
+                // Fallback nếu thư viện tạo img tag thay vì canvas
+                const qrImg = document.querySelector('#qr-code-container img');
+                if(qrImg) {
+                    const downloadLink = document.createElement("a");
+                    downloadLink.href = qrImg.src;
+                    downloadLink.download = "DCINE-Ticket-QR.png";
+                    downloadLink.click();
+                }
+            }
+        }
+
+        function goHome() {
+            // Xóa dữ liệu phiên đặt vé hiện tại để bắt đầu mới
+            // Giữ lại 'allOrders' (lịch sử), chỉ xóa orderConfirmed và orderSummary
+            localStorage.removeItem('orderConfirmed');
+            localStorage.removeItem('orderSummary');
+            
+            // Redirect
+            window.location.href = "index.html"; // Giả sử có trang chủ
+        }
+
+        function goToHistory() {
+            // Xóa session đặt vé hiện tại
+            localStorage.removeItem('orderConfirmed');
+            localStorage.removeItem('orderSummary');
+            
+            window.location.href = "profile.html"; // Giả sử có trang profile
+        }
+    </script>
+</body>
+</html>
