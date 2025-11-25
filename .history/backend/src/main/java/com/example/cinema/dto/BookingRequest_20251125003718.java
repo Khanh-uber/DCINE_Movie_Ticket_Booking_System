@@ -17,7 +17,6 @@ public class BookingRequest {
         private String type;  // adult | child
 
         public SeatRequest(){}
-        
         public String getCode() { return code; }
         public void setCode(String code) { this.code = code; }
 

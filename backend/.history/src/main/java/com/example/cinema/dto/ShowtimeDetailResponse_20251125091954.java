@@ -22,8 +22,8 @@ public class ShowtimeDetailResponse {
     public Theater getTheater() { return theater; }
     public void setTheater(Theater theater) { this.theater = theater; }
 
-    public Long getShowtimeId(){return showtimeId;}
-    public void setShowtimeId(Long showtimeId){this.showtimeId = showtimeId;}
+    // public Long getShowtimeId(){return showtimeId;}
+    // public void setShowtimeId(Long showtimeId){this.showtimeId = showtimeId;}
 
 
     public Movie getMovie() { return movie; }

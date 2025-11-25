@@ -5,7 +5,6 @@ public class BookingResponse {
     private String status;
     private List<Item> items;
     private Long totalAmount;
-    public BookingResponse(){}
     public Long getBookingId() {
         return bookingId;
     }
@@ -43,44 +42,12 @@ public class BookingResponse {
         private String type;  // adult | child
         private Long price;
 
-        public Item (){}
         public Item(String code, String zone, String type, Long price) {
             this.code = code;
             this.zone = zone;
             this.type = type;
             this.price = price;
     
-        }
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getZone() {
-            return zone;
-        }
-
-        public void setZone(String zone) {
-            this.zone = zone;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Long getPrice() {
-            return price;
-        }
-
-        public void setPrice(Long price) {
-            this.price = price;
         }
     }
 }

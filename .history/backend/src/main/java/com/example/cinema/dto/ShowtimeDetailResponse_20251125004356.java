@@ -11,7 +11,7 @@ public class ShowtimeDetailResponse {
     private Theater theater;
     private Movie movie;
     private Pricing pricing;
-    private Long showtimeId;
+    // private Long showtimeId;
     // ===== Constructor =====
     public ShowtimeDetailResponse() {}
 

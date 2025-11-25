@@ -49,7 +49,7 @@ public class ShowtimeDetailService {
         ShowtimeDetailResponse res = new ShowtimeDetailResponse();
 
         res.setShowtime(stInfo);
-        res.setShowtimeId(showtimeId);
+        res.set
         
         ShowtimeDetailResponse.Theater stTheather= new ShowtimeDetailResponse.Theater();
         stTheather.setId(((Number)st.get("theater_id")).longValue());
