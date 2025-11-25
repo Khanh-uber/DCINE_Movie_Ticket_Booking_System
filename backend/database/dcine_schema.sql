@@ -121,7 +121,7 @@ CREATE TABLE `cast_person` (
   `cast_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
   `role_type` enum('ACTOR','DIRECTOR') NOT NULL,
-  `actor_url` varchar(255)
+  `cast_url` varchar(255)
 );
 
 CREATE TABLE `movie_cast` (
@@ -187,29 +187,30 @@ CREATE TABLE `booking_voucher` (
   PRIMARY KEY (`booking_id`, `voucher_id`)
 );
 
-CREATE TABLE `combo` (
-  `combo_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+CREATE TABLE `concession_item` (
+  `item_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `code` varchar(50) UNIQUE NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` text,
   `price` decimal(10,2) NOT NULL,
   `old_price` decimal(10,2),
   `tag` varchar(50),
-  `combo_url` varchar(255),
-  `active` boolean DEFAULT true
+  `image_url` VARCHAR(255),
+  `active` BOOLEAN DEFAULT true,
+  `category` ENUM('combo','popcorn','beverage','hot-food','coffee','desserts')
 );
 
-CREATE TABLE `combo_variant` (
+CREATE TABLE `concession_variant` (
   `variant_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `combo_id` bigint NOT NULL,
+  `item_id` bigint NOT NULL,
   `label` varchar(100) NOT NULL,
   `value` varchar(50) NOT NULL,
   `price_diff` decimal(10,2) DEFAULT 0
 );
 
-CREATE TABLE `booking_combo` (
+CREATE TABLE `booking_concession` (
   `booking_id` bigint NOT NULL,
-  `combo_id` bigint NOT NULL,
+  `item_id` bigint NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
   `total_price` decimal(10,2) NOT NULL,
   PRIMARY KEY (booking_id,combo_id)
@@ -275,10 +276,10 @@ ALTER TABLE `booking_voucher` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking
 
 ALTER TABLE `booking_voucher` ADD FOREIGN KEY (`voucher_id`) REFERENCES `voucher` (`voucher_id`);
 
-ALTER TABLE `combo_variant` ADD FOREIGN KEY (`combo_id`) REFERENCES `combo` (`combo_id`);
+ALTER TABLE `concession_variant` ADD FOREIGN KEY (`item_id`) REFERENCES `concession_item` (`item_id`);
 
-ALTER TABLE `booking_combo` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking` (`booking_id`);
+ALTER TABLE `booking_concession` ADD FOREIGN KEY (`booking_id`) REFERENCES `booking` (`booking_id`);
 
-ALTER TABLE `booking_combo` ADD FOREIGN KEY (`combo_id`) REFERENCES `combo` (`combo_id`);
+ALTER TABLE `booking_concession` ADD FOREIGN KEY (`item_id`) REFERENCES `concession_item` (`item_id`);
 
 ALTER TABLE `otp_record` ADD FOREIGN KEY (`account_id`) REFERENCES `account` (`account_id`);

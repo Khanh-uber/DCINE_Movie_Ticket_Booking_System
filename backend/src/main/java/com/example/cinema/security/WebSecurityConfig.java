@@ -17,6 +17,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) // tắt CSRF khi test API
+            .cors(cors -> {})             // bật CORS cho Spring Security
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",  // cho phép toàn bộ API của bạn
@@ -34,8 +35,11 @@ public class WebSecurityConfig {
                     "/api/**"
                 ).permitAll()
         
-                .anyRequest().authenticated()
-            );
+                .anyRequest().permitAll() //authenticated()
+            )
+            .httpBasic(basic -> basic.disable())
+            .formLogin(login -> login.disable());
+
         return http.build();
     }
     // 4️⃣ Bean PasswordEncoder để mã hóa mật khẩu (BCrypt)

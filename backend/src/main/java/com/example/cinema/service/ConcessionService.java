@@ -4,58 +4,65 @@ import java.util.*;
 
 import org.springframework.stereotype.Service;
 import com.example.cinema.entity.*;
-import com.example.cinema.dto.ComboResponse;
+import com.example.cinema.dto.ConcessionListResponse;
 import com.example.cinema.dto.ConcessionResponse;
-import com.example.cinema.repository.ComboRepository;
-import com.example.cinema.repository.ComboVariantRepository;
+import com.example.cinema.repository.ConcessionItemRepository;
+import com.example.cinema.repository.ConcessionVariantRepository;
 import com.example.cinema.repository.ShowTimeRepository;
 
 @Service
 public class ConcessionService {
     private final ShowTimeRepository showtimeRepo;
-    private final ComboRepository comboRepo;
-    private final ComboVariantRepository comboVariantRepo;
-    public ConcessionService(ShowTimeRepository showtimeRepo, ComboRepository comboRepo, ComboVariantRepository combo){
+    private final ConcessionItemRepository itemRepo;
+    private final ConcessionVariantRepository variantRepo;
+    public ConcessionService(ShowTimeRepository showtimeRepo, ConcessionItemRepository itemRepo, ConcessionVariantRepository variantRepo){
         this.showtimeRepo = showtimeRepo;
-        this.comboRepo = comboRepo;
-        this.comboVariantRepo = combo;
+        this.itemRepo = itemRepo;
+        this.variantRepo = variantRepo;
     }
-    public ComboResponse getAllCombos(){
-        List<Combo> combos = comboRepo.findByActive();
-        List<ComboResponse.Item> list = new ArrayList<>();
-        
-        for (Combo c: combos ){
-            ComboResponse.Item dto = new ComboResponse.Item();
-            dto.setId(c.getComboId());
-            dto.setCode(c.getCode());
-            dto.setTitle(c.getTitle());
-            dto.setDescription(c.getDescription());
-            dto.setPrice(c.getPrice());
-            dto.setOldPrice(c.getOldPrice());
-            dto.setTag(c.getTag());
-            dto.setImageUrl(c.getComboUrl());
-            dto.setCategory("combo");
-            dto.setVariants(new ArrayList<>()); // FE yêu cầu mảng rỗng
-            list.add(dto);
 
-            List<ComboVariant> vars = comboVariantRepo.findByComboId(c.getComboId());
-            List<ComboResponse.Variant> varDTO = new ArrayList<>();
-            
-            for (ComboVariant v : vars ){
-                ComboResponse.Variant Vdto = new ComboResponse.Variant();
-                Vdto.setId(v.getVariantId());
-                Vdto.setLabel(v.getLabel());
-                Vdto.setPriceDiff(v.getPriceDiff());
-                Vdto.setValue(v.getValue());
-                varDTO.add(Vdto);
-            }
-            dto.setVariants(varDTO);
-            list.add(dto);
-        }
-        
-        return new ComboResponse(list);
+    public ConcessionListResponse getAll() {
+        List<ConcessionItem> items = itemRepo.findByActive();
+        return mapToResponse(items);
     }
-    
-    
-    
+
+    public ConcessionListResponse getByCategory(String category) {
+        List<ConcessionItem> items = itemRepo.findByCategoryAndActive(category, true);
+        return mapToResponse(items);
+    }
+
+    private ConcessionListResponse mapToResponse(List<ConcessionItem> items) {
+        List<ConcessionListResponse.Item> dtoList = new ArrayList<>();
+
+        for (ConcessionItem item : items) {
+            ConcessionListResponse.Item dto = new ConcessionListResponse.Item();
+
+            dto.setId(item.getItemId());
+            dto.setCode(item.getCode());
+            dto.setTitle(item.getTitle());
+            dto.setDescription(item.getDescription());
+            dto.setPrice(item.getPrice());
+            dto.setOldPrice(item.getOldPrice());
+            dto.setTag(item.getTag());
+            dto.setImageUrl(item.getImageUrl());
+            dto.setCategory(item.getCategory());
+
+            List<ConcessionVariant> variants = variantRepo.findByItemId(item.getItemId());
+            List<ConcessionListResponse.Variant> varList = new ArrayList<>();
+
+            for (ConcessionVariant v : variants){
+                ConcessionListResponse.Variant vdto = new ConcessionListResponse.Variant();
+                vdto.setId(v.getVariantId());
+                vdto.setLabel(v.getLabel());
+                vdto.setValue(v.getValue());
+                vdto.setPriceDiff(v.getPriceDiff());
+                varList.add(vdto);
+            }
+
+            dto.setVariants(varList);
+            dtoList.add(dto);
+        }
+
+        return new ConcessionListResponse(dtoList);
+    }
 }
