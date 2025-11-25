@@ -120,7 +120,8 @@ CREATE TABLE `movie_genre` (
 CREATE TABLE `cast_person` (
   `cast_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(100) NOT NULL,
-  `role_type` enum('ACTOR','DIRECTOR') NOT NULL
+  `role_type` enum('ACTOR','DIRECTOR') NOT NULL,
+  `actor_url` varchar(255)
 );
 
 CREATE TABLE `movie_cast` (
@@ -194,7 +195,7 @@ CREATE TABLE `combo` (
   `price` decimal(10,2) NOT NULL,
   `old_price` decimal(10,2),
   `tag` varchar(50),
-  `image_url` varchar(255),
+  `combo_url` varchar(255),
   `active` boolean DEFAULT true
 );
 
