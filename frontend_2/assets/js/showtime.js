@@ -209,47 +209,135 @@
   // 6. RENDERERS
   // ======================
 
-  function renderHero() {
-    const m = state.movie;
-    if (!m || !m.id) {
-       $('#stHero').classList.add('hidden');
-       $('#simpleBc').style.display = 'block';
-       $('#simpleBc nav').innerHTML = `<a href="index.html">Trang chủ</a> / <span class="curr">Lịch chiếu</span>`;
-       return;
+function renderHero() {
+  const m = state.movie;
+  const hero = $('#stHero');
+  const simple = $('#simpleBc');
+
+  // Không có movie -> ẩn hero, dùng breadcrumb đơn giản
+  if (!m || !m.id) {
+    if (hero) hero.classList.add('hidden');
+    if (simple) {
+      simple.style.display = 'block';
+      const nav = simple.querySelector('nav') || $('#simpleBc nav');
+      if (nav) {
+        nav.innerHTML = `
+          <a href="index.html">Trang chủ</a>
+          <span class="sep">/</span>
+          <span class="curr">Lịch chiếu</span>
+        `;
+      }
     }
-    $('#stHero').classList.remove('hidden');
-    $('#simpleBc').style.display = 'none';
-    
-    // Breadcrumb đầy đủ
-    $('#bc').innerHTML = `
-      <a href="index.html">Trang chủ</a> <span class="sep">/</span> 
-      <a href="movies.html">Phim</a> <span class="sep">/</span> 
-      <a href="movie-detail.html?movie=${m.id}">${m.title}</a> <span class="sep">/</span> 
+    return;
+  }
+
+  // Có movie -> hiện hero, ẩn breadcrumb đơn giản
+  if (hero) hero.classList.remove('hidden');
+  if (simple) simple.style.display = 'none';
+
+  // Breadcrumb đầy đủ
+  const bc = $('#bc');
+  if (bc) {
+    bc.innerHTML = `
+      <a href="index.html">Trang chủ</a>
+      <span class="sep">/</span>
+      <a href="movies.html">Phim</a>
+      <span class="sep">/</span>
+      <a href="movie-detail.html?movie=${m.id}">${m.title || m.name || 'Chi tiết phim'}</a>
+      <span class="sep">/</span>
       <span class="curr">Lịch chiếu</span>
     `;
-
-    $('#heroTitle').textContent = m.title;
-    const poster = $('#heroPoster');
-    poster.src = m.posterUrl || 'https://via.placeholder.com/300x450';
-    poster.onerror = () => poster.src = 'https://via.placeholder.com/300x450';
-    if(m.backdropUrl) $('#heroBg').style.backgroundImage = `url('${m.backdropUrl}')`;
-    
-    // Meta tags đầy đủ
-    $('#heroAge').textContent = m.rated || m.age || 'T13';
-    $('#heroDur').textContent = (m.duration || m.runtime) ? `${m.duration || m.runtime} phút` : '--';
-    $('#heroGenre').textContent = Array.isArray(m.genres) ? m.genres.join(', ') : (m.genre || '--');
-    $('#sumMovie').textContent = m.title;
-    
-    const btnT = $('#btnTrailer');
-    if(m.trailerUrl) {
-       btnT.style.display = 'inline-flex';
-       btnT.onclick = () => window.openTrailerModal ? window.openTrailerModal(m.trailerUrl) : window.open(m.trailerUrl);
-    } else btnT.style.display = 'none';
-
-    // Link nút "Chi tiết" quay lại trang movie-detail
-    const btnBack = $('#btnBackMovie');
-    if(btnBack) btnBack.href = `movie-detail.html?movie=${m.id}`;
   }
+
+  // ===== HERO TEXT =====
+  const titleEl = $('#heroTitle');
+  if (titleEl) titleEl.textContent = m.title || m.name || 'Đang cập nhật';
+
+  const sumMovie = $('#sumMovie');
+  if (sumMovie) sumMovie.textContent = m.title || m.name || '';
+
+  // ===== POSTER (dọc) =====
+  const posterEl = $('#heroPoster');
+  if (posterEl) {
+    const posterSrc =
+      m.posterUrl ||
+      m.poster ||
+      m.bannerUrl ||
+      m.banner ||
+      m.backdropUrl ||
+      m.backdrop;
+
+    posterEl.src =
+      posterSrc ||
+      'https://via.placeholder.com/300x450?text=No+Poster';
+
+    posterEl.onerror = () => {
+      posterEl.src =
+        'https://via.placeholder.com/300x450?text=Image+Error';
+    };
+  }
+
+  // ===== BACKDROP / BANNER (nền ngang) =====
+  const heroBg = $('#heroBg');
+  if (heroBg) {
+    const bgSrc =
+      m.backdropUrl ||
+      m.backdrop ||
+      m.bannerUrl ||
+      m.banner ||
+      m.posterUrl ||
+      m.poster;
+
+    if (bgSrc) {
+      heroBg.style.backgroundImage = `url('${bgSrc}')`;
+    } else {
+      heroBg.style.backgroundImage = 'none';
+    }
+  }
+
+  // ===== META (tuổi, thời lượng, thể loại) =====
+  const ageEl = $('#heroAge');
+  if (ageEl) ageEl.textContent = m.rated || m.age || 'T13';
+
+  const durEl = $('#heroDur');
+  if (durEl) {
+    const minutes = m.duration || m.runtime;
+    durEl.textContent = minutes ? `${minutes} phút` : '--';
+  }
+
+  const genreEl = $('#heroGenre');
+  if (genreEl) {
+    const genres = Array.isArray(m.genres)
+      ? m.genres
+      : [m.genre].filter(Boolean);
+    genreEl.textContent = genres.length ? genres.join(', ') : '--';
+  }
+
+  // ===== TRAILER BUTTON =====
+  const btnT = $('#btnTrailer');
+  const trailerLink = m.trailerUrl || m.trailer;
+  if (btnT) {
+    if (trailerLink) {
+      btnT.style.display = 'inline-flex';
+      btnT.onclick = () => {
+        if (window.openTrailerModal) {
+          window.openTrailerModal(trailerLink);
+        } else {
+          window.open(trailerLink, '_blank');
+        }
+      };
+    } else {
+      btnT.style.display = 'none';
+    }
+  }
+
+  // ===== NÚT QUAY LẠI CHI TIẾT PHIM =====
+  const btnBack = $('#btnBackMovie');
+  if (btnBack) {
+    btnBack.href = `movie-detail.html?movie=${m.id}`;
+  }
+}
+
 
   function renderProvDropdown() {
     const wrap = $('#provinceDropdown');
