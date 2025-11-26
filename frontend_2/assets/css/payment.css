@@ -19,6 +19,8 @@ body.theme-dcine {
 .payment-container {
   margin-inline: auto;
   padding: 48px 16px 40px;
+  max-width: 1100px;
+  width: 100%;
 }
 
 
@@ -27,12 +29,13 @@ body.theme-dcine {
   margin-bottom: 32px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(229, 9, 20, 0.6);
+  animation: fadeInDown 0.8s ease-out;
 }
 
 .page-title {
   font-family: "Montserrat", system-ui, -apple-system, sans-serif;
   font-size: clamp(2rem, 3.2vw, 2.7rem);
-  letter-spacing: 0.18em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #fff;
   text-shadow: 
@@ -125,6 +128,7 @@ body.theme-dcine {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  animation: fadeInLeft 0.8s ease-out;
 }
 
 .card-visual {
@@ -367,6 +371,7 @@ body.theme-dcine {
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
   position: sticky;
   top: 64px;
+  animation: fadeInRight 0.8s ease-out;
 }
 
 .summary-title {
@@ -692,5 +697,37 @@ body.theme-dcine {
 
   .card-visual {
     max-width: 100%;
+  }
+}
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }

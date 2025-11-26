@@ -17,6 +17,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) // tắt CSRF khi test API
+            .cors(cors -> {})             // bật CORS cho Spring Security
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/**",  // cho phép toàn bộ API của bạn

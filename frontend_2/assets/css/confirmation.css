@@ -1,0 +1,329 @@
+/* Confirmation page – D-cine Ticket Success */
+
+/* Biến giống payment để giữ style đồng bộ */
+:root {
+  --bg-main: #0d0d0d;
+  --bg-panel: #1a1a1a;
+  --bg-input: #111111;
+  --primary-red: #e50914;
+  --accent-gold: #ffd700;
+  --text-white: #ffffff;
+  --text-gray: #b3b3b3;
+  --glow-red: 0 0 10px rgba(229, 9, 20, 0.4);
+}
+
+body.theme-dcine {
+  background: var(--bg-main);
+  color: var(--text-white);
+}
+
+.confirmation-container {
+  margin-inline: auto;
+  max-width: 1100px;
+  width: 100%;
+  padding: 48px 16px 40px;
+}
+
+/* Banner tiêu đề giống payment */
+.success-banner {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(229, 9, 20, 0.6);
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.page-title {
+  font-family: "Montserrat", system-ui, -apple-system, sans-serif;
+  font-size: clamp(2rem, 3.2vw, 2.7rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    -1px -1px 0 #e50914,
+    1px 1px 0 #00e5ff,
+    -2px -2px 5px rgba(229, 9, 20, 0.8),
+    2px 2px 5px rgba(0, 229, 255, 0.8),
+    0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+.page-subtitle {
+  margin-top: 8px;
+  font-size: 1rem;
+  color: var(--text-gray);
+}
+
+/* Grid 2 cột chính */
+.conf-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Cột trái – vé & QR */
+.ticket-box {
+  background: rgba(17, 17, 17, 0.95);
+  border-radius: 10px;
+  padding: 24px 22px 20px;
+  border: 1px solid rgba(229, 9, 20, 0.7);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+  animation: fadeInLeft 0.8s ease-out;
+}
+
+/* QR section */
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed #444;
+}
+
+.qr-frame {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px var(--accent-gold);
+}
+
+#qr-code-container {
+  width: 180px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-download-qr {
+  margin-top: 12px;
+  background: transparent;
+  border-radius: 4px;
+  border: 1px solid #444;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-gray);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.08s ease;
+}
+
+.btn-download-qr:hover {
+  border-color: #ffffff;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.qr-hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  text-align: center;
+}
+
+/* Thông tin vé */
+.ticket-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.ticket-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+.ticket-label {
+  min-width: 105px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.ticket-value {
+  flex: 1;
+  text-align: right;
+  color: #ffffff;
+}
+
+.highlight-movie {
+  font-weight: 600;
+  color: var(--accent-gold);
+}
+
+.ticket-note {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--text-gray);
+}
+
+/* Cột phải – Hóa đơn */
+.invoice-box {
+  background: var(--bg-panel);
+  border-radius: 8px;
+  padding: 20px 18px 18px;
+  border-top: 3px solid var(--primary-red);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+  animation: fadeInRight 0.8s ease-out;
+  position: sticky;
+  top: 64px;
+}
+
+.invoice-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 10px;
+}
+
+.invoice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.invoice-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-gray);
+}
+
+.invoice-row span:last-child {
+  color: #ffffff;
+}
+
+.invoice-row.total {
+  margin-top: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.invoice-row.total span:last-child {
+  color: var(--accent-gold);
+}
+
+.invoice-note {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  margin-bottom: 14px;
+}
+
+.divider {
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  margin: 12px 0;
+}
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-primary,
+.btn-outline {
+  width: 100%;
+  border-radius: 4px;
+  padding: 10px 14px;
+  border: 1px solid rgba(229, 9, 20, 0.85);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+    transform 0.08s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #e50914, #ff284d);
+  color: #ffffff;
+  box-shadow: var(--glow-red);
+}
+
+.btn-primary:hover {
+  background: #000000;
+  color: var(--primary-red);
+}
+
+.btn-outline {
+  color: var(--text-gray);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.btn-outline:hover {
+  color: #ffffff;
+  background: rgba(229, 9, 20, 0.08);
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .conf-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .invoice-box {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .confirmation-container {
+    padding-inline: 12px;
+  }
+
+  .ticket-box,
+  .invoice-box {
+    padding: 18px 14px;
+  }
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

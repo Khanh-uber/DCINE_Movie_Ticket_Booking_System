@@ -12,7 +12,7 @@
   const toVND = (n) =>
     (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + '₫';
 
-  const CAT_ORDER = ['combo', 'popcorn', 'beverage', 'hot-food', 'coffee', 'desserts'];
+  const CAT_ORDER = ['combo', 'popcorn', 'beverage', 'hot-food', 'coffee', 'dessert'];
 
 const CAT_CONFIG = {
   combo:    { label: 'Combo',    icon: 'ic-ticket-star' },
@@ -20,7 +20,7 @@ const CAT_CONFIG = {
   beverage: { label: 'Beverage', icon: 'ic-beverage' },
   'hot-food': { label: 'Hot Food', icon: 'ic-hot-food' },
   coffee:   { label: 'Coffee',   icon: 'ic-drink' },
-  desserts: { label: 'Desserts', icon: 'ic-desserts' },
+  dessert: { label: 'Dessert', icon: 'ic-dessert' },
   all:      { label: 'Tất cả',   icon: 'ic-menu' }
 };
 
@@ -723,7 +723,7 @@ function buildBreadcrumb() {
     await loadTicketAndCart();
 
     // 2) Load danh sách combos (menu) từ BE / JSON
-    const rawCombos = await getJSON('/combos', '../data/combos.json');
+    const rawCombos = await getJSON('/concessions', '../data/combos.json');
     state.combos = normalizeCombos(rawCombos);
 
     const grid = $('#combosGrid');
