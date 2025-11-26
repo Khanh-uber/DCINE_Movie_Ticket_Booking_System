@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Chiếu Phim | D-cine</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --bg-main: #0D0D0D;
+            --bg-panel: #161616;
+            --bg-card: #1A1A1A;
+            --primary-red: #E50914;
+            --hover-red: #ff1e2d;
+            --accent-gold: #FFD700;
+            --text-white: #FFFFFF;
+            --text-gray: #B3B3B3;
+            --glow-red: 0 0 15px rgba(229, 9, 20, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-white);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
+
+        /* --- 2. HEADER & FOOTER --- */
+        header, footer { background: #000; padding: 20px; border-bottom: 1px solid #333; }
+        .logo { color: var(--primary-red); font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+
+        /* --- 3. HERO BANNER --- */
+        .movie-hero {
+            position: relative;
+            padding: 40px 20px;
+            background-size: cover;
+            background-position: center top;
+            border-bottom: 2px solid var(--primary-red);
+            margin-bottom: 30px;
+        }
+        .movie-hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, #0D0D0D 100%);
+            backdrop-filter: blur(5px);
+        }
+        .hero-content {
+            position: relative; z-index: 2;
+            max-width: 1200px; margin: 0 auto;
+            display: flex; gap: 40px; align-items: flex-end;
+        }
+        .hero-poster {
+            width: 160px; height: 240px;
+            border-radius: 8px; border: 2px solid var(--accent-gold);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            object-fit: cover;
+        }
+        .hero-info h1 { font-size: 2.5rem; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 0 #000; }
+        .hero-meta { display: flex; gap: 20px; font-size: 0.95rem; color: #ddd; margin-bottom: 20px; }
+        .tag { background: rgba(255,255,255,0.1); padding: 3px 10px; border-radius: 4px; border: 1px solid #555; }
+        .tag-age { background: var(--primary-red); border: none; font-weight: bold; }
+        
+        .btn-trailer {
+            background: transparent; border: 1px solid #fff; color: #fff;
+            padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .btn-trailer:hover { background: white; color: black; }
+
+        /* --- 4. MAIN LAYOUT --- */
+        .main-container {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px 50px;
+            display: grid; grid-template-columns: 2.5fr 1fr; gap: 40px;
+            width: 100%;
+        }
+
+        /* --- LEFT: FILTERS & CITY SELECT --- */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .city-select-wrapper {
+            position: relative;
+            min-width: 180px;
+        }
+        .city-select {
+            width: 100%;
+            background: var(--bg-panel);
+            color: white;
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+        }
+        .city-select:focus { border-color: var(--primary-red); box-shadow: 0 0 10px rgba(229, 9, 20, 0.2); }
+        .city-select-wrapper::after {
+            content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            pointer-events: none; color: var(--primary-red); font-size: 0.8rem;
+        }
+
+        /* --- LEFT: DATE SCROLLER --- */
+        .date-scroller {
+            display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 40px;
+            scrollbar-width: thin; scrollbar-color: var(--primary-red) #222;
+        }
+        .date-card {
+            min-width: 90px; padding: 15px 10px;
+            background: var(--bg-panel); border: 1px solid #333; border-radius: 10px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .date-card:hover { border-color: var(--primary-red); transform: translateY(-3px); }
+        .date-card.active {
+            background: var(--primary-red); color: white;
+            border-color: var(--primary-red); box-shadow: var(--glow-red);
+        }
+        .date-day { font-size: 0.9rem; text-transform: uppercase; opacity: 0.8; }
+        .date-num { font-size: 1.4rem; font-weight: 800; font-family: 'Montserrat'; }
+
+        /* --- LEFT: THEATER LIST --- */
+        .theater-item {
+            background: var(--bg-card); border: 1px solid #333; border-radius: 12px;
+            padding: 25px; margin-bottom: 25px;
+        }
+        .theater-head { margin-bottom: 20px; border-bottom: 1px dashed #444; padding-bottom: 15px; }
+        .theater-name { color: var(--accent-gold); font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; }
+        .theater-addr { font-size: 0.9rem; color: #888; }
+        
+        .format-row { margin-bottom: 15px; }
+        .format-label {
+            display: inline-block; background: #222; color: #fff; padding: 4px 10px;
+            border-radius: 4px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; border: 1px solid #444;
+        }
+        
+        .time-grid { display: flex; flex-wrap: wrap; gap: 15px; }
+        .time-btn {
+            background: transparent; border: 1px solid var(--primary-red); color: white;
+            padding: 10px 20px; border-radius: 8px; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: 0.3s; min-width: 90px;
+        }
+        .time-btn:hover {
+            background: var(--primary-red); color: white;
+            box-shadow: var(--glow-red); transform: scale(1.05);
+        }
+        .time-btn.selected {
+            background: var(--text-white); color: var(--primary-red);
+            border-color: white; font-weight: 800;
+        }
+
+        /* --- RIGHT: STICKY PANEL --- */
+        .sticky-panel {
+            background: var(--bg-panel); border: 1px solid #333; border-radius: 12px;
+            padding: 25px; position: sticky; top: 20px;
+            border-top: 4px solid var(--primary-red);
+        }
+        .panel-title { font-size: 1.2rem; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem; }
+        .info-label { color: var(--text-gray); }
+        .info-val { font-weight: 600; text-align: right; max-width: 60%; }
+        .hl { color: var(--accent-gold); }
+
+        .btn-next {
+            width: 100%; padding: 15px; margin-top: 20px;
+            background: linear-gradient(90deg, #E50914 0%, #ff4d57 100%);
+            color: white; border: none; border-radius: 8px;
+            font-weight: 700; text-transform: uppercase; font-size: 1rem;
+            cursor: pointer; transition: 0.3s;
+            opacity: 0.5; pointer-events: none;
+        }
+        .btn-next.active { opacity: 1; pointer-events: all; box-shadow: var(--glow-red); }
+        .btn-next:hover { transform: translateY(-2px); }
+
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .hero-content { flex-direction: column; align-items: center; text-align: center; }
+            .hero-poster { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="max-width: 1200px; margin:0 auto; display:flex; justify-content:space-between; align-items:center;">
+            <div class="logo">D-CINE</div>
+            <nav style="color:white; font-size:0.9rem;">
+                <a href="index.html" style="color:white; margin-right:20px; text-decoration:none;">TRANG CHỦ</a>
+                <a href="#" style="color:var(--primary-red); font-weight:bold; text-decoration:none;">LỊCH CHIẾU</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="movie-hero" id="hero-bg">
+        <div class="hero-content">
+            <img id="hero-poster" src="" class="hero-poster" alt="Poster">
+            <div class="hero-info">
+                <h1 id="hero-title">Loading...</h1>
+                <div class="hero-meta">
+                    <span class="tag tag-age" id="hero-rating">--</span>
+                    <span class="tag"><i class="fa-regular fa-clock"></i> <span id="hero-duration">--</span></span>
+                    <span class="tag"><i class="fa-solid fa-film"></i> <span id="hero-genre">--</span></span>
+                </div>
+                <button class="btn-trailer"><i class="fa-solid fa-play"></i> Xem Trailer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="left-content">
+            <div class="filter-section">
+                <h3 style="margin: 0;">Lịch Chiếu</h3>
+                <div class="city-select-wrapper">
+                    <select id="city-select" class="city-select" onchange="changeCity(this.value)">
+                        </select>
+                </div>
+            </div>
+
+            <div class="date-scroller" id="date-list"></div>
+
+            <div id="theater-container">
+                <div style="text-align:center; padding:50px; color:#666; border:1px dashed #333; border-radius:10px;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;"></i><br>Đang tải dữ liệu...
+                </div>
+            </div>
+        </div>
+
+        <div class="right-sidebar">
+            <div class="sticky-panel">
+                <div class="panel-title">THÔNG TIN ĐẶT VÉ</div>
+                
+                <div class="info-row">
+                    <span class="info-label">Phim</span>
+                    <span class="info-val hl" id="sum-movie">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Rạp</span>
+                    <span class="info-val" id="sum-theater">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Ngày chiếu</span>
+                    <span class="info-val" id="sum-date">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Suất chiếu</span>
+                    <span class="info-val hl" id="sum-time">...</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Định dạng</span>
+                    <span class="info-val" id="sum-format">...</span>
+                </div>
+
+                <button id="btn-continue" class="btn-next" onclick="goToSeatMap()">
+                    Tiếp tục chọn ghế <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="margin-top:auto; text-align:center; color:#666; font-size:0.8rem;">
+        &copy; 2025 D-cine Cinema. All rights reserved.
+    </footer>
+
+    <script>
+        // --- 1. MOCK DATA ---
+        const db = {
+            cities: [
+                { id: "hcm", name: "Hồ Chí Minh" },
+                { id: "hn", name: "Hà Nội" },
+                { id: "dn", name: "Đà Nẵng" }
+            ],
+            movies: {
+                "mv-01": { 
+                    id: "mv-01", title: "Dune: Part Two", duration: "166 phút", genre: "Hành động / Viễn tưởng", rating: "C13",
+                    poster: "https://image.tmdb.org/t/p/w300/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+                    backdrop: "https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg"
+                },
+                "mv-02": { 
+                    id: "mv-02", title: "Mai", duration: "131 phút", genre: "Tâm lý / Tình cảm", rating: "C18",
+                    poster: "https://upload.wikimedia.org/wikipedia/vi/8/86/Mai_movie_poster.jpg",
+                    backdrop: "https://i.ytimg.com/vi/O17tX8k8JjE/maxresdefault.jpg"
+                }
+            },
+            theaters: [
+                { id: "th-01", cityId: "hcm", name: "D-cine Bitexco", address: "2 Hải Triều, Q.1, TP.HCM" },
+                { id: "th-02", cityId: "hcm", name: "D-cine Landmark 81", address: "720A Điện Biên Phủ, Q.Bình Thạnh" },
+                { id: "th-03", cityId: "hn", name: "D-cine Vincom Bà Triệu", address: "191 Bà Triệu, Hà Nội" },
+                { id: "th-04", cityId: "dn", name: "D-cine Lê Duẩn", address: "123 Lê Duẩn, Đà Nẵng" }
+            ],
+            showtimes: [
+                // HCM
+                { movieId: "mv-01", theaterId: "th-01", date: "2025-11-26", format: "2D Phụ Đề", times: ["09:30", "11:45", "14:00", "17:15"] },
+                { movieId: "mv-01", theaterId: "th-01", date: "2025-11-26", format: "IMAX 3D", times: ["19:30", "22:00"] },
+                { movieId: "mv-01", theaterId: "th-02", date: "2025-11-26", format: "2D Phụ Đề", times: ["10:00", "13:00", "16:00"] },
+                { movieId: "mv-01", theaterId: "th-01", date: "2025-11-27", format: "2D Phụ Đề", times: ["10:00", "15:00"] },
+                
+                // Hà Nội (để test bộ lọc)
+                { movieId: "mv-01", theaterId: "th-03", date: "2025-11-26", format: "2D Lồng Tiếng", times: ["18:00", "20:30"] }
+            ]
+        };
+
+        // --- 2. GLOBAL STATE ---
+        let currentMovieId = localStorage.getItem('selectedMovieId') || "mv-01"; 
+        let selectedDateStr = "2025-11-26"; 
+        let currentCityId = "hcm"; // Mặc định HCM
+        let selectedShowtime = null;
+
+        // --- 3. INIT ---
+        window.onload = function() {
+            if(!db.movies[currentMovieId]) currentMovieId = "mv-01";
+
+            renderHero();
+            renderCityOptions();
+            renderDates();
+            renderTheatersAndShowtimes();
+            updateSummary();
+        };
+
+        // --- 4. RENDER FUNCTIONS ---
+
+        function renderHero() {
+            const movie = db.movies[currentMovieId];
+            document.getElementById('hero-title').innerText = movie.title;
+            document.getElementById('hero-rating').innerText = movie.rating;
+            document.getElementById('hero-duration').innerText = movie.duration;
+            document.getElementById('hero-genre').innerText = movie.genre;
+            document.getElementById('hero-poster').src = movie.poster;
+            document.getElementById('hero-bg').style.backgroundImage = `url('${movie.backdrop}')`;
+            document.getElementById('sum-movie').innerText = movie.title;
+        }
+
+        function renderCityOptions() {
+            const select = document.getElementById('city-select');
+            select.innerHTML = '';
+            db.cities.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.id;
+                option.text = city.name;
+                if(city.id === currentCityId) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+
+        function renderDates() {
+            const container = document.getElementById('date-list');
+            container.innerHTML = '';
+            const baseDate = new Date(selectedDateStr); 
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(baseDate);
+                d.setDate(baseDate.getDate() + i);
+                
+                const dateStr = d.toISOString().split('T')[0];
+                const dayName = i === 0 ? "Hôm nay" : getDayName(d.getDay());
+                const dayNum = `${d.getDate()}/${d.getMonth()+1}`;
+                const isActive = (i === 0) ? "active" : "";
+
+                container.innerHTML += `
+                    <div class="date-card ${isActive}" onclick="selectDate(this, '${dateStr}')">
+                        <span class="date-day">${dayName}</span>
+                        <span class="date-num">${dayNum}</span>
+                    </div>`;
+            }
+        }
+
+        function renderTheatersAndShowtimes() {
+            const container = document.getElementById('theater-container');
+            container.innerHTML = '';
+
+            // Bước 1: Lấy các rạp thuộc City hiện tại
+            const theatersInCity = db.theaters.filter(t => t.cityId === currentCityId);
+            const theaterIdsInCity = theatersInCity.map(t => t.id);
+
+            // Bước 2: Lấy các suất chiếu thỏa mãn: Phim + Ngày + Rạp thuộc City
+            const relevantShowtimes = db.showtimes.filter(st => 
+                st.movieId === currentMovieId && 
+                st.date === selectedDateStr &&
+                theaterIdsInCity.includes(st.theaterId)
+            );
+
+            if (relevantShowtimes.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:40px; border:1px dashed #444; border-radius:10px; color:#777;">
+                        <i class="fa-solid fa-city" style="font-size:2rem; margin-bottom:10px;"></i><br>
+                        Không tìm thấy suất chiếu tại khu vực này vào ngày này.
+                    </div>`;
+                return;
+            }
+
+            // Bước 3: Group by Theater và Render
+            // Lấy danh sách TheaterId duy nhất có suất chiếu
+            const activeTheaterIds = [...new Set(relevantShowtimes.map(item => item.theaterId))];
+
+            activeTheaterIds.forEach(tId => {
+                const theaterInfo = db.theaters.find(t => t.id === tId);
+                const theaterShowtimes = relevantShowtimes.filter(st => st.theaterId === tId);
+
+                let formatsHtml = '';
+                // Lấy các định dạng duy nhất (2D, IMAX...)
+                const formats = [...new Set(theaterShowtimes.map(s => s.format))];
+
+                formats.forEach(fmt => {
+                    const times = theaterShowtimes.filter(s => s.format === fmt).flatMap(s => s.times);
+                    let buttonsHtml = '';
+                    times.forEach(time => {
+                         buttonsHtml += `<button class="time-btn" onclick="selectTime(this, '${tId}', '${fmt}', '${time}')">${time}</button>`;
+                    });
+
+                    formatsHtml += `
+                        <div class="format-row">
+                            <div class="format-label">${fmt}</div>
+                            <div class="time-grid">${buttonsHtml}</div>
+                        </div>`;
+                });
+
+                container.innerHTML += `
+                    <div class="theater-item">
+                        <div class="theater-head">
+                            <div>
+                                <div class="theater-name">${theaterInfo.name}</div>
+                                <div class="theater-addr">${theaterInfo.address}</div>
+                            </div>
+                        </div>
+                        <div class="theater-body">${formatsHtml}</div>
+                    </div>`;
+            });
+        }
+
+        // --- 5. INTERACTION FUNCTIONS ---
+
+        function changeCity(cityId) {
+            currentCityId = cityId;
+            selectedShowtime = null; // Reset chọn
+            updateSummary();
+            renderTheatersAndShowtimes();
+        }
+
+        function selectDate(el, dateStr) {
+            document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            selectedDateStr = dateStr;
+            selectedShowtime = null;
+            updateSummary();
+            renderTheatersAndShowtimes();
+        }
+
+        function selectTime(btn, theaterId, format, time) {
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            const theater = db.theaters.find(t => t.id === theaterId);
+            selectedShowtime = {
+                movieId: currentMovieId,
+                theaterId: theaterId,
+                theaterName: theater.name,
+                date: selectedDateStr,
+                time: time,
+                format: format
+            };
+            updateSummary();
+        }
+
+        function updateSummary() {
+            if (selectedShowtime) {
+                document.getElementById('sum-theater').innerText = selectedShowtime.theaterName;
+                document.getElementById('sum-date').innerText = formatDateVN(selectedShowtime.date);
+                document.getElementById('sum-time').innerText = selectedShowtime.time;
+                document.getElementById('sum-format').innerText = selectedShowtime.format;
+                
+                document.getElementById('btn-continue').classList.add('active');
+                document.getElementById('btn-continue').innerHTML = 'Tiếp tục chọn ghế <i class="fa-solid fa-arrow-right"></i>';
+            } else {
+                document.getElementById('sum-theater').innerText = "...";
+                document.getElementById('sum-date').innerText = formatDateVN(selectedDateStr);
+                document.getElementById('sum-time').innerText = "...";
+                document.getElementById('sum-format').innerText = "...";
+                
+                document.getElementById('btn-continue').classList.remove('active');
+                document.getElementById('btn-continue').innerText = "Vui lòng chọn suất chiếu";
+            }
+        }
+
+        function goToSeatMap() {
+            if (!selectedShowtime) return;
+            localStorage.setItem('bookingSession', JSON.stringify(selectedShowtime));
+            window.location.href = 'seat-map.html';
+        }
+
+        // Helpers
+        function getDayName(dayIndex) {
+            return ["CN", "Th 2", "Th 3", "Th 4", "Th 5", "Th 6", "Th 7"][dayIndex];
+        }
+        function formatDateVN(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+    </script>
+</body>
+</html>
