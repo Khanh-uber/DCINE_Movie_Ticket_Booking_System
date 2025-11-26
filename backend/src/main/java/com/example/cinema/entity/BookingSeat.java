@@ -5,45 +5,28 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Entity
-public class BookingSeat {
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="booking_id")
-    private Long bookingId;
-    
-    @Column(name="seat_id", nullable = false)
-    private Long seatId ;
-    
-    @Column(name="price_at_booking", nullable = false)
-    private Double priceAtBooking;
 
-    public BookingSeat(){}
-    public BookingSeat(Long seatId, Double priceAtBooking) {
-        this.seatId = seatId;
+@Entity
+@Table(name="booking_seat")
+public class BookingSeat {
+    @EmbeddedId
+    private BookingSeatKey id;
+
+    @Column(name = "price_at_booking", nullable = false)
+    private Long priceAtBooking;
+
+    public BookingSeat() {}
+
+    public BookingSeat(BookingSeatKey id, Long priceAtBooking) {
+        this.id = id;
         this.priceAtBooking = priceAtBooking;
     }
-    public Long getBookingId() {
-        return bookingId;
-    }
 
-    public void setBookingId(Long bookingId) {
-        this.bookingId = bookingId;
-    }
+    public BookingSeatKey getId() { return id; }
+    public void setId(BookingSeatKey id) { this.id = id; }
 
-    public Long getSeatId() {
-        return seatId;
-    }
-
-    public void setSeatId(Long seatId) {
-        this.seatId = seatId;
-    }
-
-    public Double getPriceAtBooking() {
-        return priceAtBooking;
-    }
-
-    public void setPriceAtBooking(Double priceAtBooking) {
+    public Long getPriceAtBooking() { return priceAtBooking; }
+    public void setPriceAtBooking(Long priceAtBooking) {
         this.priceAtBooking = priceAtBooking;
     }
 }

@@ -45,4 +45,12 @@ public interface SeatRepository extends JpaRepository<Seat, Long>{
     
 
     
+    // (BookingService)
+        @Query(value="""
+                        select seat_id
+                        from seat 
+                        where hall_id = :hallId
+                        and concat(row_label, seat_number) = :code
+                        """, nativeQuery = true)
+    Long findSeatIdByCode(@Param("hallId") Long hallId, @Param("code") String code);
 }

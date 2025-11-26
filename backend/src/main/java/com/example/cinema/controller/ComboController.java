@@ -1,4 +1,4 @@
-package com.example.cinema.entity;
+package com.example.cinema.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

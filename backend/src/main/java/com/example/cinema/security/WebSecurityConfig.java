@@ -34,7 +34,7 @@ public class WebSecurityConfig {
                     "/api/**"
                 ).permitAll()
         
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
         return http.build();
     }
