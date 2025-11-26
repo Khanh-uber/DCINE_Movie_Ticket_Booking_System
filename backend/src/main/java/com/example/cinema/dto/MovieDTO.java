@@ -1,7 +1,7 @@
 package com.example.cinema.dto;
 
 import com.example.cinema.entity.Movie;
-
+import com.example.cinema.entity.Movie.MovieStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,8 +21,9 @@ public class MovieDTO {
     private List<String> cast;
     private List<String> director;
     private String synopsis;
-    private String originalName;
+    private String originalTitle;
     private String href;
+    private MovieStatus status;
     
 
     // 
@@ -58,8 +59,8 @@ public class MovieDTO {
     public List<String> getDirector(){return director;}
     public void setDirector(List<String> director){this.director = director;}
     
-    public String getOriginalName(){return originalName;}
-    public void setOriginalName(String originalName){this.originalName = originalName;}
+    public String getOriginalTitle(){return originalTitle;}
+    public void setOriginalTitle(String originalTitle){this.originalTitle = originalTitle;}
 
     public String getHref(){return href;}
     public void setHref(String href){this.href = href;}
@@ -91,6 +92,8 @@ public class MovieDTO {
     public String getTrailerUrl(){return trailerUrl;}
     public void setTrailerUrl(String trailerUrl){this.trailerUrl = trailerUrl;}
     
+    public MovieStatus getStatus(){return status;}
+    public void setStatus(MovieStatus status){this.status = status;}
     
     
     public static MovieDTO fromEntity(Movie movie) {
@@ -103,7 +106,7 @@ public class MovieDTO {
         }
 
         dto.setRated(rated);
-        dto.setBackDropUrl(movie.getBackDropUrl());
+        dto.setBackDropUrl(movie.getPosterUrl());
         dto.setLanguage(movie.getLanguage());
         dto.setId(movie.getId()); // Tạo mã "tt001"
         dto.setTitle(movie.getTitle());
@@ -113,8 +116,9 @@ public class MovieDTO {
         dto.setTrailerUrl(movie.getTrailerUrl());
         dto.setReleaseDate(movie.getReleaseDate());
         dto.setDurationMin(movie.getDurationMin());
-        dto.setOriginalName(movie.getTitle());
+        dto.setOriginalTitle(movie.getTitle());
         dto.setHref("showtime.html?movie="+movie.getId());
+        dto.setStatus(movie.getStatus());
         return dto;
     }
     
