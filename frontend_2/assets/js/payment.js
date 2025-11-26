@@ -976,7 +976,9 @@
     }
     state.pendingPayment = pendingPayment;
     showInlineQr(method, qrPayload);
-
+    if (state.backend.enabled && backendData && backendData.transactionId) {
+    console.log('Đang chờ tín hiệu thanh toán từ server cho giao dịch:', backendData.transactionId);
+}
   }
 
 
