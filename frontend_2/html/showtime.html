@@ -1,97 +1,117 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8"/>
-  <title>D-cine — Chọn lịch chiếu</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-
-  <!-- Fonts -->
+  <meta charset="utf-8" />
+  <title>D-cine — Lịch chiếu phim</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Core CSS (giữ nguyên đường dẫn dự án) -->
-  <link rel="stylesheet" href="../assets/css/variable.css">
-  <link rel="stylesheet" href="../assets/css/base.css">
-  <link rel="stylesheet" href="../assets/css/layout.css">
-  <link rel="stylesheet" href="../assets/css/header.css">
-  <link rel="stylesheet" href="../assets/css/footer.css">
-  <link rel="stylesheet" href="../assets/css/main.css">
-  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/variable.css?v=1">
+  <link rel="stylesheet" href="../assets/css/base.css?v=1">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=1">
+  <link rel="stylesheet" href="../assets/css/header.css?v=1">
+  <link rel="stylesheet" href="../assets/css/main.css?v=1">
+  <link rel="stylesheet" href="../assets/css/components.css?v=1">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=1">
 
-  <!-- Page CSS -->
-  <link rel="stylesheet" href="../assets/css/showtime.css">
+  <link rel="stylesheet" href="../assets/css/showtime.css?v=2">
 </head>
-<body class="theme-dcine">
-  <!-- Header include -->
+<body>
   <div id="hdr-include"></div>
 
-  <main class="container showtime-page">
-    <nav id="bc" class="breadcrumb" aria-label="Breadcrumb"></nav>
+  <section id="stHero" class="st-hero hidden">
+    <div class="st-hero__bg" id="heroBg"></div>
+    <div class="st-hero__content container">
+      <div class="poster-wrap">
+        <img id="heroPoster" src="" alt="Poster" />
+      </div>
+      <div class="info-wrap">
+        <nav id="bc" class="breadcrumb st-bc" aria-label="Breadcrumb"></nav>
+        <h1 id="heroTitle" class="hero-title">Loading...</h1>
+        
+        <div class="hero-meta">
+            <span class="tag tag-age" id="heroAge">--</span>
+            <span class="tag"><i class="fa-regular fa-clock"></i> <span id="heroDur">--</span></span>
+            <span class="tag"><i class="fa-solid fa-film"></i> <span id="heroGenre">--</span></span>
+        </div>
 
-    <div class="st-grid">
-      <!-- LEFT: Movie card -->
-      <aside id="movieSide" class="movie-side">
-        <div class="poster-wrap">
-          <img id="mvPoster" alt="Poster" />
-          <!-- Trailer: đỏ + căn giữa -->
-          <button id="btnTrailer" class="btn trailer-red" hidden>
-            ▶ WATCH TRAILER
+        <div class="hero-actions">
+          <button id="btnTrailer" class="btn outline white btn-hero-action">
+             <i class="fa-solid fa-play"></i> Trailer
           </button>
+          <a id="btnBackMovie" href="#" class="btn outline gray btn-hero-action">
+             <i class="fa-solid fa-circle-info"></i> Chi tiết
+          </a>
         </div>
-
-        <div class="mv-copy">
-          <h1 id="mvTitle">—</h1>
-          <div class="mv-meta">
-            <span id="mvYear">—</span> <span class="dot">•</span>
-            <span id="mvGenres">—</span> <span class="dot">•</span>
-            <span id="mvDuration">—</span>
-          </div>
-          <p id="mvDesc" class="mv-desc">—</p>
-
-          <div class="cta-vertical">
-            <a id="btnContinue" class="btn" href="#filters">CONTINUE BOOKING</a>
-            <a id="btnBack" class="btn outline" href="movies.html">⬅ BACK TO MOVIE PAGE</a>
-          </div>
-        </div>
-      </aside>
-
-      <!-- RIGHT: Filters + Theatres + Showtimes -->
-      <section class="picker">
-        <!-- Filters -->
-        <div id="filters" class="filters card">
-          <div class="field">
-            <label for="citySel">Select your city</label>
-            <select id="citySel"></select>
-          </div>
-          <div class="field">
-            <label for="dateSel">Date</label>
-            <input id="dateSel" type="date" />
-          </div>
-        </div>
-
-        <!-- Day chips -->
-        <div id="dayChips" class="day-chips"></div>
-
-        <!-- Theatres (2 cột) -->
-        <div class="theater-group">
-          <div class="tg-head">
-            <h3 id="cityLabel" class="section-ttl">Movie Theatres in —</h3>
-          </div>
-          <div id="theaterChips" class="chips grid-2"></div>
-        </div>
-
-        <!-- Showtimes -->
-        <div id="showtimesWrap" class="showtimes card" aria-live="polite"></div>
-      </section>
+      </div>
     </div>
+  </section>
+
+  <div id="simpleBc" class="container" style="margin-top: 20px; display:none;">
+    <nav class="breadcrumb"></nav>
+  </div>
+
+  <main class="container st-layout">
+    <div class="st-main">
+      
+      <div class="st-toolbar">
+        <h2 class="section-title">Lịch Chiếu</h2>
+
+        <div class="st-filters">
+          <div class="custom-dropdown" id="provinceDropdown">
+            <div class="dropdown-label">Khu vực:</div>
+            <div class="dropdown-select">
+              <span class="select-selected">Đang tải...</span>
+              <i class="fa-solid fa-caret-down"></i>
+            </div>
+            <ul class="dropdown-list"></ul>
+          </div>
+
+          <div class="custom-dropdown" id="locationDropdown">
+            <div class="dropdown-label">Vị trí:</div>
+            <div class="dropdown-select">
+              <span class="select-selected">Tất cả</span>
+              <i class="fa-solid fa-caret-down"></i>
+            </div>
+            <ul class="dropdown-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="date-scroller" id="dateList"></div>
+
+      <div id="theaterList" class="theater-list">
+        <div class="st-loading">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+          <span>Đang tìm vé tốt nhất cho bạn...</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="st-sidebar">
+      <div class="booking-panel">
+        <div class="panel-head">THÔNG TIN ĐẶT VÉ</div>
+        <div class="panel-body">
+          <div class="info-row"><span class="lbl">Phim</span><span class="val hl-gold" id="sumMovie">...</span></div>
+          <div class="info-row"><span class="lbl">Rạp</span><span class="val" id="sumTheater">...</span></div>
+          <div class="info-row"><span class="lbl">Ngày chiếu</span><span class="val" id="sumDate">...</span></div>
+          <div class="info-row"><span class="lbl">Suất chiếu</span><span class="val hl-gold" id="sumTime">...</span></div>
+          <div class="info-row"><span class="lbl">Định dạng</span><span class="val" id="sumFormat">...</span></div>
+        </div>
+        <button id="btnContinue" class="btn-next" disabled>
+          Chọn ghế <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </aside>
   </main>
 
-  <!-- Footer include -->
   <div id="footer-include"></div>
 
   <script>window.API_BASE = window.API_BASE || '/api';</script>
   <script src="../assets/js/main.js" defer></script>
-  <script src="../assets/js/showtime.js" defer></script>
+  <script src="../assets/js/showtime.js?v=2" defer></script>
 </body>
 </html>
