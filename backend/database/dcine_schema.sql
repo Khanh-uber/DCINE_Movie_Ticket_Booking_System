@@ -4,7 +4,7 @@ USE dcine_schema;
 
 CREATE TABLE `account` (
   `account_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  `customer_id` bigint NOT NULL,
+  `customer_id` bigint UNIQUE NOT NULL,
   `membership_tier_id` bigint DEFAULT null,
   `username` varchar(50) UNIQUE NOT NULL,
   `password_hash` varchar(255) NOT NULL,
@@ -31,7 +31,9 @@ CREATE TABLE `customer` (
   `customer_id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `full_name` varchar(100) NOT NULL,
   `phone` varchar(20) DEFAULT null,
-  `dob` date DEFAULT null
+  `dob` date DEFAULT null,
+  `address` VARCHAR(255) DEFAULT NULL,
+  `gender` ENUM('MALE', 'FEMALE') DEFAULT NULL
 );
 
 CREATE TABLE `theater` (
