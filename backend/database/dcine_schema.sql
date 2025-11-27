@@ -215,7 +215,7 @@ CREATE TABLE `booking_concession` (
   `item_id` bigint NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
   `total_price` decimal(10,2) NOT NULL,
-  PRIMARY KEY (booking_id,combo_id)
+  PRIMARY KEY (booking_id,item_id )
 );
 
 CREATE TABLE `otp_record` (
