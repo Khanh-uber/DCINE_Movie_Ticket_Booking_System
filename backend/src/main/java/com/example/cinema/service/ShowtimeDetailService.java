@@ -24,7 +24,7 @@ public class ShowtimeDetailService {
         this.seatTypeRepo = seatTypeRepo;
     }
     public ShowtimeDetailResponse getShowtimeDetail(Long id){
-        Map<String, Object> st = showtimeRepo.findShowtimeDetailRaw(id);
+        Map<String, Object> st = showtimeRepo.findShowtimeDetail(id);
         if (st == null)
             throw new RuntimeException("Khong tim thay xuat chieu");
         Long movieId = showtimeRepo.findMovieIdByShowtime(id);

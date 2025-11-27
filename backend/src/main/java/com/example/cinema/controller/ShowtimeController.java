@@ -1,38 +1,44 @@
 package com.example.cinema.controller;
 
-import com.example.cinema.dto.ShowtimeDetailDTO;
+import com.example.cinema.dto.*;
+import com.example.cinema.service.ShowtimeDetailService;
 import com.example.cinema.service.ShowtimeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/showtimes")
+
 public class ShowtimeController {
-
-    private final ShowtimeService service;
-
-    public ShowtimeController(ShowtimeService service) {
-        this.service = service;
+    private final ShowtimeService showtimeService;
+    private final ShowtimeDetailService showtimeDetailService;
+    public ShowtimeController (ShowtimeService showtimeService, ShowtimeDetailService showtimeDetailService){
+        this.showtimeService = showtimeService;
+        this.showtimeDetailService = showtimeDetailService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getShowtimes(
-            @RequestParam(name = "movie", required = false) Long movieId,
-            @RequestParam(name = "province", required = false) Long provinceId
-    ) {
+    public ResponseEntity<List<ShowtimeDTO>> getShowtimes(@RequestParam(name = "movie", required = false ) Long movieId){
+        List<ShowtimeDTO> showtimes = showtimeService.getAllShowtimesFlex(movieId);
+        return ResponseEntity.ok(showtimes);
+    }
 
-        List<Map<String, Object>> data =
-                service.getShowtimesForFE(movieId, provinceId);
-
-        return ResponseEntity.ok(data);
+    @GetMapping("/movie/{movieId}")
+    public ResponseEntity<List<ShowtimeFlatDTO>> getShowtimesMovie(@PathVariable Long movieId){
+        List<ShowtimeFlatDTO> showtimes = showtimeService.getShowtimesFlat(movieId);
+        return ResponseEntity.ok(showtimes);
+        
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShowtimeDetailDTO> getShowtimeDetail(@PathVariable Long id) {
-        ShowtimeDetailDTO dto = service.getShowtimeDetail(id);
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<?> getShowtimeDetail(@PathVariable Long id) {
+        try {
+            ShowtimeDetailResponse response = showtimeDetailService.getShowtimeDetail(id);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
+    
 }

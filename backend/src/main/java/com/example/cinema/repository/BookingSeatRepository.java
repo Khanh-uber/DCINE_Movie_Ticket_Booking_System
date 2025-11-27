@@ -54,4 +54,15 @@ public interface BookingSeatRepository extends JpaRepository<BookingSeat, Bookin
         @Transactional
         @Query(value = "DELETE FROM booking_seat WHERE booking_id = :bookingId", nativeQuery = true)
         void deleteSeatsByBookingId(@Param("bookingId") Long bookingId);
+
+
+        // (ConcessionService)
+        @Query(value="""
+                        select distinct concat(s.row_label, s.seat_number) as code, bs.price_at_booking, st.name as zone , st.price_multiplier, s2.base_price from seat s
+                        join booking_seat bs on bs.seat_id = s.seat_id
+                        join seat_type st on st.seat_type_id = s.seat_type_id
+                        join showtime s2 on s2.hall_id = s.hall_id 
+                        where bs.booking_id = :bookingId
+                        """, nativeQuery = true )
+        List<Map<String, Object>> findSeatByBooking(@Param("bookingId") Long bookingId);
 }

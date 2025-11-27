@@ -2,20 +2,17 @@ package com.example.cinema.service;
 
 import com.example.cinema.repository.LocationRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
+import com.example.cinema.entity.*;
 @Service
 public class LocationService {
-
-    private final LocationRepository repo;
-
-    public LocationService(LocationRepository repo) {
-        this.repo = repo;
+    private final LocationRepository locationRepo;
+    public LocationService(LocationRepository locationRepo){
+        this.locationRepo = locationRepo;
     }
 
-    public List<Map<String,Object>> getAll() {
-        return repo.findAllLocations();
+    public List<Location> findAllLocations() {
+        return locationRepo.findAllLocation();
     }
+    
 }

@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface BookingRepository extends JpaRepository<Booking, Long>{ 
     
+    // (BookingService)
     @Query(value = "SELECT * FROM booking " +
               "WHERE account_id = :accountId AND status = 'PENDING' " +
               "ORDER BY booking_id DESC " +
@@ -24,4 +25,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
     @Transactional
     @Query(value = "DELETE FROM booking WHERE booking_id = :bookingId", nativeQuery = true)
     void deleteBookingById(@Param("bookingId") Long bookingId);
+
+
+    // (ConcessionService)
+    @Query(value="""
+        select *
+        from booking
+        where account_id = :accountId
+        """, nativeQuery = true)
+    Booking findPendingBookingByAccountId(@Param("accountId") Long accountId);
 }

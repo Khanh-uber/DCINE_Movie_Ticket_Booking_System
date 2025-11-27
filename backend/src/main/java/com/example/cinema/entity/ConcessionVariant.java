@@ -24,7 +24,15 @@ public class ConcessionVariant {
     @Column(name = "price_diff")
     private Double priceDiff;
 
-    public ConcessionVariant(){}
+    public ConcessionVariant() {}
+
+    public ConcessionVariant(Long variantId, Long itemId, String label, String value, Double priceDiff) {
+        this.variantId = variantId;
+        this.itemId = itemId;
+        this.label = label;
+        this.value = value;
+        this.priceDiff = priceDiff;
+    }
 
     public Long getVariantId(){ return variantId; }
     public void setVariantId(Long variantId){ this.variantId = variantId; }

@@ -1,28 +1,24 @@
 package com.example.cinema.repository;
+import com.example.cinema.entity.ConcessionItem;
 
-import com.example.cinema.entity.*;
+import io.lettuce.core.dynamic.annotation.Param;
 
-import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.*;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
+public interface ConcessionItemRepository extends JpaRepository<ConcessionItem, Long> {
 
-public interface ConcessionItemRepository extends JpaRepository<ConcessionItem, Long>{ 
     @Query(value="""
-            select * from concession_item 
-            where active = true
-            """, nativeQuery = true)
-    List<ConcessionItem> findByActive();
-
-    @Query(value = """
             select * from concession_item
-            where category = :category
-            and active = true
+            where active = true
+            """, nativeQuery= true)
+    List<ConcessionItem> getConcessionItemInfo();
+
+    @Query(value="""
+            select *
+            from concession_item
+            where item_id = :itemId
             """, nativeQuery = true)
-    List<ConcessionItem> findByCategoryAndActive(
-        @Param("category") String category,
-        @Param("active") boolean active
-    );
-    
+    Map<String, Object> findItemInfo(@Param("itemId") Long itemId);
 }

@@ -1,16 +1,16 @@
 package com.example.cinema.controller;
 
-import com.example.cinema.service.LocationService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.*;
+import com.example.cinema.entity.*;
+import com.example.cinema.service.LocationService;
 
 @RestController
 @RequestMapping("/api/locations")
 public class LocationController {
-
     private final LocationService service;
 
     public LocationController(LocationService service) {
@@ -18,7 +18,8 @@ public class LocationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String,Object>>> getAll() {
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<?> getAllLocations(){
+        List<Location> list = service.findAllLocations();
+        return ResponseEntity.ok(list);
     }
 }

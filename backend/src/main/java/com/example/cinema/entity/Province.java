@@ -1,34 +1,27 @@
 package com.example.cinema.entity;
-
-import jakarta.persistence.*; // Hoặc import javax.persistence.*
+import jakarta.persistence.*;
 
 @Entity
-@Table(name = "province")
+@Table(name="province")
 public class Province {
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "province_id")
     private Long id;
+    
+    @Column(name="province_name")
+    private String name ;
+    
 
-    @Column(name = "province_name")
-    private String name;
-
-    public Province() {}
-
-    public Long getId() {
-        return id;
+    public Province(){}
+    public Province(String provinceName){
+        this.name = provinceName;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId(){return id;}
+    public void setId(Long id){this.id = id;}
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getName(){return name;}
+    public void setName(String name){this.name = name;}
+    
 }

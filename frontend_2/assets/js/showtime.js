@@ -56,8 +56,6 @@
     selectedDate: null,
     selectedShowtime: null,
 
-    weekIndex: 0,
-
     // Data Containers
     movie: null,
     provinces: [], 
@@ -109,19 +107,17 @@
       const tId = String(s.theaterId || s.theater || '').trim();
       if (!tId) return;
 
-const push = (id, date, startTime, fmt, price, endTime) => {
-    out.push({
-      id: String(id),
-      theaterId: tId,
-      movieId: mId,
-      date: String(date).slice(0, 10),
-      time: startTime,
-      endTime: endTime,     // ⭐⭐ thêm vào đây
-      format: fmt || '2D',
-      price: price || 95000
-    });
-};
-
+      const push = (id, date, time, fmt, price) => {
+        out.push({
+          id: String(id),
+          theaterId: tId,
+          movieId: mId,
+          date: String(date).slice(0, 10),
+          time: time,
+          format: fmt || '2D',
+          price: price || 95000
+        });
+      };
 
       // Xử lý JSON lồng nhau (dates -> formats -> times)
       const dates = s.dates || [];
@@ -138,21 +134,10 @@ const push = (id, date, startTime, fmt, price, endTime) => {
         });
       } 
       // Xử lý dữ liệu phẳng từ DB (start_at)
-      else if (s.startAt || s.start_at) {
-
-          const startObj = new Date(s.startAt || s.start_at);
-          const endObj   = s.endAt || s.end_at ? new Date(s.endAt || s.end_at) : null;
-
-          push(
-            s.id || s.showtime_id,
-            startObj.toISOString().slice(0,10),
-            startObj.toTimeString().slice(0,5),
-            s.format || s.room_type || s.roomType,
-            s.basePrice || s.base_price,
-            endObj ? endObj.toTimeString().slice(0,5) : null
-          );
+      else if (s.start_at) {
+          const dObj = new Date(s.start_at);
+          push(s.showtime_id || s.id, dObj.toISOString().slice(0,10), dObj.toTimeString().slice(0,5), s.format, s.base_price);
       }
-
     });
     return out;
   }
@@ -167,7 +152,7 @@ const push = (id, date, startTime, fmt, price, endTime) => {
     const [pData, lData, tData] = await Promise.all([
       getJSON(`${API}/provinces`, '../data/proviences.json'),
       getJSON(`${API}/locations`, '../data/locations.json'),
-      getJSON(`${API}/theaters`)
+      getJSON(`${API}/theaters`, '../data/theaters.json')
     ]);
 
     state.provinces = Array.isArray(pData) ? pData : (pData.items || []);
@@ -182,19 +167,10 @@ const push = (id, date, startTime, fmt, price, endTime) => {
       const mvData = await getJSON(`${API}/movies`, '../data/movies.json');
       const allMv = mvData.now ? [...mvData.now, ...mvData.soon] : (Array.isArray(mvData) ? mvData : []);
       state.movie = allMv.find(m => String(m.id) === String(state.movieId)) || {};
-      state.movie.duration =
-        state.movie.duration_min ||
-        state.movie.duration ||
-        state.movie.runtime ||
-        null;
     }
 
     // Load lịch chiếu
-    const movieParam = state.movieId ? `movie=${state.movieId}` : '';
-    const provParam  = state.selProvId ? `province=${state.selProvId}` : '';
-    const qs = [movieParam, provParam].filter(Boolean).join('&');
-
-    const stData = await getJSON(`${API}/showtimes?${qs}`, '../data/showtimes.json');
+    const stData = await getJSON(`${API}/showtimes`, '../data/showtimes.json');
     state.showtimes = normShowtimes(stData, state.movieId);
 
     $('#theaterList').innerHTML = '';
@@ -325,7 +301,7 @@ function renderHero() {
 
   const durEl = $('#heroDur');
   if (durEl) {
-    const minutes = m.durationMin || m.duration_min || m.duration || m.runtime;
+    const minutes = m.duration || m.runtime;
     durEl.textContent = minutes ? `${minutes} phút` : '--';
   }
 
@@ -435,86 +411,31 @@ function renderHero() {
   function closeDropdowns() { $$('.custom-dropdown').forEach(d => d.classList.remove('open')); }
   document.addEventListener('click', closeDropdowns);
 
-function renderDates() {
+  function renderDates() {
     const cont = $('#dateList');
     cont.innerHTML = '';
-
     const dates = getAvailableDates();
-    console.log("DATES AVAILABLE:", dates);
-    console.log("CURRENT SELECTED DATE:", state.selectedDate);
 
     if (!dates.length) {
-        cont.innerHTML = `<div class="no-show-msg">Chưa có lịch chiếu tại khu vực này.</div>`;
-        return;
+       cont.innerHTML = `<div class="no-show-msg">Chưa có lịch chiếu tại khu vực này.<br>Vui lòng chọn Vị trí khác.</div>`;
+       $('#theaterList').innerHTML = '';
+       return;
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-    if (!state.selectedDate) {
-        state.selectedDate = dates.includes(today) ? today : dates[0];
-    }
+    // Auto select first date nếu chưa chọn
+    if (!state.selectedDate || !dates.includes(state.selectedDate)) state.selectedDate = dates[0];
+    const today = new Date().toISOString().slice(0,10);
 
-    const pageSize = 7;
-    const start = state.weekIndex * pageSize;
-    const pageDates = dates.slice(start, start + pageSize);
-
-    if (pageDates.length === 0) {
-        state.weekIndex = 0;
-        return renderDates();
-    }
-
-    // ==== WRAPPER GIỮ LAYOUT ỔN ĐỊNH ====
-    const wrap = document.createElement('div');
-    wrap.className = 'date-wrapper';
-    cont.appendChild(wrap);
-
-    // ==== NÚT BACK ====
-    const backBtn = document.createElement('div');
-    backBtn.className = `date-nav prev ${state.weekIndex > 0 ? '' : 'hidden'}`;
-    backBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
-    if (state.weekIndex > 0) backBtn.onclick = () => changeWeek(-1);
-    wrap.appendChild(backBtn);
-
-    // ==== DANH SÁCH NGÀY ====
-    const daysWrap = document.createElement('div');
-    daysWrap.className = 'days-row';
-    wrap.appendChild(daysWrap);
-
-    pageDates.forEach(ymd => {
-        const d = new Date(ymd);
-        const el = document.createElement('div');
-        el.className = `date-card ${ymd === state.selectedDate ? 'active' : ''}`;
-        el.innerHTML = `
-            <span class="date-day">${ymd === today ? 'Hôm nay' : getDayName(d)}</span>
-            <span class="date-num">${d.getDate()}/${d.getMonth()+1}</span>
-        `;
-
-        el.onclick = () => {
-            state.selectedDate = ymd;
-            const index = dates.indexOf(ymd);
-            state.weekIndex = Math.floor(index / 7);
-            renderDates();
-            renderSchedule();
-        };
-
-        daysWrap.appendChild(el);
+    dates.forEach(ymd => {
+       const d = new Date(ymd);
+       const el = document.createElement('div');
+       el.className = `date-card ${ymd === state.selectedDate ? 'active' : ''}`;
+       el.innerHTML = `<span class="date-day">${ymd===today?'Hôm nay':getDayName(d)}</span><span class="date-num">${d.getDate()}/${d.getMonth()+1}</span>`;
+       el.onclick = () => { state.selectedDate = ymd; renderDates(); renderSchedule(); };
+       cont.appendChild(el);
     });
-
-    // ==== NÚT NEXT ====
-    const nextBtn = document.createElement('div');
-    nextBtn.className = `date-nav next ${(start + pageSize < dates.length) ? '' : 'hidden'}`;
-    nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
-    if (start + pageSize < dates.length) nextBtn.onclick = () => changeWeek(1);
-    wrap.appendChild(nextBtn);
-
     renderSchedule();
-}
-
-
-
-window.changeWeek = (step) => {
-    state.weekIndex += step;
-    renderDates();
-};
+  }
 
   function renderSchedule() {
     const cont = $('#theaterList');
@@ -552,16 +473,11 @@ window.changeWeek = (step) => {
             const past = isPast(s.date, s.time);
             const cls = past ? 'time-btn is-disabled' : 'time-btn';
             return `<button class="${cls}" ${past ? 'disabled' : ''} 
-                    onclick="selectTime(this, '${s.theaterId}', '${th.name}', '${fmt}', '${s.time}', '${s.id}', '${s.endTime}')">
-                    ${s.time}${s.endTime ? ` - ${s.endTime}` : ''}
+                    onclick="selectTime(this, '${s.theaterId}', '${th.name}', '${fmt}', '${s.time}', '${s.id}')">
+                    ${s.time}
                     </button>`;
           }).join('');
-            bodyHtml += `
-            <div class="format-row">
-                <div class="format-lbl">${fmt}</div>
-                <div class="format-divider"></div>
-                <div class="time-list">${btns}</div>
-            </div>`;
+          bodyHtml += `<div class="format-row"><div class="format-lbl">${fmt}</div><div class="time-list">${btns}</div></div>`;
        }
 
        item.innerHTML = `
@@ -569,7 +485,7 @@ window.changeWeek = (step) => {
             <div class="theater-name">${th.name}</div>
             <div class="theater-addr" style="font-size:0.9rem; color:#888;">
                <i class="fa-solid fa-map-marker-alt"></i> ${th.address}
-               <span style="color:#666; margin-left:5px;"></span>
+               <span style="color:#666; margin-left:5px;">(${th.location_name})</span>
             </div>
          </div>
          <div class="theater-body">${bodyHtml}</div>
@@ -578,11 +494,11 @@ window.changeWeek = (step) => {
     });
   }
 
-  window.selectTime = (btn, tId, tName, fmt, time, stId, endTime) => {
+  window.selectTime = (btn, tId, tName, fmt, time, stId) => {
      if(btn.disabled) return;
      $$('.time-btn').forEach(b => b.classList.remove('selected'));
      btn.classList.add('selected');
-     state.selectedShowtime = { id: stId, theater: tName, format: fmt, time, endTime, date: state.selectedDate };
+     state.selectedShowtime = { id: stId, theater: tName, format: fmt, time, date: state.selectedDate };
      updateSummary();
   };
 
@@ -592,9 +508,7 @@ window.changeWeek = (step) => {
      if (s) {
         $('#sumTheater').textContent = s.theater;
         $('#sumDate').textContent = fmtDateVN(s.date);
-        $('#sumTime').textContent = s.endTime 
-          ? `${s.time} - ${s.endTime}` 
-          : s.time;
+        $('#sumTime').textContent = s.time;
         $('#sumFormat').textContent = s.format;
         btn.disabled = false;
         btn.classList.add('active');
@@ -630,9 +544,6 @@ window.changeWeek = (step) => {
      renderHero();
      renderProvDropdown();
      renderLocDropdown();
-
-     await loadData();    // reload showtimes theo province
-
      renderDates();
 
      $('#btnContinue').onclick = () => {

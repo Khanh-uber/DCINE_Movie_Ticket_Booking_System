@@ -2,54 +2,86 @@ package com.example.cinema.dto;
 import java.util.*;
 public class ConcessionResponse {
 
-    private TicketDTO ticket;
-    private List<ComboCartItemDTO> combos;
-    private TotalsDTO totals;
+    private TicketInfo ticket;
+    private List<ComboItem> combos;
+    private Totals totals;
 
     public ConcessionResponse(){}
 
-    public TicketDTO getTicket(){return ticket;}
-    public void setTicket(TicketDTO ticket){this.ticket = ticket;}
+    public TicketInfo getTicket(){return ticket;}
+    public void setTicket(TicketInfo ticket){this.ticket = ticket;}
 
-    public List<ComboCartItemDTO> getCombos(){return combos;}
-    public void setCombos(List<ComboCartItemDTO> combos){this.combos = combos;}
+    public List<ComboItem> getCombos(){return combos;}
+    public void setCombos(List<ComboItem> combos){this.combos = combos;}
 
-    public TotalsDTO getTotals() {return totals;}
-    public void setTotals(TotalsDTO totals){this.totals = totals;}
+    public Totals getTotals() {return totals;}
+    public void setTotals(Totals totals){this.totals = totals;}
 
-    public static class TicketDTO{
+    public static class TicketInfo{
         private Long showtimeId;
-        private List<String> items;
-        private Integer amount;
-        private Map<String, Object> meta;
+        private String movieTitle;
+        private String date;
+        private String time;
+        private List<SeatItems> items;
+        private Long totalAmount;
+        // private Map<String, Object> meta;
 
-        public TicketDTO(){}
-
+        public TicketInfo(){}
         public Long getShowtimeId(){return showtimeId;}
         public void setShowtimeId(Long showtimeId){this.showtimeId = showtimeId;}
 
-        public List<String> getItems(){return items;}
-        public void setItems(List<String> items){this.items = items;}
+        public String getMovieTitle(){return movieTitle;}
+        public void setMovieTitle(String movieTitle){this.movieTitle = movieTitle;}
 
-        public Integer getAmount(){return amount;}
-        public void setAmount(Integer amount){this.amount = amount ;}
+        public String getDate(){return date;}
+        public void setDate(String date){this.date = date;}
+        
+        public String getTime(){return time;}
+        public void setTime(String time){this.time = time;}
 
-        public Map<String, Object> getMeta(){return meta;}
-        public void setMeta(Map<String, Object> meta){this.meta = meta;}
+        public List<SeatItems> getSeatItems(){return items;}
+        public void setSeatItems(List<SeatItems> items){this.items = items;}
 
+        public Long totalAmount(){return totalAmount;}
+        public void setTotalAMount(Long totalAmount){this.totalAmount = totalAmount;}
+
+        // public Map<String, Object> getMeta(){return meta;}
+        // public void setMeta(Map<String, Object> meta){this.meta = meta;}
+        
+    }
+    public static class SeatItems {
+        private String code;
+        private String zone;
+        private String type;
+        private Long price;
+        public SeatItems(){}
+        public String geZone(){return zone;}
+        public void setZone(String zone){this.zone = zone;}
+
+        public String getCode(){return code;}
+        public void setCode(String code){this.code = code;}
+
+        public String getType(){return type;}
+        public void setType(String type){this.type = type;}
+
+        public Long getPrice(){
+            return price;
+        }
+        public void setPrice(Long price){this.price = price;}
     }
 
-    public static class ComboCartItemDTO {
+    public static class ComboItem {
         private Long comboId;
         private String title;
         private String code;
         private String variant;
         private String variantLabel;
-        private Integer unitPrice;
+        private Double unitPrice;
         private Integer qty;
-        private Integer lineTotal;
+        private Double lineTotal;  
+        private String imageUrl;
 
-        public ComboCartItemDTO(){}
+        public ComboItem(){}
 
         //getter setter
         public Long getComboId() {
@@ -92,11 +124,11 @@ public class ConcessionResponse {
             this.variantLabel = variantLabel;
         }
 
-        public Integer getUnitPrice() {
+        public Double getUnitPrice() {
             return unitPrice;
         }
 
-        public void setUnitPrice(Integer unitPrice) {
+        public void setUnitPrice(Double unitPrice) {
             this.unitPrice = unitPrice;
         }
 
@@ -108,29 +140,31 @@ public class ConcessionResponse {
             this.qty = qty;
         }
 
-        public Integer getLineTotal() {
+        public Double getLineTotal() {
             return lineTotal;
         }
 
-        public void setLineTotal(Integer lineTotal) {
+        public void setLineTotal(Double lineTotal) {
             this.lineTotal = lineTotal;
         }
+        public String getImageUrl(){return imageUrl;}
+        public void setImageUrl(String imageUrl){this.imageUrl = imageUrl;}
     }
     
 
-    public static class TotalsDTO{
-        private Integer ticketAmount;
-        private Integer combosAmount;
-        private Integer grandTotal;
+    public static class Totals{
+        private Long ticketAmount;
+        private Long combosAmount;
+        private Long grandTotal;
 
-        public TotalsDTO() {}
-        public Integer getTicketAmount(){return ticketAmount;}
-        public void setTicketAmount(Integer ticketAmount){this.ticketAmount = ticketAmount;}
+        public Totals() {}
+        public Long getTicketAmount(){return ticketAmount;}
+        public void setTicketAmount(Long  ticketAmount){this.ticketAmount = ticketAmount;}
 
-        public Integer getCombosAmount(){return combosAmount;}
-        public void setCombosAmount(Integer combosAmount){this.combosAmount = combosAmount;}
+        public Long getCombosAmount(){return combosAmount;}
+        public void setCombosAmount(Long combosAmount){this.combosAmount = combosAmount;}
 
-        public Integer getGrandTotal(){return grandTotal;}
-        public void setGrandTotal(Integer grandTotal){this.grandTotal = grandTotal;}
+        public Long getGrandTotal(){return grandTotal;}
+        public void setGrandTotal(Long grandTotal){this.grandTotal = grandTotal;}
     }
 }
