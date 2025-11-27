@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import com.example.cinema.entity.*;
 import com.example.cinema.dto.BookingRequest;
 import com.example.cinema.dto.BookingResponse;
-import com.example.cinema.dto.ConcessionResponse;
 import com.example.cinema.repository.BookingRepository;
 import com.example.cinema.repository.BookingSeatRepository;
 import com.example.cinema.repository.SeatLayoutRepository;
@@ -28,11 +27,9 @@ public class BookingService {
     private final BookingSeatRepository bookingSeatRepo;
     private final RedisSeatService redisSeatService;
     private final HttpSession session;
-    private final ConcessionService concessionService;
 
     public BookingService(SeatRepository seatRepo, ShowTimeRepository showtimeRepo, BookingSeatRepository bookingSeatRepo, 
-        SeatLayoutRepository seatLayoutRepo, SeatTypeRepository seatTypeRepo, BookingRepository bookingRepo, 
-        RedisSeatService redisSeatService, HttpSession session, ConcessionService concessionService){
+        SeatLayoutRepository seatLayoutRepo, SeatTypeRepository seatTypeRepo, BookingRepository bookingRepo, RedisSeatService redisSeatService, HttpSession session){
         this.seatRepo = seatRepo;
         this.showtimeRepo = showtimeRepo;
         this.seatLayoutRepo = seatLayoutRepo;
@@ -41,7 +38,6 @@ public class BookingService {
         this.bookingSeatRepo = bookingSeatRepo;
         this.redisSeatService = redisSeatService;
         this.session = session;
-        this.concessionService = concessionService;
         
     }
     public String resolveZoneFromLayout(String row, Map<String, String> seatTypes) {
@@ -64,10 +60,10 @@ public class BookingService {
         return "standard";
     }
     public BookingResponse createBooking(Long showtimeId, List<BookingRequest.SeatRequest> requestedSeats){
-        // Long accountId = (Long) session.getAttribute("accountId");
-        // if (accountId == null) {
-        //     throw new RuntimeException("Bạn chưa đăng nhập");
-        // }
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) {
+            throw new RuntimeException("Bạn chưa đăng nhập");
+        }
 
         // 1 Kiem tra showtime ton tai 
         Showtime st = showtimeRepo.findByShowtimeId(showtimeId);
@@ -166,7 +162,7 @@ public class BookingService {
         // 8) Build booking Items 
         List<BookingResponse.Item> Items = new ArrayList<>();
         for (BookingRequest.SeatRequest reqSeat : requestedSeats){
-            Seat seat = null;   
+            Seat seat = null;
             for(Seat s : validSeats){
                 String code = s.getRowLabel() + s.getSeatNumber();
                 if (code.equals(reqSeat.getCode())){
@@ -190,7 +186,7 @@ public class BookingService {
 
         // 9) Insert Booking 
         // Xoá booking pending cũ
-        Booking old = bookingRepo.findLatestPending(1L);
+        Booking old = bookingRepo.findLatestPending(accountId);
 
         if (old != null) {
             bookingSeatRepo.deleteSeatsByBookingId(old.getBookingId());
@@ -198,7 +194,7 @@ public class BookingService {
         }
 
         Booking booking = new Booking();
-        booking.setAccountId(1L);
+        booking.setAccountId(accountId);
         booking.setShowtimeId(showtimeId);
         booking.setTotalAmount(total);
         booking.setStatus("PENDING");

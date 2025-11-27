@@ -25,7 +25,7 @@ public class ConcessionItem {
     private Double price;
 
     @Column(name="old_price")
-    private Double oldPrice;
+    private Double old_price;
     
     private String tag;
 
@@ -37,21 +37,6 @@ public class ConcessionItem {
     private String category;
 
     public ConcessionItem() {}
-
-    public ConcessionItem(Long itemId, String code, String title, String description,
-                          Double price, Double oldPrice, String tag,
-                          String imageUrl, boolean active, String category) {
-        this.itemId = itemId;
-        this.code = code;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.oldPrice = oldPrice;
-        this.tag = tag;
-        this.imageUrl = imageUrl;
-        this.active = active;
-        this.category = category;
-    }
 
 
     public Long getItemId() {
@@ -95,11 +80,11 @@ public class ConcessionItem {
     }
 
     public Double getOldPrice() {
-        return oldPrice;
+        return old_price;
     }
 
     public void setOldPrice(Double old_price) {
-        this.oldPrice = old_price;
+        this.old_price = old_price;
     }
 
     public String getTag() {
