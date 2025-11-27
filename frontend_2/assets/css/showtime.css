@@ -14,7 +14,7 @@ body { background-color: var(--st-bg); color: var(--st-text-main); }
 
 /* HERO */
 .st-hero {
-  position: relative; min-height: 330px;
+  position: relative; min-height: 350px;
   border-bottom: 2px solid var(--st-red); margin-bottom: 10px;
   display: flex; align-items: flex-end; padding-bottom: 20px;
 }
@@ -26,7 +26,7 @@ body { background-color: var(--st-bg); color: var(--st-text-main); }
 }
 .st-hero__content { position: relative; z-index: 2; display: flex; gap: 30px; align-items: flex-end; width: 100%; }
 .poster-wrap img {
-  width: 150px; height: 225px; border-radius: 6px; border: 2px solid var(--st-gold);
+  width: 170px; height: 255px; border-radius: 6px; border: 2px solid var(--st-gold);
   box-shadow: 0 10px 20px rgba(0,0,0,0.8); object-fit: cover;
 }
 .info-wrap { flex: 1; }
@@ -87,7 +87,37 @@ body { background-color: var(--st-bg); color: var(--st-text-main); }
 .dropdown-list li:hover, .dropdown-list li.selected { background: var(--st-red); color: white; font-weight: 600; }
 
 /* DATE & THEATER */
-.date-scroller { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; padding-top: 3px;}
+
+.date-scroller {
+  display: flex; 
+  gap: 12px; 
+  overflow-x: auto; 
+  white-space: nowrap; 
+  flex-wrap: nowrap;
+  padding: 5px 5px 15px 5px; 
+  margin-bottom: 10px;
+  scroll-behavior: smooth; 
+  
+}
+
+.date-scroller::-webkit-scrollbar {
+  height: 6px; 
+}
+
+.date-scroller::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+.date-scroller::-webkit-scrollbar-thumb {
+  background: #444; 
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.date-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--st-red); 
+  cursor: pointer;
+}
 .date-card {
   min-width: 80px; padding: 10px 5px; background: var(--st-panel); border: 1px solid var(--st-border);
   border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s;

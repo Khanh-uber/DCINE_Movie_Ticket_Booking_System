@@ -1,0 +1,37 @@
+{
+  "vouchers": [
+    {
+      "id": 1,
+      "code": "WELCOME10",
+      "name": "Giảm 10% cho đơn đầu tiên",
+      "type": "PERCENT",
+      "value": 10,
+      "description": "Áp dụng cho đơn vé + combo đầu tiên của tài khoản.",
+      "minTier": "Standard",
+      "startAt": "2025-01-01",
+      "endAt": "2025-12-31"
+    },
+    {
+      "id": 2,
+      "code": "SILVER20K",
+      "name": "Ưu đãi Silver 20K",
+      "type": "AMOUNT",
+      "value": 20000,
+      "description": "Giảm 20.000đ cho hóa đơn từ 120.000đ trở lên, dành cho hạng Silver.",
+      "minTier": "Silver",
+      "startAt": "2025-01-01",
+      "endAt": "2025-12-31"
+    },
+    {
+      "id": 3,
+      "code": "GOLD15",
+      "name": "Ưu đãi Gold 15%",
+      "type": "PERCENT",
+      "value": 15,
+      "description": "Giảm 15% cho khách hàng hạng Gold, tối đa 60.000đ.",
+      "minTier": "Gold",
+      "startAt": "2025-01-01",
+      "endAt": "2025-12-31"
+    }
+  ]
+}
