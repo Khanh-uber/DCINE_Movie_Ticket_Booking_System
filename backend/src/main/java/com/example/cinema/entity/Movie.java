@@ -3,6 +3,8 @@ package com.example.cinema.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.List;
+
 @Entity
 @Table(name="movie")
 public class Movie {
@@ -56,7 +58,7 @@ public class Movie {
     private LocalDate earlyScreeningDate;
 
     @Column(name="banner_url")
-    private String backdropUrl;
+    private String bannerUrl;
 
     @Column(name="original_title")
     private String originalTitle;
@@ -143,9 +145,26 @@ public class Movie {
     public LocalDate getEarlyScreeningDate(){return earlyScreeningDate;}
     public void setEarlyScreeningDate(LocalDate earlyScreeningDate){this.earlyScreeningDate=earlyScreeningDate;}
 
-    public String getBackDropUrl(){return backdropUrl;}
-    public void setBackDropUrl(String backdropUrl){this.backdropUrl = backdropUrl;}
+    public String getBannerUrl() { return bannerUrl; }
+    public void setBannerUrl(String bannerUrl) { this.bannerUrl = bannerUrl; }
 
     public String getOriginalTitle(){return originalTitle;}
     public void setOriginalTitle(String originalTitle){this.originalTitle = originalTitle;}
+
+    @ManyToMany
+    @JoinTable(
+        name = "movie_cast",
+        joinColumns = @JoinColumn(name = "movie_id"),
+        inverseJoinColumns = @JoinColumn(name = "cast_id")
+    )
+    private List<Cast_person> castPersons;
+
+    public List<Cast_person> getCastPersons() {
+        return castPersons;
+    }
+
+    public void setCastPersons(List<Cast_person> castPersons) {
+        this.castPersons = castPersons;
+    }
+
 }

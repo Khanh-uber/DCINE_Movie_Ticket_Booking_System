@@ -70,7 +70,7 @@ public class ShowtimeDetailService {
         stMovie.setTitle(m.getTitle());
         stMovie.setOriginalTitle(m.getOriginalTitle());
         stMovie.setPosterUrl(m.getPosterUrl());
-        stMovie.setBackdropUrl(m.getBackDropUrl());
+        stMovie.setBackdropUrl(m.getBannerUrl());
         stMovie.setTrailerUrl(m.getTrailerUrl());
         stMovie.setRating(m.getRating() != null ? Double.valueOf(m.getRating()) : null);
         String rated = m.getRated();

@@ -13,6 +13,9 @@ public class Cast_person {
 
     @Column(name="name")
     private String name;
+
+    @Column(name = "cast_url")
+    private String castUrl;
     
     public enum Role {
         ACTOR,
@@ -36,4 +39,8 @@ public class Cast_person {
 
     public Role getRole(){return role;}
     public void setRole(Role role){this.role = role;}
+
+    public String getCastUrl() { return castUrl; }
+    public void setCastUrl(String castUrl) { this.castUrl = castUrl; }
+
 }

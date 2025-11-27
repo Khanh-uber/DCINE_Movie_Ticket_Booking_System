@@ -156,24 +156,38 @@
       '—'
     );
     setText('#mdLang', m.language);
-    setText('#mdDirector', m.director);
 
+    // đạo diễn (List<CastDTO>)
+    if (Array.isArray(m.director)) {
+      const names = m.director.map(d => d.name).join(', ');
+      setText('#mdDirector', names);
+    } else {
+      setText('#mdDirector', m.director);
+    }
+
+    // diễn viên
     const cast = Array.isArray(m.cast) ? m.cast : [];
     const wrap = $('#mdCast');
     if (!wrap) return;
+
     wrap.innerHTML = '';
-    cast.slice(0, 12).forEach((name) => {
+
+    cast.slice(0, 12).forEach(actor => {
+      const name = actor.name || String(actor || '');
+      const img  = actor.castUrl || `https://picsum.photos/seed/${encodeURIComponent(name)}/200/200`;
+
       const el = document.createElement('div');
       el.className = 'actor';
       el.innerHTML = `
         <div class="avatar">
-          <img src="https://picsum.photos/seed/${encodeURIComponent(name)}/200/200"
-               alt="${name}">
+          <img src="${img}" alt="${name}">
         </div>
-        <div class="name">${name}</div>`;
+        <div class="name">${name}</div>
+      `;
       wrap.appendChild(el);
     });
   }
+
 
   function renderFacts(m) {
     const originalTitle =
