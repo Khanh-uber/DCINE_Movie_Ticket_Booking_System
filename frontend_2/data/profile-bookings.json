@@ -1,0 +1,50 @@
+{
+  "bookings": [
+    {
+      "id": 101,
+      "bookingCode": "BK-20251128-01",
+      "status": "PAID",
+      "movie": {
+        "id": 201,
+        "title": "TEE YOD: Quỷ Ăn Tạng Phần 3",
+        "posterUrl": "/assets/images/movies/tee_yod_quy_an_tang_phan_3/poster_doc.jpg"
+      },
+      "showtime": {
+        "id": 501,
+        "theaterId": 1,
+        "theaterName": "Dcine Quận 1",
+        "startTime": "2025-11-28T20:00:00"
+      },
+      "seats": [
+        { "row": "F", "number": 5, "code": "F5" },
+        { "row": "F", "number": 6, "code": "F6" }
+      ],
+      "concessions": [
+        { "itemId": 301, "name": "Combo Big 1", "quantity": 1 },
+        { "itemId": 302, "name": "Bắp Phô Mai L", "quantity": 1 }
+      ],
+      "totalAmount": 240000
+    },
+    {
+      "id": 102,
+      "bookingCode": "BK-20251015-09",
+      "status": "PAID",
+      "movie": {
+        "id": 202,
+        "title": "Joker: Folie à Deux",
+        "posterUrl": "/assets/images/movies/joker2/poster_doc.jpg"
+      },
+      "showtime": {
+        "id": 502,
+        "theaterId": 3,
+        "theaterName": "Dcine Hà Đông",
+        "startTime": "2025-10-15T19:30:00"
+      },
+      "seats": [
+        { "row": "B", "number": 5, "code": "B5" }
+      ],
+      "concessions": [],
+      "totalAmount": 95000
+    }
+  ]
+}

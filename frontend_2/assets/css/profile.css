@@ -1,0 +1,775 @@
+/* =========================
+   PROFILE PAGE (D-cine)
+   ========================= */
+
+:root {
+    --bg-page: #0D0D0D;
+    --bg-panel: #1A1A1A;
+    --bg-input: #111111;
+    --primary-red: #E50914;
+    --accent-gold: #FFD700;
+    --text-gray: #B3B3B3;
+}
+
+/* Body chỉ áp cho trang profile */
+body.page-profile {
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-page);
+    color: #FFFFFF;
+}
+
+/* Container riêng cho profile */
+.profile-page__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+}
+
+/* =========================
+   HEADER HỒ SƠ
+   ========================= */
+
+.profile-header-card {
+    background: linear-gradient(135deg, #1a1a1a 0%, #101010 100%);
+    border: 1px solid #333333;
+    border-radius: 16px;           /* hơi vuông, giống demo */
+    padding: 26px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.65); /* shadow nhẹ, không glow màu */
+}
+
+
+.user-summary {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-summary h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.7rem;
+    margin: 0 0 6px 0;
+}
+
+.user-handle {
+    color: var(--text-gray);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+.avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+}
+
+.avatar-frame {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid var(--accent-gold); /* Viền vàng */
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.avatar-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Nút Camera tròn ở góc */
+.btn-edit-avatar {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background-color: #000000;
+    color: white;
+    border-radius: 50%;
+    border: 3px solid #1a1a1a; /* Viền trùng màu nền web để tạo cảm giác cắt */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transition: transform 0.2s;
+    z-index: 10;
+}
+
+.btn-edit-avatar:hover {
+    transform: scale(1.1); /* Phóng to nhẹ khi rê chuột */
+    background-color: #000000;
+}
+
+/* Badge hạng */
+
+.badge-tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid;
+}
+
+/* màu theo hạng – áp cho badge */
+.badge-tier.tier-Standard {
+    border-color: #aaaaaa;
+    color: #aaaaaa;
+    background: rgba(170,170,170,0.10);
+}
+.badge-tier.tier-Silver {
+    border-color: #C0C0C0;
+    color: #C0C0C0;
+    background: rgba(192,192,192,0.10);
+}
+.badge-tier.tier-Gold {
+    border-color: #FFD700;
+    color: #FFD700;
+    background: rgba(255,215,0,0.10);
+}
+.badge-tier.tier-Platinum {
+    border-color: #E50914;
+    color: #E50914;
+    background: rgba(229,9,20,0.10);
+}
+/* 1. Standard: Tông Đen Xám Basic */
+.profile-header-card.tier-Standard {
+    background: linear-gradient(135deg, #222222 0%, #111111 100%);
+    border-color: #444;
+    box-shadow: none;
+}
+
+/* 2. Silver: Tông Xám Xanh Đậm (Gunmetal) - Thay cho màu xám trắng cũ */
+.profile-header-card.tier-Silver {
+    background: linear-gradient(135deg, #434955 0%, #1b1d22 100%);
+    border-color: #717d96; /* Viền bạc tối */
+    box-shadow: 0 10px 30px rgba(113, 125, 150, 0.15); /* Glow bạc nhẹ */
+}
+
+/* 3. Gold: Tông Vàng Đồng Đậm (Dark Bronze) - Thay cho màu vàng sáng cũ */
+.profile-header-card.tier-Gold {
+    background: linear-gradient(135deg, #5c420b 0%, #261a02 100%);
+    border-color: #c5962d; /* Viền vàng đồng */
+    box-shadow: 0 10px 30px rgba(197, 150, 45, 0.2); /* Glow vàng nhẹ */
+}
+
+/* 4. Platinum: Tông Xanh Thép Đậm (Deep Steel) - Thay cho màu xanh nhạt cũ */
+.profile-header-card.tier-Platinum {
+    background: linear-gradient(135deg, #243246 0%, #0e131b 100%);
+    border-color: #5c7cfa; /* Viền xanh ánh thép */
+    box-shadow: 0 10px 30px rgba(92, 124, 250, 0.25); /* Glow xanh nhẹ */
+}
+
+/* --- CẬP NHẬT MÀU CHỮ CHO DỄ ĐỌC HƠN --- */
+.user-summary h2 {
+    color: #FFFFFF;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5); /* Đổ bóng chữ để nổi hơn nữa */
+}
+
+.user-handle {
+    color: rgba(255, 255, 255, 0.7) !important; /* Màu xám sáng hơn */
+}
+
+/* Cập nhật lại màu viền avatar cho hợp với nền tối mới */
+.profile-header-card.tier-Standard .avatar-frame { border-color: #555; }
+.profile-header-card.tier-Silver .avatar-frame   { border-color: #9ca3af; }
+.profile-header-card.tier-Gold .avatar-frame     { border-color: #fbbf24; }
+.profile-header-card.tier-Platinum .avatar-frame { border-color: #60a5fa; }
+
+/* viền avatar đổi nhẹ theo hạng */
+.profile-header-card.tier-Standard .avatar-frame {
+    border-color: #b0b0b0;
+}
+
+.profile-header-card.tier-Silver .avatar-frame {
+    border-color: #dde5f5;
+}
+
+.profile-header-card.tier-Gold .avatar-frame {
+    border-color: #ffd700;
+}
+
+.profile-header-card.tier-Platinum .avatar-frame {
+    border-color: #e3f2fd;
+}
+
+/* Progress chi tiêu */
+
+.membership-progress {
+    margin-top: 16px;
+    max-width: 420px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #cccccc;
+    margin-bottom: 6px;
+}
+
+.progress-bg {
+    background: #333333;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary-red), var(--accent-gold));
+    transition: width 0.9s ease;
+}
+
+.tier-msg {
+    font-size: 0.8rem;
+    color: #888888;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Logout */
+
+.btn-logout {
+    position: absolute;
+    top: 22px;
+    right: 24px;
+    background: transparent;
+    border: 1px solid var(--primary-red);
+    color: var(--primary-red);
+    padding: 8px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-logout:hover {
+    background: var(--primary-red);
+    color: #ffffff;
+}
+
+.hide-mobile {
+    display: inline;
+}
+
+/* =========================
+   NAV TABS
+   ========================= */
+
+.nav-tabs {
+    display: flex;
+    gap: 14px;
+    margin: 28px 0 26px;
+    border-bottom: 1px solid #333333;
+    padding-bottom: 14px;
+    overflow-x: auto;
+}
+
+.nav-item {
+    padding: 9px 22px;
+    background: transparent;
+    border: 1px solid #444444;
+    color: var(--text-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-item.active,
+.nav-item:hover {
+    background: var(--primary-red);
+    color: #ffffff;
+    border-color: var(--primary-red);
+}
+
+.tab-container {
+    margin-top: 4px;
+}
+
+.tab-pane {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* =========================
+   FORM HỒ SƠ & BẢO MẬT
+   ========================= */
+
+.info-form {
+    background: var(--bg-panel);
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #333333;
+}
+
+.info-form__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.info-form__header h3 {
+    margin: 0;
+    color: var(--primary-red);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.btn-edit {
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+}
+
+.form-grid--single {
+    grid-template-columns: 1fr;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group--full {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    color: var(--text-gray);
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid #444444;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.form-input:disabled {
+    background: #222222;
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+
+/* nút Lưu / Hủy dưới form hồ sơ */
+
+.edit-actions {
+    display: none;
+    margin-top: 18px;
+    display: none;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-primary,
+.btn-ghost {
+    padding: 9px 18px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--primary-red);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.05);
+}
+
+.btn-ghost {
+    background: transparent;
+    border: 1px solid #555555;
+    color: #cccccc;
+}
+
+.btn-ghost:hover {
+    background: #222222;
+}
+
+/* Đặt riêng cho tab bảo mật: form ở giữa, max-width */
+
+#tab-security .info-form {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+/* =========================
+   VÉ CỦA TÔI
+   ========================= */
+
+.ticket-section-title {
+    color: var(--accent-gold);
+    margin: 30px 0 14px;
+    font-size: 1.05rem;
+    border-left: 4px solid var(--primary-red);
+    padding-left: 10px;
+    text-transform: uppercase;
+}
+
+.ticket-list {
+    display: grid;
+    gap: 18px;
+}
+
+.ticket-card {
+    display: flex;
+    background: #222222; 
+    border: 1px solid #333333;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3); 
+}
+
+.ticket-card:hover {
+    border-color: var(--primary-red);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(229, 9, 20, 0.15);
+}
+
+.ticket-poster {
+    width: 130px;
+    height: 100%; 
+    min-height: 190px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border-right: 1px solid #333;
+}
+.ticket-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+.ticket-movie {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 10px;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+.ticket-meta {
+    color: #e0e0e0; /* Màu chữ sáng hơn */
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ticket-meta i {
+    color: var(--primary-red);
+    width: 18px;
+    text-align: center;
+}
+
+.ticket-status-used {
+    position: absolute;
+    top: 16px;
+    right: 18px;
+    background: #333333;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #999999;
+}
+
+.btn-qr {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #E50914;
+    color: #ffffff;
+    border: 1px solid #E50914;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.btn-qr:hover {
+    background: #ff1e2d;
+    border-color: #ff1e2d;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.btn-qr:active {
+    transform: translateY(-50%) scale(0.97);
+    box-shadow: none;
+}
+
+/* Loading / empty text */
+
+.st-loading,
+.st-empty {
+    text-align: center;
+    padding: 26px;
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   ƯU ĐÃI (VOUCHERS)
+   ========================= */
+
+.promo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+    margin-top: 10px;
+}
+
+.promo-card {
+    background: linear-gradient(to bottom right, #1a1a1a, #222222);
+    border: 1px solid #444444;
+    border-radius: 8px;
+    padding: 18px 18px 18px 22px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* vệt sáng nhỏ bên trái, không glow quá mạnh */
+.promo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--accent-gold);
+}
+
+.promo-title {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-gray);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.promo-main {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.promo-desc {
+    color: #aaaaaa;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+}
+
+.promo-code-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #000000;
+    padding: 9px 10px;
+    border-radius: 4px;
+    border: 1px dashed #555555;
+}
+
+.code-text {
+    font-family: "JetBrains Mono","Fira Code", monospace;
+    font-size: 0.86rem;
+    letter-spacing: .12em;
+}
+
+.btn-copy {
+    background: transparent;
+    border: none;
+    color: var(--primary-red);
+    cursor: pointer;
+}
+
+/* =========================
+   MODAL QR
+   ========================= */
+
+/* =========================
+   MODAL QR
+   ========================= */
+
+.modal {
+    display: none;               
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;               
+    height: 100vh;
+    background-color: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 16px;               
+    box-sizing: border-box;
+}
+
+.modal-content {
+    background-color: #111111;
+    padding: 24px 26px 20px;
+    border: 2px solid var(--primary-red);
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    max-width: 360px;
+    width: 100%;                  
+}
+
+.modal-title {
+    color: var(--accent-gold);
+    margin-bottom: 18px;
+    font-size: 1rem;
+    letter-spacing: .12em;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 18px;
+    color: #ffffff;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+
+.qrcode-box {
+    background: #ffffff;
+    padding: 14px;
+    display: inline-block;
+    border-radius: 8px;
+}
+
+.modal-ticket-code {
+    margin-top: 18px;
+    color: #cccccc;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+    .profile-page__inner {
+        padding-top: 24px;
+    }
+
+    .profile-header-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .btn-logout {
+        position: static;
+        margin-top: 12px;
+        align-self: stretch;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .membership-progress {
+        max-width: 100%;
+        margin-top: 14px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ticket-card {
+        flex-direction: column;
+    }
+
+    .ticket-poster {
+        width: 100%;
+        height: 150px;
+    }
+
+    .btn-qr {
+        position: static;
+        transform: none;
+        margin-top: 14px;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =========================
+   ANIMATION
+   ========================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -15,16 +15,26 @@ public class MovieDTO {
     private LocalDate releaseDate;
     private Integer durationMin;
     private String rated;
-    private String backdropUrl;
+    private String bannerUrl;
     private List<String> genres;
     private String language;
-    private List<String> cast;
-    private List<String> director;
+    //private List<String> cast;
+    //private List<String> director;
     private String synopsis;
     private String originalTitle;
     private String href;
     private MovieStatus status;
     
+    private List<CastDTO> cast;
+
+    public List<CastDTO> getCast() { return cast; }
+    public void setCast(List<CastDTO> cast) { this.cast = cast; }
+
+    private List<CastDTO> director;
+
+    public List<CastDTO> getDirector() { return director; }
+    public void setDirector(List<CastDTO> director) { this.director = director; }
+
 
     // 
     public MovieDTO() {}
@@ -39,13 +49,12 @@ public class MovieDTO {
         this.durationMin = duration_min;
     }
     
-
     // ✅ Getter + Setter cho tất cả field
     public String getRated(){return rated;}
     public void setRated(String rated){this.rated = rated;}
 
-    public String getBackDropUrl(){return backdropUrl;}
-    public void setBackDropUrl(String backDropUrl){this.backdropUrl = backDropUrl;}
+    public String getBannerUrl() { return bannerUrl; }
+    public void setBannerUrl(String bannerUrl) { this.bannerUrl = bannerUrl; }
 
     public List<String> getGenres(){return genres;}
     public void setGenres(List<String> genres){this.genres = genres;}
@@ -53,11 +62,11 @@ public class MovieDTO {
     public String getLanguage(){return language;}
     public void setLanguage(String language){this.language = language;}
 
-    public List<String> getCast(){return cast;}
-    public void setCast(List<String> cast){this.cast = cast;}
+    // public List<String> getCast(){return cast;}
+    // public void setCast(List<String> cast){this.cast = cast;}
 
-    public List<String> getDirector(){return director;}
-    public void setDirector(List<String> director){this.director = director;}
+    //public List<String> getDirector(){return director;}
+    //public void setDirector(List<String> director){this.director = director;}
     
     public String getOriginalTitle(){return originalTitle;}
     public void setOriginalTitle(String originalTitle){this.originalTitle = originalTitle;}
@@ -84,9 +93,7 @@ public class MovieDTO {
     public LocalDate getReleaseDate() { return releaseDate; }
     public void setReleaseDate(LocalDate releaseDate) { this.releaseDate = releaseDate; }
 
-    public String getPosterUrl(){
-        return posterUrl;
-    }
+    public String getPosterUrl(){ return posterUrl; }
     public void setPosterUrl(String posterUrl){this.posterUrl = posterUrl;}
 
     public String getTrailerUrl(){return trailerUrl;}
@@ -106,7 +113,7 @@ public class MovieDTO {
         }
 
         dto.setRated(rated);
-        dto.setBackDropUrl(movie.getPosterUrl());
+        dto.setBannerUrl(movie.getBannerUrl());
         dto.setLanguage(movie.getLanguage());
         dto.setId(movie.getId()); // Tạo mã "tt001"
         dto.setTitle(movie.getTitle());
@@ -116,7 +123,7 @@ public class MovieDTO {
         dto.setTrailerUrl(movie.getTrailerUrl());
         dto.setReleaseDate(movie.getReleaseDate());
         dto.setDurationMin(movie.getDurationMin());
-        dto.setOriginalTitle(movie.getTitle());
+        dto.setOriginalTitle(movie.getOriginalTitle());
         dto.setHref("showtime.html?movie="+movie.getId());
         dto.setStatus(movie.getStatus());
         return dto;
