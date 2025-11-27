@@ -1,19 +1,21 @@
 package com.example.cinema.service;
 
+import com.example.cinema.repository.TheaterRepository;
 import org.springframework.stereotype.Service;
 
-import com.example.cinema.dto.TheaterDTO;
-import com.example.cinema.repository.TheaterRepository;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class TheaterService {
-    private final TheaterRepository theaterRepo;
-    public TheaterService (TheaterRepository theaterRepo){
-        this.theaterRepo = theaterRepo;
+
+    private final TheaterRepository repo;
+
+    public TheaterService(TheaterRepository repo) {
+        this.repo = repo;
     }
-    public List<TheaterDTO> getAll() {
-        return theaterRepo.findAllWithLocation().stream()
-                .map(TheaterDTO::fromEntity)
-                .toList();
+
+    public List<Map<String, Object>> getTheaters(Long provinceId) {
+        return repo.findTheaters(provinceId);
     }
 }

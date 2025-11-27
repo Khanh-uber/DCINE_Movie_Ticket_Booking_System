@@ -71,9 +71,7 @@
       const res = await fetch(API + path, {
         method: 'POST',
         headers: { 'Content-Type':'application/json' },
-        credentials: 'include', 
         body: JSON.stringify(body || {})
-
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return await res.json().catch(() => null);
@@ -301,26 +299,22 @@ if (zone === 'couple') {
 
     if (detail) {
       // Tuỳ BE đặt tên, cố gắng map linh hoạt
-      const st = detail.showtime || detail;
-      const mv = detail.movie || st.movie || {};
-      const th = detail.theater || st.theater || {};
+      const st = detail;   // detail chính là showtimeDetailDTO trả về từ BE
 
-      // Lưu id showtime để dùng cho API ghế & bookingKey
-      state.show.id      = st.id || st.showtimeId || st.code || stId;
-      state.show.theater = st.theaterName || th.name || th.title || st.theater || 'D-Cine';
-      state.show.date    = st.date || st.showDate || st.day || '';
-      state.show.time    = st.time || st.showTime || st.startTime || '';
-      state.show.format  = st.format || st.screenFormat || st.version || '2D';
+      state.show.id      = st.showtimeId;
+      state.show.theater = st.theaterName;
+      state.show.date    = st.showDate;
+      state.show.time    = st.startTime;
+      state.show.format  = st.formatName;
 
       // Movie
-      const mvId = q.get('movie') || q.get('mv') || null;
-      state.movie.id        = mv.id || mvId || null;
-      state.movie.title     = mv.title || mv.name || state.movie.title;
-      state.movie.posterUrl = mv.posterUrl || mv.poster || state.movie.posterUrl || '';
-      state.movie.trailerUrl= mv.trailerUrl || mv.trailer || state.movie.trailerUrl || '';
-      state.movie.year      = mv.year || (mv.releaseDate || mv.premiereDate || '').slice(0, 4) || '';
-      state.movie.genres    = mv.genres || (mv.genre ? [mv.genre] : []);
-      state.movie.duration  = mv.duration || mv.runtime || '';
+      state.movie.id        = st.movieId;
+      state.movie.title     = st.movieTitle;
+      state.movie.posterUrl = st.posterUrl || st.poster_url || '';
+      state.movie.trailerUrl= st.trailerUrl || st.trailer_url || '';
+      state.movie.year      = st.releaseYear;
+      state.movie.genres    = st.genres || [];
+      state.movie.duration  = st.durationMin;
 
       // Map pricing từ BE sang PRICING (FE chỉ dùng hiển thị)
       if (detail.pricing && detail.pricing.byZone) {
