@@ -1,24 +1,26 @@
 package com.example.cinema.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.cinema.repository.ProvinceRepository;
 import com.example.cinema.service.ProvinceService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
-
+@RequestMapping("/api/provinces")
 public class ProvinceController {
+
     private final ProvinceService provinceService;
-    public ProvinceController(ProvinceService provinceService){
+
+    public ProvinceController(ProvinceService provinceService) {
         this.provinceService = provinceService;
     }
 
-    @GetMapping("/provinces")
-    public ResponseEntity<?> getAllProvinces(){
+    @GetMapping
+    public ResponseEntity<?> getAllProvinces() {
         return ResponseEntity.ok(provinceService.getAllProvinces());
-    } 
+    }
+
+    @GetMapping("/{provinceId}/locations")
+    public ResponseEntity<?> getLocationsByProvince(@PathVariable Long provinceId) {
+        return ResponseEntity.ok(provinceService.getLocationsByProvinceId(provinceId));
+    }
 }

@@ -1,26 +1,26 @@
 package com.example.cinema.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.cinema.dto.TheaterDTO;
 import com.example.cinema.service.TheaterService;
-import java.util.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/theaters")
-
 public class TheaterController {
 
-    private final TheaterService theaterService;
-    public TheaterController(TheaterService theaterService){
-        this.theaterService = theaterService;
+    private final TheaterService service;
+
+    public TheaterController(TheaterService service) {
+        this.service = service;
     }
+
     @GetMapping
-    public List<TheaterDTO> getAll() {
-        return theaterService.getAll();
+    public ResponseEntity<List<Map<String, Object>>> getTheaters(
+            @RequestParam(name = "province", required = false) Long provinceId
+    ) {
+        return ResponseEntity.ok(service.getTheaters(provinceId));
     }
 }

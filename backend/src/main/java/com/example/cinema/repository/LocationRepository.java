@@ -1,21 +1,20 @@
 package com.example.cinema.repository;
 
-import com.example.cinema.entity.*;
-
-import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import com.example.cinema.entity.Location;
 
+import java.util.List;
+import java.util.Map;
 
+public interface LocationRepository extends JpaRepository<Location, Long> {
 
-
-public interface LocationRepository extends JpaRepository<Location, Long>{ 
-        
-    @Query(value ="""
-            select l.location_id,
-                l.city_name,
-                l.province_id 
-            from location l
-            """, nativeQuery = true)
-    List<Location> findAllLocation();
+    @Query(value = """
+        SELECT 
+            location_id,
+            province_id,
+            city_name
+        FROM location
+    """, nativeQuery = true)
+    List<Map<String,Object>> findAllLocations();
 }

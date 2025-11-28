@@ -191,9 +191,8 @@
 		try {
 			const res = await fetch(`${API}/api/auth/login`, {
 				method: 'POST',
-				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ emailOrPhone, password: password?.value || '' }),
+				body: JSON.stringify({ emailOrPhone, password: password?.value || '' })
 			});
 
 			const text = await res.text();
