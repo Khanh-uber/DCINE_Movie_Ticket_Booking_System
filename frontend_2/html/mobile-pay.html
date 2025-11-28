@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-CINE | Xác nhận thanh toán</title>
+
+  <link rel="stylesheet" href="../assets/css/mobile-pay.css" />
+</head>
+
+<body>
+  <div class="wrap">
+    <h2>XÁC NHẬN THANH TOÁN</h2>
+
+    <!-- Box thông tin vé -->
+    <div id="orderBox" class="info-box">
+      <div class="row"><span>Mã đơn hàng:</span><span id="orderId">...</span></div>
+      <div class="row"><span>Phim:</span><span id="movieTitle">...</span></div>
+      <div class="row"><span>Rạp:</span><span id="theaterName">...</span></div>
+      <div class="row"><span>Ngày chiếu:</span><span id="showDate">...</span></div>
+      <div class="row"><span>Suất chiếu:</span><span id="showTime">...</span></div>
+      <div class="row"><span>Ghế:</span><span id="seatList">...</span></div>
+    </div>
+
+    <!-- Box tiền -->
+    <div id="moneyBox" class="info-box">
+      <div class="row"><span>Tiền vé:</span><span id="ticketAmount">0đ</span></div>
+      <div class="row"><span>Combo:</span><span id="comboAmount">0đ</span></div>
+      <div class="row"><span>VAT (10%):</span><span id="vat">0đ</span></div>
+      <div class="row"><span>Giảm giá:</span><span id="discount">0đ</span></div>
+
+      <hr class="divider" />
+
+      <div class="row total">
+        <span>TỔNG TIỀN:</span><span id="grandTotal">0đ</span>
+      </div>
+    </div>
+
+    <button class="btn" id="btnPay">XÁC NHẬN THANH TOÁN</button>
+    <div class="success" id="successMsg">Thanh toán thành công ✔</div>
+  </div>
+
+  <script src="../assets/js/mobile-pay.js"></script>
+</body>
+</html>
