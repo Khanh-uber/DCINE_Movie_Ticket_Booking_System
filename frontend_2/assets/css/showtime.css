@@ -136,7 +136,7 @@ body { background-color: var(--st-bg); color: var(--st-text-main); }
 .st-sidebar { position: relative; }
 .booking-panel {
   background: var(--st-panel); border: 1px solid var(--st-border); border-radius: 12px; padding: 25px;
-  position: sticky; top: 20px; border-top: 4px solid var(--st-red); box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+  position: sticky; top: calc(var(--header-h)); border-top: 4px solid var(--st-red); box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 .panel-head {
   font-family: 'Montserrat', sans-serif; font-size: 1.1rem; font-weight: 700; text-transform: uppercase;
@@ -210,4 +210,15 @@ body { background-color: var(--st-bg); color: var(--st-text-main); }
 .days-row {
   display: flex;
   gap: 8px;
+}
+
+/* ===== Sticky Top Bar ===== */
+.st-topbar {
+  position: sticky;
+  top: calc(var(--header-h));   /* nằm dưới header */
+  z-index: 998;
+  background: #0d0d0d;          /* nền đen đồng bộ */
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
 }

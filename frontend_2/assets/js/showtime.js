@@ -71,31 +71,31 @@
   // ======================
   
   // Map dữ liệu Rạp với Location và Province bằng ID
-  function normTheaters(rawData) {
+function normTheaters(rawData) {
     const arr = Array.isArray(rawData) ? rawData : (rawData.items || []);
-    return arr.map(t => {
-      const id = String(t.theater_id || t.id).trim();
-      const locId = t.location_id; // Key link với bảng Location
-      
-      // Tìm Location cha
-      const loc = state.locations.find(l => String(l.location_id || l.id) === String(locId));
-      
-      // Tìm Province ông nội (Lấy từ Location hoặc trực tiếp từ Theater)
-      const provId = loc ? (loc.province_id || loc.pid) : (t.province_id || null);
-      const prov = state.provinces.find(p => String(p.province_id || p.id) === String(provId));
 
-      return {
-        id: id,
-        name: t.name,
-        address: t.address || 'Đang cập nhật',
-        location_id: locId ? String(locId) : null,
-        province_id: provId ? String(provId) : null,
-        // Dữ liệu hiển thị UI
-        city_name: loc ? (loc.city_name || loc.name) : (t.city || 'Khác'),
-        province_name: prov ? (prov.province_name || prov.name) : 'Khác'
-      };
+    return arr.map(t => {
+        const loc = state.locations.find(
+            l => String(l.location_id) === String(t.location_id)
+        );
+
+        const provId = loc ? String(loc.province_id) : null;
+        const prov = state.provinces.find(
+            p => String(p.province_id) === provId
+        );
+
+        return {
+            id: String(t.theater_id || t.id),
+            name: t.name,
+            address: t.address || '',
+            location_id: t.location_id ? String(t.location_id) : null,
+
+            province_id: provId,
+            city_name: loc ? (loc.city_name || loc.name) : 'Khác',
+            province_name: prov ? (prov.province_name || prov.name) : 'Khác',
+        };
     }).filter(t => t.id);
-  }
+}
 
   function normShowtimes(data, movieId) {
     const base = Array.isArray(data) ? data : (data.items || []);
@@ -196,8 +196,8 @@ const push = (id, date, startTime, fmt, price, endTime) => {
 
     const stData = await getJSON(`${API}/showtimes?${qs}`, '../data/showtimes.json');
     state.showtimes = normShowtimes(stData, state.movieId);
+    state.selectedDate = null;
 
-    $('#theaterList').innerHTML = '';
   }
 
   // ======================
@@ -223,11 +223,20 @@ const push = (id, date, startTime, fmt, price, endTime) => {
     return list;
   }
 
-  function getAvailableDates() {
-    const tIds = getFilteredTheaters().map(t => t.id);
-    const shows = state.showtimes.filter(s => tIds.includes(s.theaterId));
-    return uniq(shows.map(s => s.date)).sort();
-  }
+    function getAvailableDates() {
+        const tIds = getFilteredTheaters().map(t => t.id);
+        const shows = state.showtimes.filter(s => tIds.includes(s.theaterId));
+
+        // Lấy ngày hôm nay theo giờ VN
+        const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+                        .toISOString().slice(0, 10);
+
+        return uniq(
+            shows
+              .map(s => s.date)
+              .filter(d => d >= today)   // ⭐ Loại bỏ ngày đã qua
+        ).sort();
+    }
 
   // ======================
   // 6. RENDERERS
@@ -378,18 +387,24 @@ function renderHero() {
     selText.textContent = cur ? (cur.province_name || cur.name) : 'Chọn khu vực';
 
     wrap.querySelector('.dropdown-select').onclick = (e) => { e.stopPropagation(); closeDropdowns(); wrap.classList.toggle('open'); };
-    list.onclick = (e) => {
+    list.onclick = async (e) => {
        const li = e.target.closest('li');
        if(!li) return;
        const newId = li.dataset.id;
        if(newId !== state.selProvId){
           state.selProvId = newId;
           state.selLocId = 'all'; 
+
           // Lưu lại để F5 không mất
           localStorage.setItem('st_provId', newId);
           localStorage.setItem('st_locId', 'all');
+
           renderProvDropdown();
           renderLocDropdown();
+
+          await loadData();
+
+          state.weekIndex = 0;
           state.selectedDate = null;
           renderDates();
        }
@@ -435,6 +450,10 @@ function renderHero() {
   function closeDropdowns() { $$('.custom-dropdown').forEach(d => d.classList.remove('open')); }
   document.addEventListener('click', closeDropdowns);
 
+function pad(n) {
+  return n < 10 ? '0' + n : n;
+}
+
 function renderDates() {
     const cont = $('#dateList');
     cont.innerHTML = '';
@@ -445,10 +464,16 @@ function renderDates() {
 
     if (!dates.length) {
         cont.innerHTML = `<div class="no-show-msg">Chưa có lịch chiếu tại khu vực này.</div>`;
+        $('#theaterList').innerHTML = '';
         return;
     }
 
-    const today = new Date().toISOString().slice(0, 10);
+    function getTodayLocal() {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().slice(0, 10);
+    }
+    const today = getTodayLocal();
     if (!state.selectedDate) {
         state.selectedDate = dates.includes(today) ? today : dates[0];
     }
@@ -485,7 +510,8 @@ function renderDates() {
         el.className = `date-card ${ymd === state.selectedDate ? 'active' : ''}`;
         el.innerHTML = `
             <span class="date-day">${ymd === today ? 'Hôm nay' : getDayName(d)}</span>
-            <span class="date-num">${d.getDate()}/${d.getMonth()+1}</span>
+            <span class="date-num">${pad(d.getDate())}/${pad(d.getMonth()+1)}</span>
+
         `;
 
         el.onclick = () => {
@@ -630,8 +656,6 @@ window.changeWeek = (step) => {
      renderHero();
      renderProvDropdown();
      renderLocDropdown();
-
-     await loadData();    // reload showtimes theo province
 
      renderDates();
 
