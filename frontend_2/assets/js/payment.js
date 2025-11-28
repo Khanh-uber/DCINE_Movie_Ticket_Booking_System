@@ -77,26 +77,27 @@
       ? raw.discount
       : null;
 
-    if (!ticket && !combos.length && grandTotal == null) return null;
+    if (!ticket) return null;
 
     return { ticket, combos, totals, grandTotal, discount };
   }
 
   function readLocalFallback() {
-    const keys = ['orderSummary', 'concessions_cart'];
-    for (const key of keys) {
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        const data = JSON.parse(raw);
-        const order = parseOrder(data);
-        if (order) {
-          state.order = order;
-          return;
-        }
-      } catch (err) {
-        console.warn('[payment] cannot parse', key, err);
-      }
+    try {
+      const raw = localStorage.getItem('concessions_cart');
+      if (!raw) return;
+
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return;
+
+      state.order = {
+        ticket: data.ticket || {},
+        combos: data.combos || [],
+        totals: { grandTotal: data.grandTotal || 0 },
+        grandTotal: data.grandTotal || 0
+      };
+    } catch (err) {
+      console.warn('[payment] cannot parse concessions_cart', err);
     }
   }
 
@@ -892,8 +893,12 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            paymentMethod: method,
-            order: state.order
+            paymentMethod: state.paymentMethod,
+            order: {
+                ticket: state.order.ticket,
+                combos: state.order.combos || [],
+                grandTotal: state.order.grandTotal
+            }
           })
         });
         if (res.ok) {
@@ -951,13 +956,9 @@
       // Lấy thông tin QR
       if (backendData.qr) {
         qrPayload = backendData.qr;
-      } else if (
-        backendData.qrUrl ||
-        backendData.qrImageUrl
-      ) {
-        qrPayload = {
-          imageUrl: backendData.qrUrl || backendData.qrImageUrl
-        };
+      }
+      else if (backendData.qrUrl || backendData.qrImageUrl) {
+          qrPayload = { imageUrl: backendData.qrUrl || backendData.qrImageUrl };
       }
 
       const beStatus =
@@ -977,8 +978,9 @@
     state.pendingPayment = pendingPayment;
     showInlineQr(method, qrPayload);
     if (state.backend.enabled && backendData && backendData.transactionId) {
-    console.log('Đang chờ tín hiệu thanh toán từ server cho giao dịch:', backendData.transactionId);
-}
+      console.log('Đang chờ tín hiệu thanh toán từ server cho giao dịch:', backendData.transactionId);
+    }
+    window.joinPaymentRoom = function() {};
   }
 
 
