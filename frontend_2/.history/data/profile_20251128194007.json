@@ -1,0 +1,29 @@
+{
+  "user": {
+    "id": 1,
+    "username": "minhthuc",
+    "fullName": "Nguyễn Phạm Minh Thức",
+    "email": "thucthcsll2@gmail.com",
+    "phone": "0901234567",
+    "dob": "2005-01-15",
+    "gender": "MALE",
+    "address": "123 Lê Lợi, Phường Bến Thành, Quận 1, TP.HCM",
+    "membership": "Silver",
+    "points": 120,
+    "totalSpent": 1250000,
+    "joinedAt": "2025-11-26",
+    "avatarUrl": "/assets/images/avatars/default-user-11.jpg"
+  },
+  "stats": {
+    "totalBookings": 4,
+    "totalTickets": 7,
+    "totalSpending": 1250000,
+    "upcomingTickets": 1
+  },
+  "tiers": [
+    { "name": "Standard", "min": 0, "label": "Standard Member" },
+    { "name": "Silver",   "min": 1000000, "label": "Silver Member" },
+    { "name": "Gold",     "min": 3000000, "label": "Gold Member" },
+    { "name": "Platinum", "min": 10000000, "label": "Platinum Member" }
+  ]
+}
