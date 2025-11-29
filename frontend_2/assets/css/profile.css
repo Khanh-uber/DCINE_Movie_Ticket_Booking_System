@@ -136,11 +136,6 @@ body.page-profile {
     color: #FFD700;
     background: rgba(255,215,0,0.10);
 }
-.badge-tier.tier-Platinum {
-    border-color: #E50914;
-    color: #E50914;
-    background: rgba(229,9,20,0.10);
-}
 /* 1. Standard: Tông Đen Xám Basic */
 .profile-header-card.tier-Standard {
     background: linear-gradient(135deg, #222222 0%, #111111 100%);
@@ -162,12 +157,6 @@ body.page-profile {
     box-shadow: 0 10px 30px rgba(197, 150, 45, 0.2); /* Glow vàng nhẹ */
 }
 
-/* 4. Platinum: Tông Xanh Thép Đậm (Deep Steel) - Thay cho màu xanh nhạt cũ */
-.profile-header-card.tier-Platinum {
-    background: linear-gradient(135deg, #243246 0%, #0e131b 100%);
-    border-color: #5c7cfa; /* Viền xanh ánh thép */
-    box-shadow: 0 10px 30px rgba(92, 124, 250, 0.25); /* Glow xanh nhẹ */
-}
 
 /* --- CẬP NHẬT MÀU CHỮ CHO DỄ ĐỌC HƠN --- */
 .user-summary h2 {
@@ -183,7 +172,6 @@ body.page-profile {
 .profile-header-card.tier-Standard .avatar-frame { border-color: #555; }
 .profile-header-card.tier-Silver .avatar-frame   { border-color: #9ca3af; }
 .profile-header-card.tier-Gold .avatar-frame     { border-color: #fbbf24; }
-.profile-header-card.tier-Platinum .avatar-frame { border-color: #60a5fa; }
 
 /* viền avatar đổi nhẹ theo hạng */
 .profile-header-card.tier-Standard .avatar-frame {

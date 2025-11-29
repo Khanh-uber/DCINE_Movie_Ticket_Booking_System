@@ -33,57 +33,124 @@ async function ensureMovieTpl() {
 }
 
 
-  // ====== Promo-card template loader (once) ======
-  let PROMO_TPL = null;
-
+  // ====== Voucher card (home) – build bằng JS, không dùng promo-card.html ======
   async function ensurePromoCardTemplate() {
-    if (PROMO_TPL) return PROMO_TPL;
-    const res = await fetch('../../html/components/promo-card.html', { cache: 'no-store' });
-    const html = await res.text();
-    const holder = document.createElement('div'); holder.innerHTML = html;
-    PROMO_TPL = holder.querySelector('#promo-card');
-    if (PROMO_TPL) document.body.appendChild(PROMO_TPL);
-    return PROMO_TPL;
+    // Giữ hàm cho loadDealsCarousel() gọi, nhưng không fetch gì nữa
+    return true;
   }
 
   function promoCardFromData(p) {
-    const el = PROMO_TPL.content.firstElementChild.cloneNode(true);
-    el.classList.add('deal');
+    const el = document.createElement('article');
+    el.className = 'deal promo-card';
     el.dataset.id = p.id || '';
-    if (p.href) el.dataset.href = p.href;
 
-    const bg = el.querySelector('[data-img]');
-    if (bg && p.imageUrl) bg.style.backgroundImage = `url('${p.imageUrl}')`;
+    if (p.href) {
+      el.dataset.href = p.href;
+    }
 
-    const t = el.querySelector('[data-title]'); if (t) t.textContent = p.title || '';
-    const d = el.querySelector('[data-desc]');  if (d) d.textContent = p.desc  || '';
+    // --- Header nhỏ: tag + badge (−10%, VOUCHER,...) ---
+    const titleRow = document.createElement('div');
+    titleRow.className = 'promo-title';
 
-    const tag = el.querySelector('[data-tag]'); if (tag && p.tag){ tag.textContent = p.tag; tag.hidden = false; }
-    const b   = el.querySelector('[data-badge]'); if (b && p.badge){ b.textContent = p.badge; b.hidden = false; }
-    const v   = el.querySelector('[data-valid]'); if (v && p.validUntil){ v.textContent = `HSD: ${p.validUntil}`; v.hidden = false; }
+    const tagSpan = document.createElement('span');
+    tagSpan.textContent = p.tag || 'Voucher thành viên';
+    titleRow.appendChild(tagSpan);
 
-    const cta = el.querySelector('[data-cta]');
-    if (cta) { cta.href = p.href || '#'; cta.textContent = p.ctaText || 'Nhận ưu đãi'; }
+    if (p.badge) {
+      const badge = document.createElement('span');
+      badge.className = 'promo-badge';
+      badge.textContent = p.badge;
+      titleRow.appendChild(badge);
+    }
 
-el.addEventListener('click', (e) => {
-  // Nếu bấm đúng nút CTA thì cho đi như cũ
-  if (e.target.closest('a.btn')) return;
+    // --- Dòng chính: tên voucher ---
+    const main = document.createElement('div');
+    main.className = 'promo-main';
+    main.textContent = p.title || '';
 
-  // [FIX] Nếu vừa kéo thì KHÔNG điều hướng
-  const rail = el.closest('.rail');
-  if (rail && rail.dataset.isDragging === '1') {
-    rail.dataset.isDragging = '0';
-    e.preventDefault();
-    e.stopPropagation();
-    return;
-  }
+    // --- Mô tả ---
+    const desc = document.createElement('p');
+    desc.className = 'promo-desc';
+    desc.textContent = p.desc || '';
 
-  const to = el.dataset.href;
-  if (to) location.href = to;
-});
+    // --- Hạn sử dụng (nếu có) ---
+    let validEl = null;
+    if (p.validUntil) {
+      validEl = document.createElement('div');
+      validEl.className = 'promo-valid';
+      validEl.textContent = `HSD: ${p.validUntil}`;
+    }
+
+    // --- Hộp hiển thị mã + nút Sao chép ---
+    const codeBox = document.createElement('div');
+    codeBox.className = 'promo-code-box';
+
+    const codeText = document.createElement('span');
+    codeText.className = 'code-text';
+    codeText.textContent = p.code || p.id || '';
+
+    const btnCopy = document.createElement('button');
+    btnCopy.type = 'button';
+    btnCopy.className = 'btn-copy';
+    btnCopy.textContent = 'Sao chép';
+
+    btnCopy.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const code = codeText.textContent.trim();
+      if (!code) return;
+
+      // copy mã
+      const doCopy = (txt) => {
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(txt).catch(() => {});
+        } else {
+          const input = document.createElement('input');
+          input.value = txt;
+          document.body.appendChild(input);
+          input.select();
+          try { document.execCommand('copy'); } catch {}
+          document.body.removeChild(input);
+        }
+      };
+
+      doCopy(code);
+
+      btnCopy.classList.add('copied');
+      btnCopy.textContent = 'Đã copy';
+      setTimeout(() => {
+        btnCopy.classList.remove('copied');
+        btnCopy.textContent = 'Sao chép';
+      }, 1500);
+    });
+
+    codeBox.appendChild(codeText);
+    codeBox.appendChild(btnCopy);
+
+    // --- Gắn vào card ---
+    el.appendChild(titleRow);
+    el.appendChild(main);
+    el.appendChild(desc);
+    if (validEl) el.appendChild(validEl);
+    el.appendChild(codeBox);
+
+    // Click cả card -> đi tới trang promotions
+    el.addEventListener('click', (e) => {
+      const rail = el.closest('.rail');
+      // nếu vừa kéo rail thì không điều hướng
+      if (rail && rail.dataset.isDragging === '1') {
+        rail.dataset.isDragging = '0';
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      const to = el.dataset.href;
+      if (to) location.href = to;
+    });
 
     return el;
   }
+
 
   // ====== Combo-item template loader (once) ======
   let COMBO_TPL = null;
@@ -286,7 +353,7 @@ async function loadNotifications({ mountId='notifList', limit=20, inMenu=false }
       { id:'n1', title:'Vé DC-123456 đã xác nhận', text:'Bạn hãy đến rạp trước 10 phút.',
         tag:'ĐƠN HÀNG', icon:'🎟', createdAt: new Date().toISOString(), href:'confirmation.html', unread:true },
       { id:'n2', title:'Ưu đãi thành viên Gold', text:'Tặng 1 vé khi tích 5 vé trong tháng này.',
-        tag:'THÀNH VIÊN', icon:'⭐', createdAt: new Date(Date.now()-7200000).toISOString(), href:'promotions.html', unread:false },
+        tag:'THÀNH VIÊN', icon:'⭐', createdAt: new Date(Date.now()-7200000).toISOString(), unread:false },
     ];
   }
 
@@ -1247,49 +1314,221 @@ view.forEach((m, idx) => {
     api.scrollToIndex(originalBaseLen);
   }
 
-  async function loadDealsCarousel(){
-    const wrap = document.getElementById('wrapDeals');
-    const rail = document.getElementById('railDeals');
-    if (!wrap || !rail) return;
+async function loadDealsCarousel() {
+  const wrap = document.getElementById('wrapDeals');
+  const rail = document.getElementById('railDeals');
+  if (!wrap || !rail) return;
 
-    await ensurePromoCardTemplate();
+  await ensurePromoCardTemplate();
 
-    let data = [];
-    try {
-      const res = await fetch(`${API}/deals`, { cache:'no-store' });
-      if (res.ok) data = await res.json();
-    } catch {}
+  let data = [];
 
-  // 2) Fallback ../../data/promotions.json
+  // 1) Ưu tiên gọi BE – ghép từ bảng voucher + membership_tier
+  try {
+    const res = await fetch(`${API}/deals`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json)) data = json;
+      else if (Array.isArray(json.items)) data = json.items;
+      else if (Array.isArray(json.deals)) data = json.deals;
+    }
+  } catch (err) {
+    console.warn('[Deals] API /deals lỗi, fallback JSON', err);
+  }
+
+  // 2) Fallback đọc từ file JSON cục bộ (xuất từ DB)
   if (!data.length) {
     try {
-      const r2 = await fetch('../../data/promotions.json', { cache:'no-store' });
+      const r2 = await fetch('./assets/data/promotions.json', { cache: 'no-store' });
       if (r2.ok) {
-        const j = await r2.json();
-        // chấp nhận nhiều shape: mảng / {items:[]} / {promotions:[]}
-        data = Array.isArray(j) ? j : (j.items || j.promotions || []);
+        const json2 = await r2.json();
+        if (Array.isArray(json2)) data = json2;
+        else if (Array.isArray(json2.items)) data = json2.items;
+        else if (Array.isArray(json2.promotions)) data = json2.promotions;
       }
-    } catch {}
+    } catch (err2) {
+      console.warn('[Deals] Fallback promotions.json lỗi', err2);
+    }
   }
 
-  // 3) Mock nếu trống
   if (!data.length) {
-    data = Array.from({length:6}, (_,i)=>({
-      id:`p${i+1}`,
-      title:`Khuyến mãi ${i+1}`,
-      desc:`Ưu đãi đặc biệt ${i+1}`,
-      img:`https://picsum.photos/seed/promo${i}/800/400`,
-      href:'#'
-    }));
+    data = [
+      {
+        id: 'WELCOME10',
+        voucherId: 1,
+        code: 'WELCOME10',
+        title: 'WELCOME10 – Giảm 10% cho thành viên mới',
+        description:
+          'Giảm 10% cho hoá đơn từ 100.000đ. Áp dụng cho hạng Standard trở lên.',
+        type: 'PERCENT',
+        value: 10,
+        minOrder: 100000,
+        membershipTierId: 1,
+        membershipTierName: 'Standard',
+        endAt: '2025-12-31'
+      },
+      {
+        id: 'SILVER20K',
+        voucherId: 2,
+        code: 'SILVER20K',
+        title: 'SILVER20K – Ưu đãi 20.000đ cho hạng Silver',
+        description:
+          'Giảm trực tiếp 20.000đ cho hoá đơn từ 150.000đ. Chỉ dành cho hạng Silver.',
+        type: 'AMOUNT',
+        value: 20000,
+        minOrder: 150000,
+        membershipTierId: 2,
+        membershipTierName: 'Silver',
+        endAt: '2025-12-31'
+      },
+      {
+        id: 'GOLD15',
+        voucherId: 3,
+        code: 'GOLD15',
+        title: 'GOLD15 – Giảm 15% cho hạng Gold',
+        description:
+          'Giảm 15% cho hoá đơn từ 200.000đ. Ưu tiên cho thành viên Gold.',
+        type: 'PERCENT',
+        value: 15,
+        minOrder: 200000,
+        membershipTierId: 3,
+        membershipTierName: 'Gold',
+        endAt: '2025-12-31'
+      },
+      {
+        id: 'SUMMER25',
+        voucherId: 4,
+        code: 'SUMMER25',
+        title: 'SUMMER25 – Ưu đãi mùa hè 25%',
+        description:
+          'Flash sale mùa hè – giảm 25% cho mọi hạng thành viên, đơn từ 100.000đ.',
+        type: 'PERCENT',
+        value: 25,
+        minOrder: 100000,
+        membershipTierId: null,
+        membershipTierName: 'Tất cả hạng',
+        endAt: '2025-08-31'
+      },
+      {
+        id: 'MOVIE50K',
+        voucherId: 5,
+        code: 'MOVIE50K',
+        title: 'MOVIE50K – Giảm 50.000đ cho mọi hạng',
+        description:
+          'Giảm 50.000đ cho hoá đơn từ 250.000đ. Áp dụng cho tất cả thành viên.',
+        type: 'AMOUNT',
+        value: 50000,
+        minOrder: 250000,
+        membershipTierId: null,
+        membershipTierName: 'Tất cả hạng',
+        endAt: '2025-06-30'
+      }
+    ];
   }
 
 
+  // 4) Chuẩn hoá voucher → shape promoCardFromData()
+  const items = data
+    .map((raw) => {
+      // Nếu BE đã trả đúng shape, dùng luôn
+      if (raw.imageUrl || raw.desc || raw.tag || raw.badge || raw.validUntil) {
+        return raw;
+      }
+
+      const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
+      const val = Number(raw.value) || 0;
+      const minOrder = raw.minOrder ?? raw.min_order ?? 0;
+      const tierName =
+        raw.membershipTierName || raw.tierName || raw.tier_name || '';
+
+      const code = raw.code || raw.voucherCode || raw.id;
+      const discountText = isPercent ? `${val}%` : fmtVND(val);
+      let desc = raw.description || `Giảm ${discountText}`;
+      if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
+      if (tierName) desc += ` • Hạng ${tierName}`;
+
+      return {
+        id: raw.id || code,
+        title: raw.title || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
+        desc,
+        imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
+        tag: tierName || 'Voucher thành viên',
+        badge: isPercent ? `-${discountText}` : 'VOUCHER',
+        validUntil: raw.validUntil || raw.endAt || raw.end_at,
+      };
+    })
+    .filter(Boolean);
+
+  if (!items.length) {
+    rail.innerHTML = '<p class="empty-text">Hiện chưa có ưu đãi khả dụng.</p>';
+    return;
+  }
+
+  const prev = wrap.querySelector('.nav.prev');
+  const next = wrap.querySelector('.nav.next');
+  const dotsWrap = wrap.querySelector('.dots');
+
+  const perPage = 3; // ✅ luôn 3 card / lần
+  const totalPages = Math.max(1, Math.ceil(items.length / perPage));
+  let pageIndex = 0;
+
+  function renderPage() {
     rail.innerHTML = '';
-    data.forEach(p => rail.appendChild(promoCardFromData(p)));
+    const start = pageIndex * perPage;
+    const slice = items.slice(start, start + perPage);
+    slice.forEach((p) => {
+      const card = promoCardFromData(p);
+      if (card) rail.appendChild(card);
+    });
 
-    // nếu muốn tái dùng hành vi kéo/scroll như rail khác, có thể gắn wheel->ngang:
-    initSimpleCarousel(document.getElementById('wrapDeals'), { itemSelector: '.deal' });
+    if (dotsWrap) {
+      const dots = dotsWrap.querySelectorAll('button.dot');
+      dots.forEach((d, idx) => {
+        d.classList.toggle('active', idx === pageIndex);
+      });
+    }
   }
+
+  function buildDots() {
+    if (!dotsWrap) return;
+    dotsWrap.innerHTML = '';
+    for (let i = 0; i < totalPages; i++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'dot';
+      if (i === pageIndex) b.classList.add('active');
+      b.addEventListener('click', () => {
+        pageIndex = i;
+        renderPage();
+      });
+      dotsWrap.appendChild(b);
+    }
+  }
+
+  function go(delta) {
+    if (!totalPages) return;
+    pageIndex = (pageIndex + delta + totalPages) % totalPages;
+    renderPage();
+  }
+
+  if (prev) {
+    prev.addEventListener('click', (e) => {
+      e.preventDefault();
+      go(-1);
+    });
+  }
+  if (next) {
+    next.addEventListener('click', (e) => {
+      e.preventDefault();
+      go(1);
+    });
+  }
+
+  buildDots();
+  renderPage();
+}
+
+
 
   // === Combos grid ===
   async function loadCombos(mode='concessions'){
@@ -1317,110 +1556,133 @@ view.forEach((m, idx) => {
     data.forEach(c => wrap.appendChild(comboItemFromData(c, {mode})));
   }
 
-  // === Membership interactions (tier switch + card tilt + perks theo hạng) ===
-  function enhanceMember(){
-    const wrap = document.querySelector('#member .member-v2');
-    if (!wrap) return;
+// ====== MEMBER SECTION: LOGIC TÍCH ĐIỂM & GIẢM GIÁ ======
+async function enhanceMember() {
+  const wrap = document.querySelector('#member .member-v2');
+  if (!wrap) return;
 
-    // Định nghĩa gói quyền lợi cho từng hạng
-    const TIERS = {
-      gold: {
-        price: '79.000đ',
-        perks: [
-          '🎟 1 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 20%',
-          '⏱️ Mua vé sớm hơn 24h',
-          '🎁 Tích điểm đổi quà & voucher'
-        ],
-        halo: 'rgba(229, 213, 79, .45)',
-        chip: ['#F8D36B','#FFB84D'],
-        label: 'Gold'
-      },
-      platinum: {
-        price: '129.000đ',
-        perks: [
-          '🎟 2 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 25%',
-          '⏱️ Mua vé sớm hơn 48h',
-          '🎫 Miễn phí nâng ghế đôi 1 lần'
-        ],
-        halo: 'rgba(162, 185, 255, .45)',
-        chip: ['#C9DAFF','#8CA8FF'],
-        label: 'Platinum'
-      },
-      diamond: {
-        price: '199.000đ',
-        perks: [
-          '🎟 4 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 30%',
-          '⏱️ Mua vé sớm hơn 72h',
-          '🎁 Quà sinh nhật + lounge VIP'
-        ],
-        halo: 'rgba(116, 249, 255, .45)',
-        chip: ['#7DF5FF','#35D1E2'],
-        label: 'Diamond'
-      }
-    };
+  // Các element hiển thị
+  const els = {
+    btns: wrap.querySelectorAll('.tier-tab'),
+    price: document.getElementById('tierPrice'),
+    cardName: document.getElementById('cardTierName'),
+    perksList: document.getElementById('loyaltyPerks'),
+    userTier: document.getElementById('loyaltyTierName'),
+    userPts: document.getElementById('loyaltyPoints'),
+    progFill: document.getElementById('loyaltyProgressFill'),
+    progTxt: document.getElementById('loyaltyProgressText')
+  };
 
-    const priceEl = document.getElementById('tierPrice');
-    const perksEl = wrap.querySelector('.perks');
-    const joinBtn = document.getElementById('joinEliteBtn');
+  // CẤU HÌNH CHUẨN DB & QUYỀN LỢI RÚT GỌN
+  const TIERS = {
+    STANDARD: {
+      label: 'Standard',
+      min: 0,
+      // Mặc định không có giảm giá, chỉ là mốc bắt đầu
+      perks: [
+        'Hạng thành viên mặc định',
+        'Tích lũy điểm chi tiêu để thăng hạng'
+      ]
+    },
+    SILVER: {
+      label: 'Silver',
+      min: 1000000, // 1 Triệu
+      perks: [
+        'Đạt mốc chi tiêu 1.000.000đ',
+        'GIẢM 5% trên tổng hóa đơn'
+      ]
+    },
+    GOLD: {
+      label: 'Gold',
+      min: 3000000, // 3 Triệu
+      perks: [
+        'Đạt mốc chi tiêu 3.000.000đ',
+        'GIẢM 10% trên tổng hóa đơn'
+      ]
+    }
+  };
 
-    const card    = wrap.querySelector('.glass-card');
-    const chip    = card?.querySelector('.chip');
-    const halo    = wrap.querySelector('.halo');
-    const cardNm  = card?.querySelector('.card-name');
+  // Icon dấu tích (SVG)
+  const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  
+  // Helper format tiền
+  const fmt = n => n.toLocaleString('vi-VN') + 'đ';
 
-    function applyTier(tier){
-      const def = TIERS[tier]; if(!def) return;
+  // --- 1. Hàm hiển thị thông tin theo Tab (Khi bấm nút chọn hạng) ---
+  function uiSwitchTab(key) {
+    const t = TIERS[key];
+    if (!t) return;
 
-      // set class để đổi theme theo CSS variables
-      wrap.classList.remove('gold','platinum','diamond');
-      wrap.classList.add(tier);
+    wrap.setAttribute('data-theme', key); // Đổi màu nền card
 
-      // giá
-      if (priceEl) priceEl.textContent = def.price;
-
-      // perks
-      if (perksEl) perksEl.innerHTML = def.perks.map(p=>`<li>${p}</li>`).join('');
-
-      // join link
-      if (joinBtn) joinBtn.href = `membership.html?tier=${tier}`;
-
-      // card visuals
-      if (cardNm) cardNm.textContent = def.label;
-      if (halo)   halo.style.background =
-        `radial-gradient(60% 70% at 50% 10%, ${def.halo}, transparent 60%)`;
-      if (chip)   chip.style.background =
-        `linear-gradient(135deg, ${def.chip[0]}, ${def.chip[1]})`;
+    // Update text bên phải
+    if (els.cardName) els.cardName.textContent = t.label;
+    
+    // Update mốc chi tiêu yêu cầu
+    if (els.price) {
+        els.price.textContent = t.min === 0 ? 'Mức khởi điểm' : `Cần tích lũy ${fmt(t.min)}`;
     }
 
-    // Bắt sự kiện tab hạng
-    wrap.querySelectorAll('.tier').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        wrap.querySelectorAll('.tier').forEach(b=>{
-          b.classList.toggle('active', b===btn);
-          b.setAttribute('aria-selected', String(b===btn));
-        });
-        applyTier(btn.dataset.tier);
-      });
-    });
+    // Update danh sách quyền lợi
+    if (els.perksList) {
+        els.perksList.innerHTML = t.perks.map(p => `<li>${checkIcon}${p}</li>`).join('');
+    }
 
-    // Subtle tilt on the glass card (giữ như cũ)
-    const rect = ()=> card?.getBoundingClientRect?.();
-    const onMove = (e)=>{
-      const r = rect(); if(!r || !card) return;
-      const cx = r.left + r.width/2, cy = r.top + r.height/2;
-      const dx = (e.clientX - cx)/r.width, dy = (e.clientY - cy)/r.height;
-      card.style.transform = `rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*8).toFixed(2)}deg)`;
-    };
-    const reset = ()=> { if(card) card.style.transform = 'rotateX(0) rotateY(0)'; };
-    card?.addEventListener('pointermove', onMove);
-    card?.addEventListener('pointerleave', reset);
-
-    // Khởi tạo theo Gold mặc định
-    applyTier('gold');
+    // Active button
+    els.btns.forEach(b => b.classList.toggle('active', b.dataset.tier === key));
   }
+
+  // --- 2. Logic Thanh Tiến Trình (Dựa trên chi tiêu thực tế) ---
+  // Giả lập hoặc lấy từ API. Ở đây giả lập user đã tiêu 1.200.000đ
+  const userSpent = 1200000; 
+  
+  // Xác định hạng hiện tại dựa trên tiền đã tiêu
+  let currentTierKey = 'STANDARD';
+  if (userSpent >= TIERS.GOLD.min) currentTierKey = 'GOLD';
+  else if (userSpent >= TIERS.SILVER.min) currentTierKey = 'SILVER';
+
+  // Cập nhật thông tin User bên trái
+  if (els.userTier) els.userTier.textContent = TIERS[currentTierKey].label;
+  if (els.userPts) els.userPts.textContent = fmt(userSpent);
+
+  // Tính toán thanh Progress
+  let nextGoal = 0;
+  let nextLabel = '';
+
+  if (currentTierKey === 'STANDARD') {
+      nextGoal = TIERS.SILVER.min;
+      nextLabel = 'Silver';
+  } else if (currentTierKey === 'SILVER') {
+      nextGoal = TIERS.GOLD.min;
+      nextLabel = 'Gold';
+  }
+
+  if (nextGoal > 0) {
+      // Tính % đã đạt được so với mốc tiếp theo
+      // Ví dụ: Đang có 1.2tr, mốc Gold là 3tr -> (1.2 / 3) * 100 = 40%
+      const percent = Math.min(100, (userSpent / nextGoal) * 100);
+      
+      if (els.progFill) els.progFill.style.width = `${percent}%`;
+      
+      const remain = nextGoal - userSpent;
+      if (els.progTxt) {
+        els.progTxt.innerHTML = `Bạn cần chi thêm <b style="color:#fff">${fmt(remain)}</b> để lên hạng ${nextLabel} (Giảm ${nextLabel === 'Silver' ? '5%' : '10%'})`;
+      }
+  } else {
+      // Đã là Gold (Max)
+      if (els.progFill) els.progFill.style.width = '100%';
+      if (els.progTxt) els.progTxt.textContent = 'Bạn đang hưởng mức giảm giá cao nhất (10%)!';
+  }
+
+  // Gắn sự kiện click cho các nút Tab
+  els.btns.forEach(btn => {
+    btn.addEventListener('click', () => uiSwitchTab(btn.dataset.tier));
+  });
+
+  // Mặc định hiển thị tab theo hạng hiện tại của user
+  uiSwitchTab(currentTierKey);
+}
+
 function initSimpleCarousel(wrap, { itemSelector = '.deal' } = {}) {
   if (!wrap) return;
   const rail = wrap.querySelector('.rail'); if (!rail) return;

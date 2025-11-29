@@ -169,7 +169,6 @@
       { name: 'Standard', min: 0 },
       { name: 'Silver',   min: 1000000 },
       { name: 'Gold',     min: 3000000 },
-      { name: 'Platinum', min: 10000000 }
     ];
   }
 

@@ -219,11 +219,43 @@
 				return;
 			}
 
-			// success
-			const token = json?.data?.accessToken || json?.accessToken;
-			if (token) localStorage.setItem('accessToken', token);
-			if (formSuccess) { formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…'; formSuccess.style.display = 'block'; }
-			window.location.href = HOME_URL;
+const token = json?.data?.accessToken || json?.accessToken;
+      
+      if (token) {
+        // Lưu token để duy trì đăng nhập
+        localStorage.setItem('accessToken', token);
+
+        // 2. Lấy thông tin User từ response (BE trả về)
+        // Cấu trúc kỳ vọng: { data: { user: { ... } } } hoặc { user: { ... } }
+        const user = json?.data?.user || json?.user || {};
+
+        // 3. Lưu Tên hiển thị (Ưu tiên fullName -> name -> username -> 'Member')
+        const displayName = user.fullName || user.name || user.username || 'Member';
+        localStorage.setItem('fullName', displayName);
+
+        // 4. Lưu Avatar (nếu có)
+        if (user.avatarUrl) {
+          localStorage.setItem('avatarUrl', user.avatarUrl);
+        } else {
+          // Nếu user mới không có avatar, xóa avatar cũ (của user trước) đi để hiện chữ cái đầu
+          localStorage.removeItem('avatarUrl');
+        }
+      }
+      // === KẾT THÚC ĐOẠN SỬA ĐỔI ===
+
+      if (formSuccess) { 
+          formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…'; 
+          formSuccess.style.display = 'block'; 
+      }
+      
+      // Logic chuyển hướng (giữ nguyên)
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      
+      // Delay nhẹ 500ms để người dùng kịp đọc thông báo (tùy chọn)
+      setTimeout(() => {
+          window.location.href = next || HOME_URL;
+      }, 500);
 		} catch (err) {
 			if (formError) { formError.textContent = err?.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.'; formError.style.display = 'block'; }
 			formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');

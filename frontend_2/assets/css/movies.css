@@ -49,3 +49,36 @@
 .muted { color: var(--muted); }
 .col-min-220 { --col-min: 220px; }
 .sec-head h1, .sec-head h2 { letter-spacing: .2px; }
+/* Breadcrumb cho trang Movies – lấy style giống movie-detail */
+.movies-bc {
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  display: flex;
+  align-items: center;
+}
+
+.movies-bc a {
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.movies-bc a:hover {
+  color: #ccc;
+  text-decoration: underline;
+}
+
+/* Dấu gạch chéo ngăn cách */
+.movies-bc .sep {
+  margin: 0 8px;
+  color: #666;
+}
+
+/* Trang hiện tại (PHIM) – đỏ giống movie-detail */
+.movies-bc .curr {
+  color: #ff3535;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}

@@ -1,139 +1,131 @@
-// header.js (Desktop Header interactions)
+// header.js
 (() => {
-  const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
 
-  // Sticky header effect
+  // 1. Sticky Header
   const header = $('#site-header');
-  const onScroll = () => {
+  window.addEventListener('scroll', () => {
     if (header) {
-      header.classList.toggle('scrolled', window.scrollY > 8);
+      // Thêm class 'scrolled' khi cuộn quá 10px
+      header.classList.toggle('scrolled', window.scrollY > 10);
     }
-  };
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
+  });
 
-  // Helper to check if an element is inside another (for click events)
-  const inside = (parent, target) => !!parent && (parent === target || parent.contains(target));
-
-  // Search toggle logic
+  // 2. Search Toggle
+// 2. Search Toggle & Submit Logic
   const searchBtn = $('#searchBtn');
-  const searchForm = $('#searchForm');
+  const searchForm = $('#searchForm'); // Đảm bảo dùng id searchForm trong HTML
   const searchInput = $('#searchInput');
-  function openSearch(show) {
-    if (!searchForm) return;
-    searchForm.classList.toggle('open', show);
-    searchBtn?.setAttribute('aria-expanded', String(show));
-    // Compress other header tools when search is open
-    $('.hdr-tools')?.classList.toggle('compact', show);
-    if (show) {
-      setTimeout(() => searchInput?.focus(), 0);
-    }
-  }
-  searchBtn?.addEventListener('click', () => {
-    const isOpen = searchForm.classList.contains('open');
-    openSearch(!isOpen);
-  });
-  document.addEventListener('click', (e) => {
-    if (!searchForm?.classList.contains('open')) return;
-    if (!inside(searchForm, e.target) && !inside(searchBtn, e.target)) {
-      openSearch(false);
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      openSearch(false);
-    }
-    // Press "/" to quick-open search (when not typing in an input)
-    if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) {
+
+  if (searchBtn && searchForm && searchInput) {
+    searchBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      openSearch(true);
-    }
-  });
+      const isOpen = searchForm.classList.contains('open');
+      const hasValue = searchInput.value.trim().length > 0;
 
-  // Authentication state UI update
-  function refreshAuthUI() {
-    const token = localStorage.getItem('accessToken');
-    const isAuth = !!token;
-    // Show/hide elements based on auth state
-    $$('.guest-only').forEach(el => {
-      el.style.display = isAuth ? 'none' : '';
+      if (isOpen && hasValue) {
+        // Nếu đang mở và có chữ -> Submit form luôn
+        searchForm.submit();
+      } else {
+        // Nếu chưa mở hoặc rỗng -> Toggle đóng/mở
+        searchForm.classList.toggle('open');
+        if (!isOpen) {
+          setTimeout(() => searchInput.focus(), 100);
+        }
+      }
     });
-    $$('.auth-only').forEach(el => {
-      el.hidden = !isAuth;
+
+    // Bắt sự kiện Enter (thường form tự handle, nhưng thêm cho chắc)
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchInput.value.trim()) {
+           searchForm.submit();
+        }
+      }
     });
-    if (isAuth) {
-      const name = (localStorage.getItem('fullName') || localStorage.getItem('username') || 'User').trim();
-      const imgUrl = localStorage.getItem('avatarUrl') || '';
+
+    // Click ra ngoài thì đóng
+    document.addEventListener('click', (e) => {
+      if (!searchBtn.contains(e.target) && !searchForm.contains(e.target)) {
+        if (!searchInput.value) { // Chỉ đóng khi không có chữ đang nhập dở
+             searchForm.classList.remove('open');
+        }
+      }
+    });
+  }
+
+  // 3. XỬ LÝ ĐĂNG NHẬP / AVATAR (Quan trọng)
+  function checkAuth() {
+    // Lấy token từ LocalStorage (bạn kiểm tra xem code login của bạn lưu tên là gì nhé)
+    // Giả sử key là 'accessToken'
+    const token = localStorage.getItem('accessToken'); 
+    
+    const guestGroup = $('#guestAction');
+    const userGroup = $('#userAction');
+
+    if (token) {
+      // --- ĐÃ ĐĂNG NHẬP ---
+      if (guestGroup) guestGroup.style.display = 'none'; // Ẩn nút đăng nhập
+      if (userGroup) userGroup.style.display = 'flex';   // Hiện avatar
+      
+      // Cập nhật thông tin User
+      const fullName = localStorage.getItem('fullName') || localStorage.getItem('username') || 'Member';
+      const avatarUrl = localStorage.getItem('avatarUrl');
+
+      const nameEl = $('#userName');
       const imgEl = $('#avatarImg');
-      const fallbackEl = $('#avatarFallback');
-      const userNameEl = $('#userName');
-      // Set avatar image or initial
-      if (imgUrl && imgEl) {
-        imgEl.src = imgUrl;
-        imgEl.hidden = false;
-        fallbackEl.hidden = true;
-      } else if (fallbackEl) {
-        fallbackEl.textContent = (name[0] || 'U').toUpperCase();
-        if (imgEl) imgEl.hidden = true;
-        fallbackEl.hidden = false;
+      const textEl = $('#avatarFallback');
+
+      if (nameEl) nameEl.textContent = fullName;
+
+      if (avatarUrl && imgEl) {
+        imgEl.src = avatarUrl;
+        imgEl.style.display = 'block';
+        if (textEl) textEl.style.display = 'none';
+      } else {
+        // Nếu không có ảnh, hiện chữ cái đầu
+        if (imgEl) imgEl.style.display = 'none';
+        if (textEl) {
+            textEl.textContent = fullName.charAt(0).toUpperCase();
+            textEl.style.display = 'block';
+        }
       }
-      // Set user name text
-      if (userNameEl) {
-        userNameEl.textContent = name;
-        userNameEl.setAttribute('title', name);
-      }
+
+    } else {
+      // --- CHƯA ĐĂNG NHẬP ---
+      if (guestGroup) guestGroup.style.display = 'flex'; // Hiện nút đăng nhập
+      if (userGroup) userGroup.style.display = 'none';   // Ẩn avatar
     }
   }
-  refreshAuthUI();
 
-  // Dev helper: call in console like window.dcineAuth('login', {name: 'Test User', avatar: 'avatar.jpg'})
-  window.dcineAuth = (cmd, payload = {}) => {
-    if (cmd === 'login') {
-      localStorage.setItem('accessToken', 'dev-token');
-      if (payload.name) localStorage.setItem('fullName', payload.name);
-      if (payload.avatar) localStorage.setItem('avatarUrl', payload.avatar);
-    } else if (cmd === 'logout') {
-      ['accessToken', 'fullName', 'username', 'avatarUrl'].forEach(k => localStorage.removeItem(k));
-    }
-    location.reload();
-  };
+  // Chạy hàm kiểm tra ngay khi load trang
+  checkAuth();
 
-  // User avatar dropdown menu
-  const userBtn = $('#userBtn');
-  const userMenu = $('#userMenu');
-  function toggleMenu(show) {
-    if (!userMenu || !userBtn) return;
-    userMenu.hidden = !show;
-    userBtn.setAttribute('aria-expanded', String(show));
-  }
-  userBtn?.addEventListener('click', () => {
-    toggleMenu(userMenu.hidden);
-  });
-  document.addEventListener('click', (e) => {
-    if (!userMenu || userMenu.hidden) return;
-    if (!inside(userMenu, e.target) && !inside(userBtn, e.target)) {
-      toggleMenu(false);
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      toggleMenu(false);
-    }
+  // 4. Smooth Scroll cho Voucher / Thành viên
+  $$('.scroll-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href.includes('#')) {
+        const hash = href.split('#')[1];
+        const target = document.getElementById(hash);
+        
+        // Chỉ cuộn nếu đang ở trang chủ và tìm thấy section
+        const isHome = location.pathname.endsWith('index.html') || location.pathname === '/' || location.pathname.endsWith('/');
+        
+        if (isHome && target) {
+          e.preventDefault();
+          const headerHeight = header ? header.offsetHeight : 70;
+          const topPos = target.getBoundingClientRect().top + window.scrollY - headerHeight;
+          
+          window.scrollTo({
+            top: topPos,
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
   });
 
-  // Log out action (clear token and reload)
-  $('#logoutBtn')?.addEventListener('click', () => {
-    ['accessToken', 'fullName', 'username', 'avatarUrl'].forEach(k => localStorage.removeItem(k));
-    location.reload();
-  });
-
-  // Highlight active nav link based on page
-  const path = location.pathname.toLowerCase();
-  $$('.main-nav .nav-link').forEach(link => {
-    const key = (link.getAttribute('data-match') || '').toLowerCase();
-    if (key && path.includes(key)) {
-      link.classList.add('active');
-    }
-  });
 })();
