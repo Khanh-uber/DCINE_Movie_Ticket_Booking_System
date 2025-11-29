@@ -286,10 +286,9 @@ if (zone === 'couple') {
 
   // ===== Load movie/showtime (đọc localStorage + query; merge an toàn) =====
 
+// ===== Load movie/showtime (ĐÃ FIX: Map trực tiếp theo DTO của Backend) =====
   async function loadShowAndMovie() {
     const q = new URLSearchParams(location.search);
-
-    // Ưu tiên lấy id suất chiếu từ query: ?showtimeId=... hoặc ?st=...
     const stId = q.get('showtimeId') || q.get('st') || q.get('showtime') || null;
 
     let detail = null;
@@ -298,51 +297,51 @@ if (zone === 'couple') {
     }
 
     if (detail) {
-      // Tuỳ BE đặt tên, cố gắng map linh hoạt
-      const st = detail;   // detail chính là showtimeDetailDTO trả về từ BE
+      // CODE 2: Map trực tiếp các trường từ Backend (Flat DTO)
+      const st = detail; 
 
+      // 1. Map thông tin suất chiếu
       state.show.id      = st.showtimeId;
       state.show.theater = st.theaterName;
       state.show.date    = st.showDate;
       state.show.time    = st.startTime;
       state.show.format  = st.formatName;
 
-      // Movie
-      state.movie.id        = st.movieId;
-      state.movie.title     = st.movieTitle;
-      state.movie.posterUrl = st.posterUrl || st.poster_url || '';
-      state.movie.trailerUrl= st.trailerUrl || st.trailer_url || '';
-      state.movie.year      = st.releaseYear;
-      state.movie.genres    = st.genres || [];
-      state.movie.duration  = st.durationMin;
+      // 2. Map thông tin phim (nằm trực tiếp trong object suất chiếu)
+      state.movie.id         = st.movieId;
+      state.movie.title      = st.movieTitle;
+      state.movie.year       = st.releaseYear;
+      state.movie.duration   = st.durationMin;
+      
+      // Xử lý biến camelCase hoặc snake_case cho an toàn
+      state.movie.posterUrl  = st.posterUrl || st.poster_url || '';
+      state.movie.trailerUrl = st.trailerUrl || st.trailer_url || '';
+      state.movie.genres     = st.genres || [];
 
-      // Map pricing từ BE sang PRICING (FE chỉ dùng hiển thị)
+      // 3. Map Pricing (Giá vé)
       if (detail.pricing && detail.pricing.byZone) {
         const p = detail.pricing.byZone;
-
         ['standard', 'vip', 'couple'].forEach((zone) => {
           const z = p[zone];
           if (!z) return;
-
           const adult = typeof z.adult === 'number' ? z.adult : null;
           const child = typeof z.child === 'number' ? z.child : null;
-
           PRICING.byZone[zone] = { adult, child };
 
-          // Fallback: nếu chỉ có adult, dùng cho tooltip/bảng giá
-          if (adult != null) {
-            SEAT_PRICE[zone] = adult;
-          }
+          // Fallback giá mặc định nếu cần
+          if (adult != null) SEAT_PRICE[zone] = adult;
         });
       }
     } else {
-      // Nếu BE chưa sẵn / lỗi, để tạm giá trị mặc định
-      console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE, dùng placeholder.');
+      console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE.');
     }
-  if (!state.movie.trailerUrl) {
-    state.movie.trailerUrl = 'https://www.youtube.com/watch?v=U2Qp5pL3ovA';
-  }
-    // Bind UI (giữ y nguyên logic cũ)
+
+    // Fallback Trailer nếu thiếu
+    if (!state.movie.trailerUrl) {
+      state.movie.trailerUrl = 'https://www.youtube.com/watch?v=U2Qp5pL3ovA';
+    }
+
+    // Bind UI (Cập nhật giao diện poster/text)
     $('#mvPoster').src = state.movie.posterUrl || 'https://picsum.photos/seed/poster/400/600';
     $('#mvTitle').textContent = state.movie.title || '—';
     $('#mvMeta').textContent = [
@@ -356,23 +355,16 @@ if (zone === 'couple') {
     $('#mvTime').textContent    = state.show.time || '--:--';
     $('#mvFormat').textContent  = state.show.format || '2D';
 
+    // Logic nút Trailer
     const tBtn  = $('#btnTrailer');
     const pPlay = $('#posterPlayBtn');
-
     if (state.movie.trailerUrl) {
       const openTrailer = () => (
         window.openTrailerModal
           ? window.openTrailerModal(state.movie.trailerUrl)
           : window.open(state.movie.trailerUrl, '_blank'));
-
-      if (tBtn) {
-        tBtn.disabled = false;
-        tBtn.onclick  = openTrailer;
-      }
-      if (pPlay) {
-        pPlay.hidden  = false;
-        pPlay.onclick = openTrailer;
-      }
+      if (tBtn) { tBtn.disabled = false; tBtn.onclick  = openTrailer; }
+      if (pPlay) { pPlay.hidden  = false; pPlay.onclick = openTrailer; }
     } else {
       if (tBtn)  tBtn.remove();
       if (pPlay) pPlay.remove();
@@ -773,15 +765,15 @@ async function onContinue(goTo = 'concessions.html') {
     if (seat) flipTooltip(seat);
   }
 
-  // ===== Boot =====
+// ===== Boot =====
   document.addEventListener('DOMContentLoaded', async () => {
     try { if (window.mountHeader)      mountHeader('#hdr-include'); } catch {}
     try { if (window.mountFooter)      mountFooter('#footer-include'); } catch {}
-    try { if (window.mountBreadcrumb)  mountBreadcrumb(); } catch {}
-
-    // 1. Lấy thông tin suất chiếu + phim từ BE
+    
+    // 1. Lấy thông tin suất chiếu + phim từ BE (Chạy hàm mới sửa ở trên)
     await loadShowAndMovie();
-    // 1. Lấy thông tin từ state sau khi đã load BE
+
+    // 2. Tạo URL chuẩn xác dựa trên dữ liệu vừa load
     const movieId    = state.movie.id;
     const showtimeId = state.show.id;
 
@@ -793,55 +785,58 @@ async function onContinue(goTo = 'concessions.html') {
       ? `movie-detail.html?movie=${encodeURIComponent(movieId)}`
       : 'index.html';
 
-    // 2. Nút back trên header + trong summary
+    // 3. Update nút Back (nếu có)
     const btnBackShow = document.getElementById('btnBackShowtime');
     if (btnBackShow) btnBackShow.href = showtimeUrl;
 
     const btnBackMovie = document.getElementById('btnBackMovie');
     if (btnBackMovie) btnBackMovie.href = movieUrl;
 
-    // 3. Cập nhật breadcrumb (nếu có)
+    // 4. BREADCRUMB: Giữ Style Code 1 nhưng data chuẩn Code 2
     const bc = document.querySelector('nav.breadcrumb');
     if (bc) {
-      const linkShow = bc.querySelector('a[href*="showtime.html"]');
-      if (linkShow) linkShow.href = showtimeUrl;
-
-      const linkSeat = bc.querySelector('a[href*="seat-map.html"]');
-      if (linkSeat && showtimeId) {
-        linkSeat.href = `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`;
-      }
+      const title = state.movie.title || 'Chi tiết phim';
+      
+      // Sử dụng innerHTML như Code 1 để tạo cấu trúc đầy đủ
+      // Home > Phim > Tên Phim > Lịch Chiếu > Chọn Ghế
+      bc.innerHTML = `
+        <a href="index.html">Trang chủ</a>
+        <span class="sep">/</span>
+        <a href="movies.html">Phim</a>
+        <span class="sep">/</span>
+        <a href="${movieUrl}">${title}</a>
+        <span class="sep">/</span>
+        <a href="${showtimeUrl}">Chọn lịch chiếu</a>
+        <span class="sep">/</span>
+        <span class="curr">Chọn ghế</span>
+      `;
     }
-    // 2. Lấy trạng thái ghế từ BE
-    await loadSeatStatesFromApi();
 
-    // 3. Vẽ ghế + summary
+    // 5. Lấy trạng thái ghế từ BE & Render
+    await loadSeatStatesFromApi();
     renderGrid();
     renderPriceMatrix();
     syncSummary();
 
-    // seat events
+    // Gán sự kiện (Events)
     const grid = $('#seatGrid');
     grid.addEventListener('click', onSeatGridClick);
     grid.addEventListener('mouseenter', onSeatMouseEnter, true);
-    // Double-click ghế đã chọn để đổi loại vé
     grid.addEventListener('dblclick', (e) => {
       const seat = e.target.closest('.seat');
       if (!seat || seat.dataset.state !== 'selected') return;
       openSeatPopover(seat, seat.id.slice(2));
     }); 
 
-    // popover events (single set)
     const popEl = $('#seatPopover');
     $('#pickAdult').addEventListener('click', () => assignSeat('adult'));
     $('#pickChild').addEventListener('click', () => assignSeat('child'));
     $('#pickCancel').addEventListener('click', closeSeatPopover);
-    popEl.querySelector('.popover-backdrop')
-        .addEventListener('click', closeSeatPopover);
+    popEl.querySelector('.popover-backdrop').addEventListener('click', closeSeatPopover);
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !popEl.hidden) closeSeatPopover();
     });
 
-    // CTA
     $('#btnContinue').addEventListener('click', () => onContinue('concessions.html'));
     $('#btnPay').addEventListener('click', () => onContinue('payment.html'));
   });

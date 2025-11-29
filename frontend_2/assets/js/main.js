@@ -46,44 +46,63 @@ async function ensureMovieTpl() {
     return PROMO_TPL;
   }
 
-  function promoCardFromData(p) {
-    const el = PROMO_TPL.content.firstElementChild.cloneNode(true);
-    el.classList.add('deal');
-    el.dataset.id = p.id || '';
-    if (p.href) el.dataset.href = p.href;
+function promoCardFromData(p) {
+  const el = PROMO_TPL.content.firstElementChild.cloneNode(true);
+  el.classList.add('deal');
+  el.dataset.id = p.id || '';
 
-    const bg = el.querySelector('[data-img]');
-    if (bg && p.imageUrl) bg.style.backgroundImage = `url('${p.imageUrl}')`;
-
-    const t = el.querySelector('[data-title]'); if (t) t.textContent = p.title || '';
-    const d = el.querySelector('[data-desc]');  if (d) d.textContent = p.desc  || '';
-
-    const tag = el.querySelector('[data-tag]'); if (tag && p.tag){ tag.textContent = p.tag; tag.hidden = false; }
-    const b   = el.querySelector('[data-badge]'); if (b && p.badge){ b.textContent = p.badge; b.hidden = false; }
-    const v   = el.querySelector('[data-valid]'); if (v && p.validUntil){ v.textContent = `HSD: ${p.validUntil}`; v.hidden = false; }
-
-    const cta = el.querySelector('[data-cta]');
-    if (cta) { cta.href = p.href || '#'; cta.textContent = p.ctaText || 'Nhận ưu đãi'; }
-
-el.addEventListener('click', (e) => {
-  // Nếu bấm đúng nút CTA thì cho đi như cũ
-  if (e.target.closest('a.btn')) return;
-
-  // [FIX] Nếu vừa kéo thì KHÔNG điều hướng
-  const rail = el.closest('.rail');
-  if (rail && rail.dataset.isDragging === '1') {
-    rail.dataset.isDragging = '0';
-    e.preventDefault();
-    e.stopPropagation();
-    return;
+  if (p.href) {
+    el.dataset.href = p.href;
   }
 
-  const to = el.dataset.href;
-  if (to) location.href = to;
-});
-
-    return el;
+  const bg = el.querySelector('[data-img]');
+  const imgUrl = p.imageUrl || p.img || p.bannerUrl;
+  if (bg && imgUrl) {
+    bg.style.backgroundImage = `url('${imgUrl}')`;
   }
+
+  const t = el.querySelector('[data-title]');
+  if (t) t.textContent = p.title || '';
+
+  const d = el.querySelector('[data-desc]');
+  if (d) d.textContent = p.desc || '';
+
+  const tag = el.querySelector('[data-tag]');
+  if (tag && p.tag) {
+    tag.textContent = p.tag;
+    tag.hidden = false;
+  }
+
+  const b = el.querySelector('[data-badge]');
+  if (b && p.badge) {
+    b.textContent = p.badge;
+    b.hidden = false;
+  }
+
+  const v = el.querySelector('[data-valid]');
+  const valid = p.validUntil || p.expiredAt || p.endAt || p.end_at;
+  if (v && valid) {
+    v.textContent = `HSD: ${valid}`;
+    v.hidden = false;
+  }
+
+  // [FIX] Nếu vừa kéo rail thì KHÔNG điều hướng khi click
+  el.addEventListener('click', (e) => {
+    const rail = el.closest('.rail');
+    if (rail && rail.dataset.isDragging === '1') {
+      rail.dataset.isDragging = '0';
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
+    const to = el.dataset.href;
+    if (to) location.href = to;
+  });
+
+  return el;
+}
+
 
   // ====== Combo-item template loader (once) ======
   let COMBO_TPL = null;
@@ -1247,49 +1266,121 @@ view.forEach((m, idx) => {
     api.scrollToIndex(originalBaseLen);
   }
 
-  async function loadDealsCarousel(){
-    const wrap = document.getElementById('wrapDeals');
-    const rail = document.getElementById('railDeals');
-    if (!wrap || !rail) return;
+async function loadDealsCarousel() {
+  const wrap = document.getElementById('wrapDeals');
+  const rail = document.getElementById('railDeals');
+  if (!wrap || !rail) return;
 
-    await ensurePromoCardTemplate();
+  await ensurePromoCardTemplate();
 
-    let data = [];
-    try {
-      const res = await fetch(`${API}/deals`, { cache:'no-store' });
-      if (res.ok) data = await res.json();
-    } catch {}
+  let data = [];
 
-  // 2) Fallback ../../data/promotions.json
+  // 1) Ưu tiên gọi BE – ghép từ bảng voucher + membership_tier
+  try {
+    const res = await fetch(`${API}/deals`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (Array.isArray(json)) data = json;
+      else if (Array.isArray(json.items)) data = json.items;
+      else if (Array.isArray(json.deals)) data = json.deals;
+    }
+  } catch (err) {
+    console.warn('[Deals] API /deals lỗi, chuyển sang fallback JSON', err);
+  }
+
+  // 2) Fallback: file JSON local (build từ DB → xuất ra promotions.json)
   if (!data.length) {
     try {
-      const r2 = await fetch('../../data/promotions.json', { cache:'no-store' });
+      const r2 = await fetch('./assets/data/promotions.json', { cache: 'no-store' });
       if (r2.ok) {
-        const j = await r2.json();
-        // chấp nhận nhiều shape: mảng / {items:[]} / {promotions:[]}
-        data = Array.isArray(j) ? j : (j.items || j.promotions || []);
+        const json2 = await r2.json();
+        if (Array.isArray(json2)) data = json2;
+        else if (Array.isArray(json2.items)) data = json2.items;
+        else if (Array.isArray(json2.promotions)) data = json2.promotions;
       }
-    } catch {}
+    } catch (err2) {
+      console.warn('[Deals] Fallback promotions.json lỗi', err2);
+    }
   }
 
-  // 3) Mock nếu trống
+  // 3) Cuối cùng: dữ liệu mock dựa đúng cấu trúc bảng voucher + membership_tier
   if (!data.length) {
-    data = Array.from({length:6}, (_,i)=>({
-      id:`p${i+1}`,
-      title:`Khuyến mãi ${i+1}`,
-      desc:`Ưu đãi đặc biệt ${i+1}`,
-      img:`https://picsum.photos/seed/promo${i}/800/400`,
-      href:'#'
-    }));
+    data = [
+      {
+        id: 'WELCOME10',
+        code: 'WELCOME10',
+        title: 'WELCOME10 – Giảm 10% cho thành viên mới',
+        description: 'Giảm 10% cho hoá đơn từ 100.000đ. Áp dụng cho hạng Standard trở lên.',
+        type: 'PERCENT',
+        value: 10,
+        minOrder: 100000,
+        membershipTierName: 'Standard',
+        endAt: '2025-12-31'
+      },
+      {
+        id: 'SILVER20K',
+        code: 'SILVER20K',
+        title: 'SILVER20K – Ưu đãi 20.000đ cho hạng Silver',
+        description: 'Giảm trực tiếp 20.000đ khi mua từ 2 vé bất kỳ.',
+        type: 'CASH',
+        value: 20000,
+        membershipTierName: 'Silver',
+        endAt: '2025-12-31'
+      },
+      {
+        id: 'GOLD15',
+        code: 'GOLD15',
+        title: 'GOLD15 – Giảm 15% cho hạng Gold',
+        description: 'Giảm 15% tối đa 50.000đ trên mọi hoá đơn.',
+        type: 'PERCENT',
+        value: 15,
+        membershipTierName: 'Gold',
+        endAt: '2025-12-31'
+      }
+    ];
   }
 
+  // 4) Chuẩn hoá voucher → shape của promoCardFromData
+  const items = data.map((raw) => {
+    // Nếu BE đã trả đúng shape (imageUrl, desc, tag...) thì dùng luôn
+    if (raw.imageUrl || raw.desc || raw.tag || raw.badge || raw.validUntil) {
+      return raw;
+    }
 
-    rail.innerHTML = '';
-    data.forEach(p => rail.appendChild(promoCardFromData(p)));
+    const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
+    const val = Number(raw.value) || 0;
+    const minOrder = raw.minOrder ?? raw.min_order ?? 0;
+    const tierName =
+      raw.membershipTierName || raw.tierName || raw.tier_name || '';
 
-    // nếu muốn tái dùng hành vi kéo/scroll như rail khác, có thể gắn wheel->ngang:
-    initSimpleCarousel(document.getElementById('wrapDeals'), { itemSelector: '.deal' });
-  }
+    const code = raw.code || raw.voucherCode || raw.id;
+    const discountText = isPercent ? `${val}%` : fmtVND(val);
+    let desc = raw.description || `Giảm ${discountText}`;
+    if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
+    if (tierName) desc += ` • Hạng ${tierName}`;
+
+    return {
+      id: raw.id || code,
+      title: raw.title || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
+      desc,
+      imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
+      tag: tierName || 'Voucher thành viên',
+      badge: isPercent ? `-${discountText}` : 'VOUCHER',
+      validUntil: raw.validUntil || raw.endAt || raw.end_at,
+      href: code
+        ? `promotions.html?voucher=${encodeURIComponent(code)}`
+        : 'promotions.html',
+      ctaText: 'Chi tiết ưu đãi'
+    };
+  });
+
+  rail.innerHTML = '';
+  items.forEach((p) => rail.appendChild(promoCardFromData(p)));
+
+  // Điều hướng & kéo ngang
+  initSimpleCarousel(wrap, { itemSelector: '.deal' });
+}
+
 
   // === Combos grid ===
   async function loadCombos(mode='concessions'){
@@ -1317,110 +1408,154 @@ view.forEach((m, idx) => {
     data.forEach(c => wrap.appendChild(comboItemFromData(c, {mode})));
   }
 
-  // === Membership interactions (tier switch + card tilt + perks theo hạng) ===
-  function enhanceMember(){
-    const wrap = document.querySelector('#member .member-v2');
-    if (!wrap) return;
+async function enhanceMember() {
+  const wrap = document.querySelector('#member .member-v2');
+  if (!wrap) return;
 
-    // Định nghĩa gói quyền lợi cho từng hạng
-    const TIERS = {
-      gold: {
-        price: '79.000đ',
-        perks: [
-          '🎟 1 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 20%',
-          '⏱️ Mua vé sớm hơn 24h',
-          '🎁 Tích điểm đổi quà & voucher'
-        ],
-        halo: 'rgba(229, 213, 79, .45)',
-        chip: ['#F8D36B','#FFB84D'],
-        label: 'Gold'
-      },
-      platinum: {
-        price: '129.000đ',
-        perks: [
-          '🎟 2 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 25%',
-          '⏱️ Mua vé sớm hơn 48h',
-          '🎫 Miễn phí nâng ghế đôi 1 lần'
-        ],
-        halo: 'rgba(162, 185, 255, .45)',
-        chip: ['#C9DAFF','#8CA8FF'],
-        label: 'Platinum'
-      },
-      diamond: {
-        price: '199.000đ',
-        perks: [
-          '🎟 4 lần chọn ghế VIP / tháng',
-          '🍿 Combo bắp nước ưu đãi 30%',
-          '⏱️ Mua vé sớm hơn 72h',
-          '🎁 Quà sinh nhật + lounge VIP'
-        ],
-        halo: 'rgba(116, 249, 255, .45)',
-        chip: ['#7DF5FF','#35D1E2'],
-        label: 'Diamond'
-      }
-    };
+  const perksEl  = wrap.querySelector('#loyaltyPerks') || wrap.querySelector('.perks');
+  const priceEl  = wrap.querySelector('#tierPrice');
+  const cardNmEl = wrap.querySelector('.card-name');
+  const tierBtns = wrap.querySelectorAll('.tier');
 
-    const priceEl = document.getElementById('tierPrice');
-    const perksEl = wrap.querySelector('.perks');
-    const joinBtn = document.getElementById('joinEliteBtn');
+  const nameEl   = document.getElementById('loyaltyTierName');
+  const ptsEl    = document.getElementById('loyaltyPoints');
+  const progFill = document.getElementById('loyaltyProgressFill');
+  const progTxt  = document.getElementById('loyaltyProgressText');
 
-    const card    = wrap.querySelector('.glass-card');
-    const chip    = card?.querySelector('.chip');
-    const halo    = wrap.querySelector('.halo');
-    const cardNm  = card?.querySelector('.card-name');
+  // Cấu hình fallback bám theo bảng membership_tier trong DB
+  // (min_spending, discount_percent, point_multiplier) :contentReference[oaicite:6]{index=6}
+  const TIERS = {
+    STANDARD: {
+      label: 'Standard',
+      minSpending: 0,
+      discountPercent: 0,
+      pointMultiplier: 1,
+      perksExtra: [
+        'Tích điểm mỗi lần mua vé & combo.',
+        'Theo dõi hạng & điểm trong hồ sơ D-cine.'
+      ],
+      theme: 'gold' // dùng lại theme cũ cho đỡ sửa CSS
+    },
+    SILVER: {
+      label: 'Silver',
+      minSpending: 1000000,
+      discountPercent: 5,
+      pointMultiplier: 1.2,
+      perksExtra: [
+        'Giảm giá tốt hơn Standard.',
+        'Ưu đãi sinh nhật dành riêng cho Silver.'
+      ],
+      theme: 'platinum'
+    },
+    GOLD: {
+      label: 'Gold',
+      minSpending: 3000000,
+      discountPercent: 10,
+      pointMultiplier: 1.5,
+      perksExtra: [
+        'Ưu tiên suất chiếu hot và khung giờ đẹp.',
+        'Ưu đãi VIP & quà tặng định kỳ.'
+      ],
+      theme: 'diamond'
+    }
+  };
 
-    function applyTier(tier){
-      const def = TIERS[tier]; if(!def) return;
+  function applyTier(key) {
+    const t = TIERS[key] || TIERS.STANDARD;
 
-      // set class để đổi theme theo CSS variables
-      wrap.classList.remove('gold','platinum','diamond');
-      wrap.classList.add(tier);
+    // đổi theme theo hạng (giữ lại class gold/platinum/diamond sẵn có trong CSS)
+    wrap.classList.remove('gold', 'platinum', 'diamond');
+    if (t.theme) wrap.classList.add(t.theme);
 
-      // giá
-      if (priceEl) priceEl.textContent = def.price;
-
-      // perks
-      if (perksEl) perksEl.innerHTML = def.perks.map(p=>`<li>${p}</li>`).join('');
-
-      // join link
-      if (joinBtn) joinBtn.href = `membership.html?tier=${tier}`;
-
-      // card visuals
-      if (cardNm) cardNm.textContent = def.label;
-      if (halo)   halo.style.background =
-        `radial-gradient(60% 70% at 50% 10%, ${def.halo}, transparent 60%)`;
-      if (chip)   chip.style.background =
-        `linear-gradient(135deg, ${def.chip[0]}, ${def.chip[1]})`;
+    if (priceEl) {
+      priceEl.textContent = t.minSpending
+        ? `Từ ${fmtVND(t.minSpending)}`
+        : '0đ';
     }
 
-    // Bắt sự kiện tab hạng
-    wrap.querySelectorAll('.tier').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        wrap.querySelectorAll('.tier').forEach(b=>{
-          b.classList.toggle('active', b===btn);
-          b.setAttribute('aria-selected', String(b===btn));
-        });
-        applyTier(btn.dataset.tier);
-      });
-    });
+    if (perksEl) {
+      const perkTexts = [
+        `🎟 Giảm ${t.discountPercent}% giá vé (tuỳ loại vé theo quy định).`,
+        `💰 Tích ${t.pointMultiplier}x điểm khi mua vé & combo.`,
+        ...t.perksExtra
+      ].filter(Boolean);
 
-    // Subtle tilt on the glass card (giữ như cũ)
-    const rect = ()=> card?.getBoundingClientRect?.();
-    const onMove = (e)=>{
-      const r = rect(); if(!r || !card) return;
-      const cx = r.left + r.width/2, cy = r.top + r.height/2;
-      const dx = (e.clientX - cx)/r.width, dy = (e.clientY - cy)/r.height;
-      card.style.transform = `rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*8).toFixed(2)}deg)`;
-    };
-    const reset = ()=> { if(card) card.style.transform = 'rotateX(0) rotateY(0)'; };
-    card?.addEventListener('pointermove', onMove);
-    card?.addEventListener('pointerleave', reset);
+      perksEl.innerHTML = perkTexts.map((p) => `<li>${p}</li>`).join('');
+    }
 
-    // Khởi tạo theo Gold mặc định
-    applyTier('gold');
+    if (cardNmEl) {
+      cardNmEl.textContent = t.label;
+    }
   }
+
+  // ----- Lấy dữ liệu loyalty từ BE (nếu đã có API) -----
+  let loyalty = null;
+  try {
+    const res = await fetch(`${API}/loyalty/summary`, {
+      cache: 'no-store',
+      credentials: 'include'
+    });
+    if (res.ok) {
+      loyalty = await res.json();
+    }
+  } catch (err) {
+    console.warn('[Loyalty] Không lấy được /loyalty/summary, dùng fallback mặc định', err);
+  }
+
+  let currentKey = 'STANDARD';
+
+  if (loyalty && loyalty.currentTier) {
+    const code = (loyalty.currentTier.code || loyalty.currentTier.name || '')
+      .toUpperCase();
+    if (TIERS[code]) currentKey = code;
+  }
+
+  // Cập nhật text "Hạng hiện tại" + điểm
+  if (nameEl) nameEl.textContent = TIERS[currentKey].label;
+
+  const pts = Number(loyalty?.points ?? 0);
+  if (ptsEl && pts > 0) {
+    ptsEl.textContent = pts.toLocaleString('vi-VN');
+  }
+
+  if (progFill && progTxt && loyalty) {
+    let percent = Number(loyalty.progressPercent ?? 0);
+    const toNext = Number(loyalty.toNextTierPoints ?? 0);
+
+    if (!percent && pts && toNext) {
+      percent = Math.min(100, (pts / (pts + toNext)) * 100);
+    }
+
+    if (percent) {
+      progFill.style.width = `${percent.toFixed(0)}%`;
+    }
+
+    if (toNext > 0 && loyalty.nextTier && loyalty.nextTier.name) {
+      progTxt.textContent =
+        `Tích thêm ${toNext.toLocaleString('vi-VN')} điểm để lên hạng ${loyalty.nextTier.name}.`;
+    }
+  }
+
+  // Switch giữa các hạng để xem quyền lợi
+  tierBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const key = (btn.dataset.tier || '').toUpperCase();
+      if (!key || !TIERS[key]) return;
+
+      tierBtns.forEach((b) =>
+        b.classList.toggle('active', b === btn)
+      );
+      btn.setAttribute('aria-selected', 'true');
+
+      applyTier(key);
+      if (nameEl) nameEl.textContent = TIERS[key].label;
+    });
+  });
+
+  // Hạng mặc định (guest) hoặc từ BE
+  applyTier(currentKey);
+}
+
 function initSimpleCarousel(wrap, { itemSelector = '.deal' } = {}) {
   if (!wrap) return;
   const rail = wrap.querySelector('.rail'); if (!rail) return;

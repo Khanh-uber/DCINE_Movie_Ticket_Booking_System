@@ -7,7 +7,7 @@ html,body{
   font-family:'Poppins',var(--font-ui)
 }
 a{color:inherit;text-decoration:none}
-main{padding-top:calc(var(--header-h) + 2px)}
+main{padding-top:calc(32px)}
 
 /* Section head: HTML dùng .section-head, code cũ dùng .sec-head -> hỗ trợ cả 2 */
 .section-head,
@@ -23,8 +23,6 @@ main{padding-top:calc(var(--header-h) + 2px)}
   font-weight:800;
   margin:0
 }
-
-/* [SỬA] more-link -> view-all cho đúng HTML */
 .view-all{
   color:var(--muted-main);
   font-weight:700;
@@ -43,72 +41,10 @@ main{padding-top:calc(var(--header-h) + 2px)}
 }
 .view-all:hover{color:var(--accent)}
 .view-all:hover::after{transform:scaleX(1)}
-
-/* ===== HERO ===== */
-.hero{
-  position:relative;
-  min-height:62vh;
-  border-radius:20px;
-  margin:16px 0 24px;
-  overflow:hidden;
-  background:#0a0a0a
-}
-.hero .hero-video{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  opacity:0;
-  transition:opacity .6s
-}
-.hero .backdrop{
-  position:absolute;
-  inset:0;
-  background-size:cover;
-  background-position:center;
-  filter:brightness(.98) contrast(1.02) saturate(1.03);
-  opacity:.92;
-  transition:transform .2s ease;
-  background-image:url('../images/banners/tanjiro_akaza_infinity_castle.jpg');
-}
-.hero::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:var(--hero-grad)
-}
-.hero-inner{
-  position:relative;
-  z-index:1;
-  max-width:760px;
-  padding:72px 18px 90px
-}
-.h-eyebrow{
-  font-size:12px;
-  letter-spacing:.18em;
-  color:#ffb3b8;
-  text-transform:uppercase;
-  opacity:.9;
-  margin-bottom:8px
-}
-.hero h1{
-  font-weight:800;
-  font-size:clamp(28px,5vw,56px);
-  line-height:1.05;
-  margin:0 0 10px;
-  text-shadow:0 8px 40px rgba(0,0,0,.5)
-}
-.hero p{
-  color:#e9e9e9;
-  max-width:58ch;
-  opacity:.92;
-  margin:0 0 18px
-}
 .cta-row{
   display:flex;
   gap:10px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 .btn{
   display:inline-flex;
@@ -415,10 +351,6 @@ main{padding-top:calc(var(--header-h) + 2px)}
   color:#000;
   box-shadow:0 12px 28px rgba(0,0,0,.35)
 }
-.member-v2 .tier.active{
-  color:#000;
-  background:linear-gradient(180deg,var(--tier),var(--tier2))
-}
 .small.trust{
   margin-top:10px;
   color:#cfcfcf;
@@ -504,6 +436,68 @@ main{padding-top:calc(var(--header-h) + 2px)}
   .carousel.coverflow .movie-card img{
     height:var(--poster-h-lg);
   }
+}
+/* ----- Loyalty Program: điểm & tiến trình ----- */
+.member-v2 .member-intro {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #c7c7c7;
+}
+
+.loyalty-summary {
+  padding: 10px 12px;
+  margin: 0 0 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.loyalty-current {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.loyalty-current .label {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: #ffb3b8;
+}
+
+.loyalty-current .value {
+  font-weight: 700;
+}
+
+.loyalty-current .points {
+  margin-left: auto;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.loyalty-progress .bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.loyalty-progress .fill {
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--tier, #e50914), var(--tier2, #ffbf3c));
+  transition: width 0.4s ease-out;
+}
+
+.loyalty-progress .text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #bfbfbf;
 }
 
 /* ===== Reveal on scroll ===== */
@@ -663,4 +657,115 @@ main{padding-top:calc(var(--header-h) + 2px)}
 }
 .movie-card.poster::after {
   pointer-events: none;
+}
+
+/* --- STYLE RIÊNG CHO HERO INDEX --- */
+
+/* Khung bao ngoài */
+.index-hero {
+  position: relative;
+  width: 100%;
+  height: 75vh; /* Chiều cao chiếm 75% màn hình */
+  min-height: 600px;
+  overflow: hidden;
+  margin-bottom: 0px;
+  background: #000;
+}
+
+/* Ảnh nền (Zoom nhẹ & Tối màu) */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 20%; /* Căn chỉnh vị trí ảnh cho đẹp */
+  filter: brightness(0.9) contrast(1.1); /* Chỉnh màu ảnh nền */
+  transform: scale(1.05); /* Zoom nhẹ để tạo chiều sâu */
+  z-index: 0;
+}
+
+/* Lớp phủ gradient (để chữ dễ đọc) */
+.hero-overlay {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    #000 0%,           /* Đen hoàn toàn ở dưới đáy */
+    rgba(0,0,0,0.8) 10%, 
+    rgba(0,0,0,0.3) 80%, 
+    rgba(0,0,0,0.2) 100%
+  );
+  display: flex;
+  align-items: flex-end; /* Đẩy nội dung xuống dưới */
+  padding-bottom: 120px;  /* Cách đáy một khoảng */
+}
+
+/* Nội dung bên trong */
+.hero-content {
+  position: relative;
+  max-width: 1100px;
+  animation: fadeUp 1s ease-out; /* Hiệu ứng trượt lên nhẹ */
+}
+
+/* Slogan phụ (Breadcrumb style) */
+.hero-subtitle {
+  display: inline-block;
+  color: #ff3535; /* Màu đỏ thương hiệu */
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+
+/* Tiêu đề chính */
+.hero-title {
+  color: #ffffff;
+  font-size: clamp(32px, 5vw, 64px); /* Tự chỉnh cỡ chữ theo màn hình */
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  margin: 0 0 20px 0;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+
+/* Đoạn văn giới thiệu */
+.hero-desc {
+  color: #e0e0e0;
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 1100px;
+  margin: 0;
+  font-weight: 400;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+/* Hiệu ứng Fade Up */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .index-hero {
+    height: 60vh;
+  }
+  .hero-title {
+    font-size: 32px;
+  }
+  .hero-desc {
+    font-size: 15px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }

@@ -242,7 +242,15 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     return { now, soon };
   }
 
-  // ===== [ĐÃ SỬA] Boot =====
+// ===== [HÀM HỖ TRỢ] Chuẩn hóa tiếng Việt để tìm kiếm =====
+  function removeAccents(str) {
+    return str.normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+              .toLowerCase();
+  }
+
+  // ===== [ĐÃ SỬA] Boot: Xử lý cả Tìm kiếm và Chuyển Tab từ Header =====
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       // 1. Fetch và chia data
@@ -253,47 +261,103 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
         allMovies.now = raw?.now || [];
         allMovies.soon = raw?.soon || [];
       }
-      console.log('[movies] now/soon =', allMovies.now.length, allMovies.soon.length);
-
-      // 2. Lấy các DOM element mới
+      
+      // 2. Lấy các DOM element
       const tabNow = document.getElementById('tabNow');
       const tabSoon = document.getElementById('tabSoon');
+      const tabsContainer = document.querySelector('.tabs-nav');
+      const pageTitle = document.querySelector('.sec-head h1');
+      
       if (window.mountBreadcrumb) mountBreadcrumb();
+
+      // Breadcrumb giống movie-detail: Trang chủ / Phim
+      const bc = document.getElementById('bc');
+      if (bc) {
+        bc.classList.add('breadcrumb', 'movies-bc');
+        bc.innerHTML = `
+          <a href="index.html">Trang chủ</a>
+          <span class="sep">/</span>
+          <span class="curr">Phim</span>
+        `;
+      }
+
       const gridId = 'movieGrid';
       const pagerId = 'moviePager';
 
-      if (!tabNow || !tabSoon) return; // Thoát nếu không tìm thấy tab
 
-      // 3. Gắn sự kiện click cho tab "Now Showing"
-      tabNow.addEventListener('click', () => {
-        // Cập nhật giao diện tab
-        tabNow.classList.add('is-active');
-        tabSoon.classList.remove('is-active');
+      // 3. LẤY THAM SỐ TỪ URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const query = urlParams.get('q');       // Lấy từ khóa tìm kiếm
+      const status = urlParams.get('status'); // Lấy trạng thái (now / soon)
+
+      // --- TRƯỜNG HỢP 1: CÓ TỪ KHÓA TÌM KIẾM (?q=...) ---
+      if (query && query.trim() !== '') {
+        console.log(`[movies] Searching for: "${query}"`);
         
-        // Vẽ lại lưới với data "now"
-        renderPagedGrid({
-          list: allMovies.now,
-          gridId, pagerId, perPage: PER_PAGE, page: 1,
-          options: { showRating: true, showRelease: false } // Bật rating/nút đặt vé
-        });
-      });
+        // Ẩn tab đi
+        if (tabsContainer) tabsContainer.style.display = 'none';
+        if (pageTitle) pageTitle.textContent = `KẾT QUẢ TÌM KIẾM: "${query}"`;
 
-      // 4. Gắn sự kiện click cho tab "Coming Soon"
-      tabSoon.addEventListener('click', () => {
-        // Cập nhật giao diện tab
-        tabSoon.classList.add('is-active');
-        tabNow.classList.remove('is-active');
-        
-        // Vẽ lại lưới với data "soon"
-        renderPagedGrid({
-          list: allMovies.soon,
-          gridId, pagerId, perPage: PER_PAGE, page: 1,
-          options: { showRating: false, showRelease: true } // Ẩn rating/nút đặt vé
-        });
-      });
+        const allList = [...allMovies.now, ...allMovies.soon];
+        const keyword = removeAccents(query);
 
-      // 5. Tải lần đầu: Tự động click vào tab "Now Showing"
-      tabNow.click();
+        const results = allList.filter(m => {
+          const title = removeAccents(m.title || '');
+          const director = removeAccents(m.director || '');
+          return title.includes(keyword) || director.includes(keyword);
+        });
+
+        renderPagedGrid({
+          list: results,
+          gridId, pagerId, perPage: PER_PAGE, page: 1,
+          options: { showRating: true, showRelease: true }
+        });
+
+        if (results.length === 0) {
+          const grid = document.getElementById(gridId);
+          if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #aaa; padding: 40px;">Không tìm thấy phim nào phù hợp với "${query}"</div>`;
+        }
+
+      } else {
+        // --- TRƯỜNG HỢP 2: KHÔNG TÌM KIẾM (CHẾ ĐỘ MẶC ĐỊNH) ---
+        if (!tabNow || !tabSoon) return;
+
+        // Định nghĩa hành động click cho các tab
+        tabNow.addEventListener('click', () => {
+          tabNow.classList.add('is-active');
+          tabSoon.classList.remove('is-active');
+          // Sửa lại tiêu đề cho đúng ngữ cảnh
+          if (pageTitle) pageTitle.textContent = 'PHIM ĐANG CHIẾU';
+          
+          renderPagedGrid({
+            list: allMovies.now,
+            gridId, pagerId, perPage: PER_PAGE, page: 1,
+            options: { showRating: true, showRelease: false }
+          });
+        });
+
+        tabSoon.addEventListener('click', () => {
+          tabSoon.classList.add('is-active');
+          tabNow.classList.remove('is-active');
+          // Sửa lại tiêu đề cho đúng ngữ cảnh
+          if (pageTitle) pageTitle.textContent = 'PHIM SẮP CHIẾU';
+
+          renderPagedGrid({
+            list: allMovies.soon,
+            gridId, pagerId, perPage: PER_PAGE, page: 1,
+            options: { showRating: false, showRelease: true }
+          });
+        });
+
+        // --- XỬ LÝ ĐIỀU HƯỚNG TỪ HEADER (?status=soon hoặc ?status=now) ---
+        if (status === 'soon') {
+            // Nếu trên URL có ?status=soon -> Kích hoạt tab Sắp chiếu
+            tabSoon.click();
+        } else {
+            // Mặc định hoặc ?status=now -> Kích hoạt tab Đang chiếu
+            tabNow.click();
+        }
+      }
 
     } catch (e) {
       console.error('[movies] boot error:', e);

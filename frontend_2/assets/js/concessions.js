@@ -325,33 +325,53 @@ function safeParseBooking() {
   }
 }
 
-function buildBreadcrumb() {
-  const wrap = document.getElementById('bc');
-  if (!wrap) return;
+// ===== Breadcrumb (Style Code 1: Phẳng + Separator) =====
+  function buildBreadcrumb() {
+    const wrap = document.getElementById('bc'); // Container trên HTML (thường là <nav class="breadcrumb">)
+    if (!wrap) return;
 
-  const cart      = safeParseBooking();
-  const movieId   = cart.meta && cart.meta.movieId;
-  const showtimeId = cart.showtimeId;
+    // 1. Đọc dữ liệu booking đang dở dang từ localStorage
+    let cart = {};
+    try {
+      cart = JSON.parse(localStorage.getItem('booking_cart') || '{}');
+    } catch (e) {
+      console.warn('Lỗi đọc booking_cart', e);
+    }
 
-  const showtimeHref = movieId
-    ? `showtime.html?movie=${encodeURIComponent(movieId)}`
-    : 'showtime.html';
+    const meta = cart.meta || {};
+    const movieId = meta.movieId || cart.movieId;
+    const showtimeId = cart.showtimeId;
+    const movieTitle = meta.movieTitle || 'Chi tiết phim';
 
-  const seatHref = showtimeId
-    ? `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`
-    : 'seat-map.html';
+    // 2. Tạo đường dẫn (Back links)
+    const movieUrl = movieId 
+      ? `movie-detail.html?movie=${encodeURIComponent(movieId)}` 
+      : 'movies.html';
 
-  wrap.innerHTML = `
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <ol>
-        <li><a href="index.html">Trang chủ</a></li>
-        <li><a href="${showtimeHref}">Chọn suất chiếu</a></li>
-        <li><a href="${seatHref}">Chọn ghế</a></li>
-        <li><span class="current">Chọn bắp nước</span></li>
-      </ol>
-    </nav>
-  `;
-}
+    const showtimeUrl = movieId 
+      ? `showtime.html?movie=${encodeURIComponent(movieId)}` 
+      : 'showtime.html';
+
+    const seatUrl = showtimeId
+      ? `seat-map.html?showtimeId=${encodeURIComponent(showtimeId)}`
+      : 'seat-map.html';
+
+    // 3. Render HTML chuẩn Style Code 1
+    // Cấu trúc: Trang chủ > Phim > Tên Phim > Lịch Chiếu > Chọn Ghế > Bắp Nước
+    wrap.innerHTML = `
+      <a href="index.html">Trang chủ</a>
+      <span class="sep">/</span>
+      <a href="movies.html">Phim</a>
+      <span class="sep">/</span>
+      <a href="${movieUrl}">${movieTitle}</a>
+      <span class="sep">/</span>
+      <a href="${showtimeUrl}">Lịch chiếu</a>
+      <span class="sep">/</span>
+      <a href="${seatUrl}">Chọn ghế</a>
+      <span class="sep">/</span>
+      <span class="curr">Bắp nước</span>
+    `;
+  }
 
 
   // ===== Categories =====
