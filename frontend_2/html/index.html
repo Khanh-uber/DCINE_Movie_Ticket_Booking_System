@@ -94,10 +94,11 @@
         <div class="kicker">D-cine Loyalty</div>
         <h2>Tích điểm – Lên hạng – Nhận quà</h2>
         <p class="member-intro">
-          Hệ thống thành viên D-cine mang đến trải nghiệm điện ảnh trọn vẹn. 
-          Tích lũy chi tiêu để mở khóa các đặc quyền riêng biệt.
+          Tích lũy chi tiêu để lên hạng và được giảm trực tiếp trên tổng hóa đơn.
+          Hạng càng cao, ưu đãi càng lớn.
         </p>
 
+        <!-- Tóm tắt hạng của người dùng (nếu đã đăng nhập) -->
         <div class="loyalty-summary">
           <div class="loyalty-header">
             <div>
@@ -114,50 +115,45 @@
               <div class="fill" id="loyaltyProgressFill" style="width: 0%"></div>
             </div>
             <div class="text" id="loyaltyProgressText">
-              Đăng nhập để xem tiến trình.
+              Đăng nhập để xem tiến trình tích lũy của bạn.
             </div>
           </div>
         </div>
 
+        <!-- Thang chi tiêu cần để lên hạng -->
         <div class="price-wrap">
-          <div class="label" style="color:#888; font-size:12px; margin-bottom:4px;">YÊU CẦU CHI TIÊU</div>
-          <div class="amt" id="tierPrice" style="font-size:24px; font-weight:800; color:#fff">0đ</div>
+          <div class="label" style="color:#888; font-size:12px; margin-bottom:4px;">
+            YÊU CẦU CHI TIÊU
+          </div>
+          <div class="amt" id="tierPrice" style="font-size:24px; font-weight:800; color:#fff">
+            0đ
+          </div>
+          <div class="price-note">
+            Đây là mức chi tiêu tích lũy cần đạt để lên hạng đang chọn.
+          </div>
         </div>
-        
-        <br>
-        <a class="btn-join" href="membership.html" data-open-login>
-          Đăng nhập ngay
-        </a>
       </div>
 
-      <div class="col-right">
-        
-        <div class="tier-tabs" role="tablist">
-          <button class="tier-tab active" data-tier="STANDARD">Standard</button>
-          <button class="tier-tab" data-tier="SILVER">Silver</button>
-          <button class="tier-tab" data-tier="GOLD">Gold</button>
-        </div>
+<div class="col-right">
+  
+  <div class="tier-tabs">
+    <button class="tier-tab" data-tier="STANDARD">Standard</button>
+    <button class="tier-tab" data-tier="SILVER">Silver</button>
+    <button class="tier-tab" data-tier="GOLD">Gold</button>
+  </div>
 
-        <div class="visual-card-wrap">
-          <div class="glass-card">
-            <div class="card-logo">D-cine</div>
-            <div class="chip"></div>
-            <div class="card-tier-name" id="cardTierName">Standard</div>
-            </div>
-        </div>
+  <div class="visual-card-wrap">
+    <div class="glass-card">
+      <div class="card-logo">D-cine</div>
+      <div class="chip"></div>
+      <div class="card-tier-name" id="cardTierName">Standard</div>
+    </div>
+  </div>
 
-        <ul class="perks-list" id="loyaltyPerks">
-          <li>
-             <svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>
-             Tích điểm mọi giao dịch
-          </li>
-          <li>
-             <svg width="16" height="16" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>
-             Đổi bắp nước bằng điểm
-          </li>
-        </ul>
+  <ul class="perks-list" id="loyaltyPerks"></ul>
 
-      </div>
+</div>
+
       
     </div>
   </div>
@@ -197,8 +193,8 @@
         <ul class="sf-links">
           <li><a href="index.html">Trang chủ</a></li>
           <li><a href="movies.html">Phim</a></li>
-          <li><a href="promotions.html">Khuyến mãi</a></li>
-          <li><a href="contact.html">Liên hệ</a></li>
+          <li><a href="movies.html?status=now">Đang chiếu</a></li>
+          <li><a href="movies.html?status=soon">Sắp ra mắt</
         </ul>
       </nav>
 
