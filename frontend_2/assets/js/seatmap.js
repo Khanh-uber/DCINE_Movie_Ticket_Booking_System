@@ -284,8 +284,6 @@ if (zone === 'couple') {
     wrap.appendChild(renderHeadOrFoot());
   }
 
-  // ===== Load movie/showtime (đọc localStorage + query; merge an toàn) =====
-
 // ===== Load movie/showtime (ĐÃ FIX: Map trực tiếp theo DTO của Backend) =====
   async function loadShowAndMovie() {
     const q = new URLSearchParams(location.search);
@@ -293,22 +291,8 @@ if (zone === 'couple') {
 
     let detail = null;
     if (stId) {
-      detail = await apiGet(`/showtimes/seatmap/${encodeURIComponent(stId)}`);
-    } else {
-    // --- Trường hợp mới: không có ID, gọi find theo phim/rạp/ngày/giờ ---
-    const movie = q.get('movie');
-    const theater = q.get('theater');
-    const date = q.get('date');
-    const time = q.get('time');
-
-    if (movie && theater && date && time) {
-      const url = `/showtimes/find?movie=${encodeURIComponent(movie)}&theater=${encodeURIComponent(theater)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
-      detail = await apiGet(url);
-    } else {
-      console.warn('[seatmap] Thiếu tham số để tìm suất chiếu (movie/theater/date/time)');
+      detail = await apiGet(`/showtimes/${encodeURIComponent(stId)}`);
     }
-  }
-
 
     if (detail) {
       // CODE 2: Map trực tiếp các trường từ Backend (Flat DTO)
@@ -386,17 +370,12 @@ if (zone === 'couple') {
   }
 async function loadSeatStatesFromApi() {
   const id = state.show.id;
-  const movie = state.movie.id;
-  const { theater, date, time } = state.show;
+  if (!id) return;
 
-  let data = null;
-  if (id) {
-    data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
-  } else if (movie && theater && date && time) {
-    const url = `/showtimes/seats?movie=${encodeURIComponent(movie)}&theater=${encodeURIComponent(theater)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
-    data = await apiGet(url);
-  }
+  const data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
   if (!data) return;
+
+  // ----- layout từ BE -----
   if (Array.isArray(data.rows) && data.rows.length) {
     ROWS = data.rows;                   // ["A","B","C",...]
   }

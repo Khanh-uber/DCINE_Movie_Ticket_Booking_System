@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = {"http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://127.0.0.1:5502"})
@@ -54,13 +53,26 @@ public class AuthController {
             session.setAttribute("username", acc.getUsername());
             session.setAttribute("role", acc.getRole());
             session.setAttribute("accountId", acc.getAccountId());
+        String fullName = acc.getUsername();
+        if (acc.getCustomer() != null && acc.getCustomer().getFullName() != null) {
+            fullName = acc.getCustomer().getFullName();
+        }
+        String avatarUrl = acc.getAvatarUrl();
+        String accessToken = java.util.UUID.randomUUID().toString();
+        Map<String, Object> user = new java.util.HashMap<>();
+        user.put("id", acc.getAccountId());
+        user.put("fullName", fullName);
+        user.put("avatarUrl", avatarUrl);    
+        user.put("email", acc.getEmail());
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("accessToken", accessToken);
+        data.put("user", user);
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("ok", true);
+        response.put("message", "Login successful");
+        response.put("data", data);
 
-            Map<String, Object> response = Map.of(
-                "message", "Đăng nhập thành công",
-                    "username", acc.getUsername(),
-                    "role", acc.getRole()
-            );
-            return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);
         }
         catch (Exception e){
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

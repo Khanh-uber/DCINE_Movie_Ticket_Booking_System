@@ -3,15 +3,17 @@ package com.example.cinema.entity;
 import jakarta.persistence.*;
 import java.sql.Timestamp;  
 @Entity
-@Table (name = "account")
+@Table(name = "account")
 public class Account {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "account_id")
-    private Long accountId;
-    
-    @Column(name="membership_tier_id")
+    private Long accountId;      // ID đúng là account_id (Long)
+
+    @Column(name = "membership_tier_id")
     private Long memberShipId;
+    
 
     @Column(name = "loyalty_points")
     private int loyaltyPoints ;
@@ -24,6 +26,9 @@ public class Account {
 
     @Column(name="email", unique = true)
     private String email;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;  
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -73,7 +78,13 @@ public class Account {
     public void setAccountId(Long accountId) {
         this.accountId = accountId;
     }
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
 
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
     public String getUsername() {
         return username;
     }
