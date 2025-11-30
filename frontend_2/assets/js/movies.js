@@ -48,8 +48,9 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
   }
 
   // Title
-  const t = el.querySelector('[data-title]');
-  if (t) t.textContent = m.title || '';
+const t = el.querySelector('[data-title]');
+if (t) t.textContent = m.title || m.movieName || m.name || '';
+
 
   // Director
   const d = el.querySelector('[data-director]');
@@ -290,35 +291,69 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       const query = urlParams.get('q');       // Lấy từ khóa tìm kiếm
       const status = urlParams.get('status'); // Lấy trạng thái (now / soon)
 
-      // --- TRƯỜNG HỢP 1: CÓ TỪ KHÓA TÌM KIẾM (?q=...) ---
-      if (query && query.trim() !== '') {
-        console.log(`[movies] Searching for: "${query}"`);
-        
-        // Ẩn tab đi
-        if (tabsContainer) tabsContainer.style.display = 'none';
-        if (pageTitle) pageTitle.textContent = `KẾT QUẢ TÌM KIẾM: "${query}"`;
+if (query && query.trim() !== '') {
+  console.log(`[movies] Searching for: "${query}"`);
 
-        const allList = [...allMovies.now, ...allMovies.soon];
-        const keyword = removeAccents(query);
+  // Ẩn tab đi
+  if (tabsContainer) tabsContainer.style.display = 'none';
+  if (pageTitle) pageTitle.textContent = `KẾT QUẢ TÌM KIẾM: "${query}"`;
 
-        const results = allList.filter(m => {
-          const title = removeAccents(m.title || '');
-          const director = removeAccents(m.director || '');
-          return title.includes(keyword) || director.includes(keyword);
-        });
+  const allList = [...(allMovies.now || []), ...(allMovies.soon || [])];
+  const keyword = removeAccents(query);
 
-        renderPagedGrid({
-          list: results,
-          gridId, pagerId, perPage: PER_PAGE, page: 1,
-          options: { showRating: true, showRelease: true }
-        });
+  const results = allList.filter((m) => {
+    // Gom tất cả text có thể liên quan lại 1 chỗ
+    const bagParts = [
+      m.title,
+      m.movieName,
+      m.name,
+      m.originalTitle,
+      m.vnTitle,
+      m.viTitle,
+      m.enTitle,
+      m.director,
+      m.directorName,
 
-        if (results.length === 0) {
-          const grid = document.getElementById(gridId);
-          if (grid) grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #aaa; padding: 40px;">Không tìm thấy phim nào phù hợp với "${query}"</div>`;
-        }
+      // cast / diễn viên
+      Array.isArray(m.cast) ? m.cast.join(' ') : m.cast,
+      Array.isArray(m.actors) ? m.actors.join(' ') : m.actors,
 
-      } else {
+      // genres / tags
+      Array.isArray(m.genres) ? m.genres.join(' ') : m.genre,
+      Array.isArray(m.tags) ? m.tags.join(' ') : m.tags,
+    ];
+
+    const bagRaw = bagParts
+      .filter(Boolean)
+      .map(String)
+      .join(' ')
+      .trim();
+
+    if (!bagRaw) return false;
+
+    const bag = removeAccents(bagRaw);
+    return bag.includes(keyword);
+  });
+
+  renderPagedGrid({
+    list: results,
+    gridId,
+    pagerId,
+    perPage: PER_PAGE,
+    page: 1,
+    options: { showRating: true, showRelease: true },
+  });
+
+  if (results.length === 0) {
+    const grid = document.getElementById(gridId);
+    if (grid) {
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; color: #aaa; padding: 40px;">
+          Không tìm thấy phim nào phù hợp với "${query}"
+        </div>`;
+    }
+  }
+} else {
         // --- TRƯỜNG HỢP 2: KHÔNG TÌM KIẾM (CHẾ ĐỘ MẶC ĐỊNH) ---
         if (!tabNow || !tabSoon) return;
 
