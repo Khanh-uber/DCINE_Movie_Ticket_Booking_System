@@ -659,11 +659,21 @@ window.changeWeek = (step) => {
 
      renderDates();
 
-     $('#btnContinue').onclick = () => {
-        if(!state.selectedShowtime) return;
-        const mvParam = state.movieId ? `&movie=${state.movieId}` : '';
-        location.href = `seat-map.html?showtimeId=${encodeURIComponent(state.selectedShowtime.id)}${mvParam}`;
-     };
+$('#btnContinue').onclick = () => {
+  if (!state.selectedShowtime) return;
+
+  const s = state.selectedShowtime;
+  const movieId = state.movieId;
+
+  location.href =
+    'seat-map.html'
+    + `?showtimeId=${encodeURIComponent(s.id)}`
+    + (movieId ? `&movie=${encodeURIComponent(movieId)}` : '')
+    + `&theater=${encodeURIComponent(s.theater)}`
+    + `&date=${encodeURIComponent(s.date)}`
+    + `&time=${encodeURIComponent(s.time)}`;
+};
+
   });
 
 })();

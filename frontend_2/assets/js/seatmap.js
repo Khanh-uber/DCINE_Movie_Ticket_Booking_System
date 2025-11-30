@@ -102,7 +102,7 @@ async function createBooking(showtimeId, seatsPayload) {
     }
     lastHoldCall = now;
 
-    await apiPost(`/showtimes/${encodeURIComponent(id)}/holds`, {
+    await apiPost(`/showtimes/seatmap/${encodeURIComponent(id)}/holds`, {
       seats: codes,              // ["A1","A2"]
       action: action || 'hold'   // 'hold' | 'release'
     });
@@ -294,7 +294,26 @@ if (zone === 'couple') {
     let detail = null;
     if (stId) {
       detail = await apiGet(`/showtimes/${encodeURIComponent(stId)}`);
+    } else {
+    // --- Trường hợp mới: không có ID, gọi find theo phim/rạp/ngày/giờ ---
+    const movie = q.get('movie');
+    const theater = q.get('theater');
+    const date = q.get('date');
+    const time = q.get('time');
+
+    if (movie && theater && date && time) {
+      const url = `/showtimes/find?movie=${encodeURIComponent(movie)}&theater=${encodeURIComponent(theater)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
+      detail = await apiGet(url);
+    } else {
+      console.warn('[seatmap] Thiếu tham số để tìm suất chiếu (movie/theater/date/time)');
     }
+  }
+
+  if (!detail) {
+    console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE.');
+    return;
+  }
+
 
     if (detail) {
       // CODE 2: Map trực tiếp các trường từ Backend (Flat DTO)
@@ -372,12 +391,17 @@ if (zone === 'couple') {
   }
 async function loadSeatStatesFromApi() {
   const id = state.show.id;
-  if (!id) return;
+  const movie = state.movie.id;
+  const { theater, date, time } = state.show;
 
-  const data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
+  let data = null;
+  if (id) {
+    data = await apiGet(`/showtimes/seatmap/${encodeURIComponent(id)}/seats`);
+  } else if (movie && theater && date && time) {
+    const url = `/showtimes/seats?movie=${encodeURIComponent(movie)}&theater=${encodeURIComponent(theater)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
+    data = await apiGet(url);
+  }
   if (!data) return;
-
-  // ----- layout từ BE -----
   if (Array.isArray(data.rows) && data.rows.length) {
     ROWS = data.rows;                   // ["A","B","C",...]
   }
@@ -502,7 +526,7 @@ async function loadSeatStatesFromApi() {
       type: state.assigned.get(code) || 'adult'
     }));
 
-    const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
+    const res = await apiPost(`/showtimes/seatmap/${encodeURIComponent(id)}/pricing-preview`, {
       seats: seatsPayload
     });
 
