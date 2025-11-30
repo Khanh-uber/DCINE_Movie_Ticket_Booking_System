@@ -51,7 +51,7 @@ public class ProfileService {
         res.setUser(u);
 
         List<ProfileResponse.MembershipTierDTO> tierList = new ArrayList<>();
-        List<Membership> mList = membershipRepo.getAllMembershipTier();
+        List<Membership> mList = membershipRepo.findAll();
         
         for (Membership m : mList){
             ProfileResponse.MembershipTierDTO dto = new ProfileResponse.MembershipTierDTO();
