@@ -27,10 +27,18 @@ public class PromotionService {
             dto.setDiscountValue(v.getValue());
             dto.setMinOrder(v.getMinOrder());
             dto.setMaxDiscount(null);
+            if (v.getMembershipTierId() != null) {
             Map<String, Object> membership = promotionRepository.getMembershipTier(v.getMembershipTierId());
-            dto.setAppliesTo((String) membership.get("name"));
+            if (membership != null && membership.containsKey("name")) {
+                dto.setAppliesTo((String) membership.get("name"));
+            } else {
+                dto.setAppliesTo("Thành viên");
+            }
+            } else {
+                dto.setAppliesTo("Tất cả khách hàng");
+            }
             dto.setValidFrom(v.getStartAt());
-            dto.setValidFrom(v.getEndAt());
+            dto.setValidTo(v.getEndAt());
             dto.setActive(true);
             plist.add(dto);
         }

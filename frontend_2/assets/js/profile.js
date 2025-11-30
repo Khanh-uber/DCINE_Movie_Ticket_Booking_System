@@ -498,11 +498,15 @@
     document.getElementById('confirm-pass').value = '';
   };
 
-  window.logout = () => {
-    if (confirm('Đăng xuất khỏi tài khoản?')) {
-      window.location.href = 'index.html';
-    }
-  };
+window.logout = () => {
+  if (confirm('Đăng xuất khỏi tài khoản?')) {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('fullName');
+    localStorage.removeItem('username');
+    localStorage.removeItem('avatarUrl');
+    window.location.href = 'index.html';
+  }
+};
 
   window.showQR = (ticketId) => {
     const modal = document.getElementById('qrModal');
