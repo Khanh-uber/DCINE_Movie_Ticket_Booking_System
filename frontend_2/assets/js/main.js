@@ -14,7 +14,7 @@ let MOVIE_TPL = null;
 async function ensureMovieTpl() {
   if (MOVIE_TPL) return MOVIE_TPL;
   try {
-    const res = await fetch('./components/movie-card.html', { cache: 'no-store' });
+    const res = await fetch('./components/movie-card.html', { cache: 'no-store', credentials: 'include' });
     if (!res.ok) throw new Error('movie-card.html not found');
 
     const html = await res.text();
@@ -363,7 +363,7 @@ async function ensureModalTemplate() {
 
   // 1. Thử load từ /html/components/modal.html nếu bạn có file này
   try {
-    const res = await fetch('components/modal.html', { cache: 'no-store' });
+    const res = await fetch('components/modal.html', { cache: 'no-store', credentials: 'include' });
     if (res.ok) {
       const html = await res.text();
       const box = document.createElement('div');
@@ -813,7 +813,7 @@ Object.assign(window, { mountPagination });
     const mount = document.querySelector('#hdr-include');
     if (!mount) return;
     try {
-      const res = await fetch('../../html/header.html', { cache: 'no-store' });
+      const res = await fetch('../../html/header.html', { cache: 'no-store', credentials: 'include' });
       mount.innerHTML = await res.text();
     } catch (e) {
       console.warn('[header] load fail', e);
@@ -1255,7 +1255,7 @@ function initCoverflow(rail, dotsEl, baseLen){
     }catch{}
   if (!base.length) {
     try {
-      const r2 = await fetch('../../data/movies.json', { cache: 'no-store' });
+      const r2 = await fetch('../../data/movies.json', { cache: 'no-store', credentials: 'include' });
       if (r2.ok) {
         const j = await r2.json();
         if (Array.isArray(j)) {
@@ -1318,7 +1318,7 @@ view.forEach((m, idx) => {
 
  if (!base.length) {
     try {
-      const r2 = await fetch('../../data/movies.json', { cache: 'no-store' });
+      const r2 = await fetch('../../data/movies.json', { cache: 'no-store', credentials: 'include' });
       if (r2.ok) {
         const j = await r2.json();
         if (Array.isArray(j)) {
@@ -1379,7 +1379,7 @@ async function loadDealsCarousel() {
 
   // 1) Ưu tiên gọi BE – ghép từ bảng voucher + membership_tier
   try {
-    const res = await fetch(`${API}/deals`, { cache: 'no-store' });
+    const res = await fetch(`${API}/deals`, { cache: 'no-store', credentials: 'include' });
     if (res.ok) {
       const json = await res.json();
       if (Array.isArray(json)) data = json;
@@ -1393,7 +1393,7 @@ async function loadDealsCarousel() {
   // 2) Fallback đọc từ file JSON cục bộ (xuất từ DB)
   if (!data.length) {
     try {
-      const r2 = await fetch('./assets/data/promotions.json', { cache: 'no-store' });
+      const r2 = await fetch('./assets/data/promotions.json', { cache: 'no-store', credentials: 'include' });
       if (r2.ok) {
         const json2 = await r2.json();
         if (Array.isArray(json2)) data = json2;
@@ -1664,7 +1664,7 @@ async function enhanceMember() {
   const API = window.API_BASE || '/api';
 
   try {
-    const res = await fetch(`${API}/memberships`, { cache: 'no-store' });
+    const res = await fetch(`${API}/memberships`, { cache: 'no-store', credentials: 'include' });
     if (res.ok) {
       beTiers = await res.json();
     }
@@ -1778,16 +1778,23 @@ function buildDots() {
 }
 async function getJSON(urlApi, localPath, pick) {
   try {
-    const r = await fetch(urlApi);
+    const r = await fetch(urlApi, {
+      cache: 'no-store',
+      credentials: 'include'   
+    });
     if (r.ok) {
       const j = await r.json();
       return typeof pick === 'function' ? pick(j) : j;
     }
   } catch {}
+
+  if (!localPath) return null; 
+
   const r2 = await fetch(localPath, { cache: 'no-store' });
   const j2 = await r2.json();
   return typeof pick === 'function' ? pick(j2) : j2;
 }
+
 function splitMovies(arr){
   const now=[], soon=[], today = new Date().toISOString().slice(0,10);
   arr.forEach(m=>{

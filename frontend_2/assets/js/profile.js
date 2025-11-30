@@ -8,7 +8,8 @@
     // 1. Gọi BE
     if (apiPath) {
       try {
-        const res = await fetch(apiPath, { cache: 'no-store' });
+        const res = await fetch(apiPath, { cache: 'no-store' ,
+        credentials: 'include' });
         if (res.ok) return await res.json();
       } catch (err) {
         console.warn('[Profile] API error', apiPath, err);
@@ -137,15 +138,13 @@
   }
   function normalizeVoucher(v) {
     if (!v || typeof v !== 'object') return null;
-
-    // BE: discountType (PERCENT/FIXED_AMOUNT), discountValue
     const typeRaw = (v.type || v.discountType || '').toString().toUpperCase();
     const isPercent =
       typeRaw === 'PERCENT' || typeRaw === '%';
 
     const valRaw =
       v.value ??
-      v.discountValue ??   // <<< thêm discountValue cho BE
+      v.discountValue ??   
       v.val ??
       v.amount ??
       0;
@@ -495,7 +494,8 @@
       const res = await fetch(`${API}/profile/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPassword: oldP, newPassword: newP })
+        body: JSON.stringify({ oldPassword: oldP, newPassword: newP }),
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('Bad response');
       alert('✅ Đổi mật khẩu thành công.');

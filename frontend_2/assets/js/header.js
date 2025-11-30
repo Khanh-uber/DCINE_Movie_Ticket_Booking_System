@@ -2,20 +2,14 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
-
-  // 1. Sticky Header
   const header = $('#site-header');
   window.addEventListener('scroll', () => {
     if (header) {
-      // Thêm class 'scrolled' khi cuộn quá 10px
       header.classList.toggle('scrolled', window.scrollY > 10);
     }
   });
-
-  // 2. Search Toggle
-// 2. Search Toggle & Submit Logic
   const searchBtn = $('#searchBtn');
-  const searchForm = $('#searchForm'); // Đảm bảo dùng id searchForm trong HTML
+  const searchForm = $('#searchForm'); 
   const searchInput = $('#searchInput');
 
   if (searchBtn && searchForm && searchInput) {
@@ -25,10 +19,8 @@
       const hasValue = searchInput.value.trim().length > 0;
 
       if (isOpen && hasValue) {
-        // Nếu đang mở và có chữ -> Submit form luôn
         searchForm.submit();
       } else {
-        // Nếu chưa mở hoặc rỗng -> Toggle đóng/mở
         searchForm.classList.toggle('open');
         if (!isOpen) {
           setTimeout(() => searchInput.focus(), 100);
@@ -67,10 +59,8 @@
 
     if (token) {
       // --- ĐÃ ĐĂNG NHẬP ---
-      if (guestGroup) guestGroup.style.display = 'none'; // Ẩn nút đăng nhập
-      if (userGroup) userGroup.style.display = 'flex';   // Hiện avatar
-      
-      // Cập nhật thông tin User
+      if (guestGroup) guestGroup.style.display = 'none'; 
+      if (userGroup) userGroup.style.display = 'flex'; 
       const fullName = localStorage.getItem('fullName') || localStorage.getItem('username') || 'Member';
       const avatarUrl = localStorage.getItem('avatarUrl');
 
@@ -85,7 +75,6 @@
         imgEl.style.display = 'block';
         if (textEl) textEl.style.display = 'none';
       } else {
-        // Nếu không có ảnh, hiện chữ cái đầu
         if (imgEl) imgEl.style.display = 'none';
         if (textEl) {
             textEl.textContent = fullName.charAt(0).toUpperCase();
@@ -94,13 +83,11 @@
       }
 
     } else {
-      // --- CHƯA ĐĂNG NHẬP ---
-      if (guestGroup) guestGroup.style.display = 'flex'; // Hiện nút đăng nhập
-      if (userGroup) userGroup.style.display = 'none';   // Ẩn avatar
+      if (guestGroup) guestGroup.style.display = 'flex'; 
+      if (userGroup) userGroup.style.display = 'none';   
     }
   }
 
-  // Chạy hàm kiểm tra ngay khi load trang
   checkAuth();
 
   // 4. Smooth Scroll cho Voucher / Thành viên
