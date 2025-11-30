@@ -769,9 +769,6 @@ function safeParseBooking() {
     const btnCheckout = $('#btnCheckout');
     if (btnCheckout) {
       btnCheckout.addEventListener('click', () => {
-        // NOTE:
-        // - Khi BE hoạt động: nên để BE xử lý confirm order.
-        // - LocalStorage dưới đây chỉ dùng như Fallback để trang payment.html có thể đọc nếu cần.
         const ticketBase = getTicketBaseAmount();
         const combosTotal = state.cart.reduce((s, it) => {
           const line = typeof it.lineTotal === 'number'
