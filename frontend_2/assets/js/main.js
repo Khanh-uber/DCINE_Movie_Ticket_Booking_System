@@ -14,7 +14,6 @@ let MOVIE_TPL = null;
 async function ensureMovieTpl() {
   if (MOVIE_TPL) return MOVIE_TPL;
   try {
-    // ĐƯỜNG DẪN ĐÚNG: từ index.html / movies.html -> ./components/movie-card.html
     const res = await fetch('./components/movie-card.html', { cache: 'no-store' });
     if (!res.ok) throw new Error('movie-card.html not found');
 
@@ -35,7 +34,6 @@ async function ensureMovieTpl() {
 
   // ====== Voucher card (home) – build bằng JS, không dùng promo-card.html ======
   async function ensurePromoCardTemplate() {
-    // Giữ hàm cho loadDealsCarousel() gọi, nhưng không fetch gì nữa
     return true;
   }
 
@@ -47,8 +45,6 @@ async function ensureMovieTpl() {
     if (p.href) {
       el.dataset.href = p.href;
     }
-
-    // --- Header nhỏ: tag + badge (−10%, VOUCHER,...) ---
     const titleRow = document.createElement('div');
     titleRow.className = 'promo-title';
 
@@ -63,17 +59,14 @@ async function ensureMovieTpl() {
       titleRow.appendChild(badge);
     }
 
-    // --- Dòng chính: tên voucher ---
     const main = document.createElement('div');
     main.className = 'promo-main';
     main.textContent = p.title || '';
 
-    // --- Mô tả ---
     const desc = document.createElement('p');
     desc.className = 'promo-desc';
     desc.textContent = p.desc || '';
 
-    // --- Hạn sử dụng (nếu có) ---
     let validEl = null;
     if (p.validUntil) {
       validEl = document.createElement('div');
@@ -81,7 +74,6 @@ async function ensureMovieTpl() {
       validEl.textContent = `HSD: ${p.validUntil}`;
     }
 
-    // --- Hộp hiển thị mã + nút Sao chép ---
     const codeBox = document.createElement('div');
     codeBox.className = 'promo-code-box';
 
@@ -125,18 +117,14 @@ async function ensureMovieTpl() {
 
     codeBox.appendChild(codeText);
     codeBox.appendChild(btnCopy);
-
-    // --- Gắn vào card ---
     el.appendChild(titleRow);
     el.appendChild(main);
     el.appendChild(desc);
     if (validEl) el.appendChild(validEl);
     el.appendChild(codeBox);
 
-    // Click cả card -> đi tới trang promotions
     el.addEventListener('click', (e) => {
       const rail = el.closest('.rail');
-      // nếu vừa kéo rail thì không điều hướng
       if (rail && rail.dataset.isDragging === '1') {
         rail.dataset.isDragging = '0';
         e.preventDefault();
@@ -1492,38 +1480,44 @@ async function loadDealsCarousel() {
     ];
   }
 
+const items = data
+  .map((raw) => {
+    const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
+    const val = Number(raw.value ?? raw.discountValue) || 0;
+    const minOrder = raw.minOrder ?? raw.min_order ?? 0;
+    const tierName =
+      raw.membershipTierName ||
+      raw.tierName ||
+      raw.tier_name ||
+      raw.appliesTo ||
+      '';
 
-  // 4) Chuẩn hoá voucher → shape promoCardFromData()
-  const items = data
-    .map((raw) => {
-      // Nếu BE đã trả đúng shape, dùng luôn
-      if (raw.imageUrl || raw.desc || raw.tag || raw.badge || raw.validUntil) {
-        return raw;
-      }
+    const code = raw.code || raw.voucherCode || raw.id;
+    const discountText = isPercent ? `${val}%` : fmtVND(val);
 
-      const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
-      const val = Number(raw.value) || 0;
-      const minOrder = raw.minOrder ?? raw.min_order ?? 0;
-      const tierName =
-        raw.membershipTierName || raw.tierName || raw.tier_name || '';
+    let desc =
+      raw.desc ||
+      raw.description ||
+      (discountText ? `Giảm ${discountText}` : '');
 
-      const code = raw.code || raw.voucherCode || raw.id;
-      const discountText = isPercent ? `${val}%` : fmtVND(val);
-      let desc = raw.description || `Giảm ${discountText}`;
-      if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
-      if (tierName) desc += ` • Hạng ${tierName}`;
+    if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
+    if (tierName) desc += ` • Hạng ${tierName}`;
 
-      return {
-        id: raw.id || code,
-        title: raw.title || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
-        desc,
-        imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
-        tag: tierName || 'Voucher thành viên',
-        badge: isPercent ? `-${discountText}` : 'VOUCHER',
-        validUntil: raw.validUntil || raw.endAt || raw.end_at,
-      };
-    })
-    .filter(Boolean);
+    return {
+      id: raw.id || code,
+      code,
+      title: raw.title || raw.name || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
+      desc,
+      imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
+      tag: raw.tag || tierName || 'Voucher thành viên',
+      badge: raw.badge || (discountText ? (isPercent ? `-${discountText}` : 'VOUCHER') : ''),
+      validUntil:
+        raw.validUntil || raw.validTo || raw.valid_to || raw.endAt || raw.end_at,
+      href: raw.href,
+    };
+  })
+  .filter(Boolean);
+
 
   if (!items.length) {
     rail.innerHTML = '<p class="empty-text">Hiện chưa có ưu đãi khả dụng.</p>';
@@ -1534,7 +1528,7 @@ async function loadDealsCarousel() {
   const next = wrap.querySelector('.nav.next');
   const dotsWrap = wrap.querySelector('.dots');
 
-  const perPage = 3; // ✅ luôn 3 card / lần
+  const perPage = 3;
   const totalPages = Math.max(1, Math.ceil(items.length / perPage));
   let pageIndex = 0;
 
@@ -1639,12 +1633,11 @@ async function enhanceMember() {
     progTxt: document.getElementById('loyaltyProgressText')
   };
 
-  // CẤU HÌNH CHUẨN DB & QUYỀN LỢI RÚT GỌN
+
   const TIERS = {
     STANDARD: {
       label: 'Standard',
       min: 0,
-      // Mặc định không có giảm giá, chỉ là mốc bắt đầu
       perks: [
         'Hạng thành viên mặc định',
         'Tích lũy điểm chi tiêu để thăng hạng'
@@ -1652,7 +1645,7 @@ async function enhanceMember() {
     },
     SILVER: {
       label: 'Silver',
-      min: 1000000, // 1 Triệu
+      min: 1000000, 
       perks: [
         'Đạt mốc chi tiêu 1.000.000đ',
         'GIẢM 5% trên tổng hóa đơn'
@@ -1660,58 +1653,76 @@ async function enhanceMember() {
     },
     GOLD: {
       label: 'Gold',
-      min: 3000000, // 3 Triệu
+      min: 3000000,
       perks: [
         'Đạt mốc chi tiêu 3.000.000đ',
         'GIẢM 10% trên tổng hóa đơn'
       ]
     }
   };
+  let beTiers = [];
+  const API = window.API_BASE || '/api';
 
-  // Icon dấu tích (SVG)
+  try {
+    const res = await fetch(`${API}/memberships`, { cache: 'no-store' });
+    if (res.ok) {
+      beTiers = await res.json();
+    }
+  } catch (e) {
+    console.warn('[Member] /memberships lỗi, dùng config cứng:', e);
+  }
+
+  if (Array.isArray(beTiers) && beTiers.length) {
+    const map = {};
+
+    beTiers.forEach(t => {
+      const key = (t.name || '').trim().toUpperCase();
+      if (!key) return;
+
+      map[key] = {
+        label: t.name,
+        min: t.minSpent ?? 0,
+        perks: [
+          t.description || '',
+          t.pointRate != null ? `Tích điểm x${t.pointRate}` : ''
+        ].filter(Boolean)
+      };
+    });
+    Object.keys(map).forEach(key => {
+      if (!TIERS[key]) TIERS[key] = {};
+
+      TIERS[key].label = map[key].label || TIERS[key].label || key;
+      TIERS[key].min   = map[key].min   ?? TIERS[key].min ?? 0;
+
+      if (map[key].perks.length) {
+        TIERS[key].perks = map[key].perks;
+      }
+    });
+  }
   const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-  
-  // Helper format tiền
   const fmt = n => n.toLocaleString('vi-VN') + 'đ';
-
-  // --- 1. Hàm hiển thị thông tin theo Tab (Khi bấm nút chọn hạng) ---
   function uiSwitchTab(key) {
     const t = TIERS[key];
     if (!t) return;
 
-    wrap.setAttribute('data-theme', key); // Đổi màu nền card
-
-    // Update text bên phải
+    wrap.setAttribute('data-theme', key);
     if (els.cardName) els.cardName.textContent = t.label;
-    
-    // Update mốc chi tiêu yêu cầu
     if (els.price) {
         els.price.textContent = t.min === 0 ? 'Mức khởi điểm' : `Cần tích lũy ${fmt(t.min)}`;
     }
-
-    // Update danh sách quyền lợi
     if (els.perksList) {
         els.perksList.innerHTML = t.perks.map(p => `<li>${checkIcon}${p}</li>`).join('');
     }
-
-    // Active button
     els.btns.forEach(b => b.classList.toggle('active', b.dataset.tier === key));
   }
-
-  // --- 2. Logic Thanh Tiến Trình (Dựa trên chi tiêu thực tế) ---
-  // Giả lập hoặc lấy từ API. Ở đây giả lập user đã tiêu 1.200.000đ
   const userSpent = 1200000; 
   
-  // Xác định hạng hiện tại dựa trên tiền đã tiêu
   let currentTierKey = 'STANDARD';
   if (userSpent >= TIERS.GOLD.min) currentTierKey = 'GOLD';
   else if (userSpent >= TIERS.SILVER.min) currentTierKey = 'SILVER';
-
-  // Cập nhật thông tin User bên trái
   if (els.userTier) els.userTier.textContent = TIERS[currentTierKey].label;
   if (els.userPts) els.userPts.textContent = fmt(userSpent);
 
-  // Tính toán thanh Progress
   let nextGoal = 0;
   let nextLabel = '';
 
@@ -1724,8 +1735,6 @@ async function enhanceMember() {
   }
 
   if (nextGoal > 0) {
-      // Tính % đã đạt được so với mốc tiếp theo
-      // Ví dụ: Đang có 1.2tr, mốc Gold là 3tr -> (1.2 / 3) * 100 = 40%
       const percent = Math.min(100, (userSpent / nextGoal) * 100);
       
       if (els.progFill) els.progFill.style.width = `${percent}%`;
@@ -1735,17 +1744,13 @@ async function enhanceMember() {
         els.progTxt.innerHTML = `Bạn cần chi thêm <b style="color:#fff">${fmt(remain)}</b> để lên hạng ${nextLabel} (Giảm ${nextLabel === 'Silver' ? '5%' : '10%'})`;
       }
   } else {
-      // Đã là Gold (Max)
       if (els.progFill) els.progFill.style.width = '100%';
       if (els.progTxt) els.progTxt.textContent = 'Bạn đang hưởng mức giảm giá cao nhất (10%)!';
   }
 
-  // Gắn sự kiện click cho các nút Tab
   els.btns.forEach(btn => {
     btn.addEventListener('click', () => uiSwitchTab(btn.dataset.tier));
   });
-
-  // Mặc định hiển thị tab theo hạng hiện tại của user
   uiSwitchTab(currentTierKey);
 }
 
@@ -1759,22 +1764,18 @@ function initSimpleCarousel(wrap, { itemSelector = '.deal' } = {}) {
   const getItems = () => Array.from(rail.querySelectorAll(itemSelector));
   const gap = parseFloat(getComputedStyle(rail).columnGap || getComputedStyle(rail).gap || 24) || 24;
 
-  // ---- build dots
 function buildDots() {
   if (!dotsWrap) return;
   dotsWrap.innerHTML = '';
   getItems().forEach((_, i) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'dot';             // [FIX] cho ăn CSS dot
+    b.className = 'dot';            
     b.addEventListener('click', () => scrollToIndex(i));
     dotsWrap.appendChild(b);
   });
   updateDots();
 }
-
-  // ---- helpers
-  // GET JSON, nếu API 404/ lỗi -> đọc file JSON cục bộ
 async function getJSON(urlApi, localPath, pick) {
   try {
     const r = await fetch(urlApi);
@@ -1787,8 +1788,6 @@ async function getJSON(urlApi, localPath, pick) {
   const j2 = await r2.json();
   return typeof pick === 'function' ? pick(j2) : j2;
 }
-
-// tách now/soon nếu movies.json là 1 mảng
 function splitMovies(arr){
   const now=[], soon=[], today = new Date().toISOString().slice(0,10);
   arr.forEach(m=>{
@@ -1818,8 +1817,6 @@ function splitMovies(arr){
     dotsWrap.querySelectorAll('button').forEach((d, idx) =>
       d.classList.toggle('active', idx === i));
   }
-
-  // ---- nav buttons
   prev && prev.addEventListener('click', (e) => {
     e.preventDefault(); 
     scrollToIndex(Math.max(0, currentIndex() - 1));
@@ -1828,8 +1825,6 @@ function splitMovies(arr){
     e.preventDefault(); 
     scrollToIndex(currentIndex() + 1);
   });
-
-  // ---- wheel: dọc -> ngang
   rail.addEventListener('wheel', (e) => {
     if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
@@ -1837,8 +1832,6 @@ function splitMovies(arr){
     }
   }, { passive: false });
 
-  // ---- drag to scroll (desktop)
-// ---- [SỬA] drag to scroll (desktop + touch) ----
 let isDown = false, startX = 0, startLeft = 0, dragMoved = false, dragTO;
 
 const startDrag = (e) => {
@@ -1847,14 +1840,11 @@ const startDrag = (e) => {
   startLeft = rail.scrollLeft;
   rail.classList.add('is-grabbing');
   rail.dataset.isDragging = '0';
-
-  // Chặn hành vi "kéo ảnh" mặc định
   if (e.target.tagName === 'IMG') e.preventDefault();
 };
 
 const moveDrag = (e) => {
   if (!isDown) return;
-  // Ngăn cuộn trang trên di động khi đang lướt ngang
   if (e.type === 'touchmove') e.preventDefault(); 
 
   const x = ('touches' in e ? e.touches[0].pageX : e.pageX);
@@ -1878,8 +1868,8 @@ const stopDrag = () => {
 };
 
 rail.addEventListener('mousedown', startDrag);
-document.addEventListener('mousemove', moveDrag); // Quan trọng: lắng nghe trên cả document
-document.addEventListener('mouseup', stopDrag);   // Quan trọng: lắng nghe trên cả document
+document.addEventListener('mousemove', moveDrag); 
+document.addEventListener('mouseup', stopDrag);   
 
 rail.addEventListener('touchstart', startDrag, { passive: false });
 document.addEventListener('touchmove', moveDrag, { passive: false });
@@ -1888,7 +1878,7 @@ let scrollSnapTO;
 
 rail.addEventListener('scroll', () => {
   updateDots();
-  if (isDown) return; // đang kéo tay thì không auto-snap
+  if (isDown) return;
 
   clearTimeout(scrollSnapTO);
   scrollSnapTO = setTimeout(() => {
@@ -1897,12 +1887,9 @@ rail.addEventListener('scroll', () => {
   }, 140);
 });
 
-  // init
   buildDots();
 }
 
-
-  // ====== Boot ======
 document.addEventListener('DOMContentLoaded', async () => {
     await mountHeader();
     await mountFooter();
@@ -1914,7 +1901,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     enhanceMember();
     parallax();
   });
-    // expose modal helpers to global
 Object.assign(window, {
   ensureModalTemplate,
   openModal,
@@ -1923,7 +1909,7 @@ Object.assign(window, {
   openConfirm,
   openQuickLogin
 });
-// ====== Global handler: Trailer / Quick Login / Confirm ======
+// Global handler: Trailer / Quick Login / Confirm
 document.addEventListener('click', async (e) => {
   const t = e.target.closest('[data-trailer-url],[data-open-login],[data-confirm]');
   if (!t) return;
