@@ -1,7 +1,7 @@
 package com.example.cinema.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;  
+import java.sql.Timestamp;  
 @Entity
 @Table(name = "account")
 public class Account {
@@ -9,7 +9,7 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "account_id")
-    private Long accountId;      
+    private Long accountId;      // ID đúng là account_id (Long)
 
     @Column(name = "membership_tier_id")
     private Long memberShipId;
@@ -49,8 +49,9 @@ public class Account {
         ACTIVE, INACTIVE;
     }
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private Timestamp createdAt = new Timestamp(System.currentTimeMillis());
+
 
     public Account(){}
     // public Account (String username, String password, Role role, String email){
@@ -134,6 +135,4 @@ public class Account {
     public void setCustomer(Customer customer){
         this.customer = customer;
     }
-    public LocalDateTime getCreatedAt(){return createdAt;}
-    public void setCreatedAt(LocalDateTime createdAt){this.createdAt = createdAt;}
 }

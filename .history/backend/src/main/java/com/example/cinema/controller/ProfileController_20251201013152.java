@@ -14,9 +14,7 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-    private Long getAccountId() {
-        return 1L; // sau thay bằng JWT/session
-    }
+    private 
     @GetMapping
     public ResponseEntity<?> getProfile() {
         try {

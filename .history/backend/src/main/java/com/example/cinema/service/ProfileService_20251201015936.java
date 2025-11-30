@@ -88,7 +88,7 @@ public class ProfileService {
         customer.setAddress(req.getAddress());
         customer.setGender(req.getGender());
         acc.setPhone(req.getPhone());
-        accountRepo.save(acc);
+        accountRepo
         customerRepo.save(customer);
 
         // build JSON trả về FE

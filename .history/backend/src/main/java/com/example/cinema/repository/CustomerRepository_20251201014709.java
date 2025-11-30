@@ -13,13 +13,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
-    @Query(value = """
-    SELECT c.* 
-    FROM customer c
-    JOIN account a ON a.customer_id = c.customer_id
-    WHERE a.account_id = :accountId
-    """, nativeQuery = true)
-Customer findCustomerByAccountId(@Param("accountId") Long accountId);
+    @Query(value="""
+            select c.full from customer c
+            join account a on a.customer_id = c.customer_id
+            where a.account_id = :accountId
+            """, nativeQuery=true)
+    Customer findCustomerByAccountId(@Param("accountId") Long accountId);
     
     
 }

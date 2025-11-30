@@ -70,7 +70,7 @@ public class ProfileService {
         res.setTiers(tierList);
         return res;
     }
-    public ProfileResponse updateProfile(Long accountId, ProfileUpdateRequest req){
+    public ProfileResponse upDateProfile(Long accountId, ProfileUpdateRequest req){
         Account acc = accountRepo.findByAccountId(accountId);
         if (acc == null){
             throw new RuntimeException("Không tìm thấy tài khoản");
@@ -87,8 +87,7 @@ public class ProfileService {
         
         customer.setAddress(req.getAddress());
         customer.setGender(req.getGender());
-        acc.setPhone(req.getPhone());
-        accountRepo.save(acc);
+        
         customerRepo.save(customer);
 
         // build JSON trả về FE
