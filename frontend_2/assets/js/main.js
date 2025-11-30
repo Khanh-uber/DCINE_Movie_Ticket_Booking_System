@@ -1493,37 +1493,46 @@ async function loadDealsCarousel() {
   }
 
 
-  // 4) Chuẩn hoá voucher → shape promoCardFromData()
-  const items = data
-    .map((raw) => {
-      // Nếu BE đã trả đúng shape, dùng luôn
-      if (raw.imageUrl || raw.desc || raw.tag || raw.badge || raw.validUntil) {
-        return raw;
-      }
+// 4) Chuẩn hoá voucher → shape promoCardFromData()
+const items = data
+  .map((raw) => {
+    // Luôn chuẩn hóa dữ liệu BE trả về
+    const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
+    const val = Number(raw.value ?? raw.discountValue) || 0;
+    const minOrder = raw.minOrder ?? raw.min_order ?? 0;
+    const tierName =
+      raw.membershipTierName ||
+      raw.tierName ||
+      raw.tier_name ||
+      raw.appliesTo ||
+      '';
 
-      const isPercent = (raw.type || '').toUpperCase() === 'PERCENT';
-      const val = Number(raw.value) || 0;
-      const minOrder = raw.minOrder ?? raw.min_order ?? 0;
-      const tierName =
-        raw.membershipTierName || raw.tierName || raw.tier_name || '';
+    const code = raw.code || raw.voucherCode || raw.id;
+    const discountText = isPercent ? `${val}%` : fmtVND(val);
 
-      const code = raw.code || raw.voucherCode || raw.id;
-      const discountText = isPercent ? `${val}%` : fmtVND(val);
-      let desc = raw.description || `Giảm ${discountText}`;
-      if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
-      if (tierName) desc += ` • Hạng ${tierName}`;
+    let desc =
+      raw.desc ||
+      raw.description ||
+      (discountText ? `Giảm ${discountText}` : '');
 
-      return {
-        id: raw.id || code,
-        title: raw.title || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
-        desc,
-        imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
-        tag: tierName || 'Voucher thành viên',
-        badge: isPercent ? `-${discountText}` : 'VOUCHER',
-        validUntil: raw.validUntil || raw.endAt || raw.end_at,
-      };
-    })
-    .filter(Boolean);
+    if (minOrder) desc += ` cho đơn từ ${fmtVND(minOrder)}`;
+    if (tierName) desc += ` • Hạng ${tierName}`;
+
+    return {
+      id: raw.id || code,
+      code,
+      title: raw.title || raw.name || (code ? `Mã ${code}` : 'Ưu đãi thành viên'),
+      desc,
+      imageUrl: raw.imageUrl || raw.bannerUrl || raw.img,
+      tag: raw.tag || tierName || 'Voucher thành viên',
+      badge: raw.badge || (discountText ? (isPercent ? `-${discountText}` : 'VOUCHER') : ''),
+      validUntil:
+        raw.validUntil || raw.validTo || raw.valid_to || raw.endAt || raw.end_at,
+      href: raw.href,
+    };
+  })
+  .filter(Boolean);
+
 
   if (!items.length) {
     rail.innerHTML = '<p class="empty-text">Hiện chưa có ưu đãi khả dụng.</p>';
