@@ -135,15 +135,20 @@
       total
     };
   }
-
   function normalizeVoucher(v) {
     if (!v || typeof v !== 'object') return null;
 
-    const typeRaw = v.type || v.discountType || '';
-    const valRaw = v.value ?? v.val ?? v.amount ?? 0;
+    // BE: discountType (PERCENT/FIXED_AMOUNT), discountValue
+    const typeRaw = (v.type || v.discountType || '').toString().toUpperCase();
+    const isPercent =
+      typeRaw === 'PERCENT' || typeRaw === '%';
 
-    const type =
-      typeRaw === 'PERCENT' || typeRaw === '%' ? '%' : 'vnd';
+    const valRaw =
+      v.value ??
+      v.discountValue ??   // <<< thêm discountValue cho BE
+      v.val ??
+      v.amount ??
+      0;
 
     const minTier =
       v.minTier ||
@@ -153,12 +158,13 @@
 
     return {
       code: v.code,
-      type,
-      val: valRaw,
+      type: isPercent ? '%' : 'vnd',
+      val: Number(valRaw) || 0,
       desc: v.description || v.desc || '',
       minTier
     };
   }
+
 
   function getEffectiveTiers() {
     if (Array.isArray(membershipTiers) && membershipTiers.length) {
@@ -177,7 +183,7 @@
     const [profileRes, bookingsRes, vouchersRes] = await Promise.all([
       getJSON(`${API}/profile`, '../data/profile.json'),
       getJSON(`${API}/profile/bookings`, '../data/profile-bookings.json'),
-      getJSON(`${API}/profile/vouchers`, '../data/profile-vouchers.json')
+      getJSON(`${API}/deals`, '../data/profile-vouchers.json')
     ]);
 
     if (profileRes) {
@@ -194,12 +200,17 @@
       bookings = [];
     }
 
-    if (vouchersRes && Array.isArray(vouchersRes.vouchers)) {
+    if (Array.isArray(vouchersRes)) {
+      vouchers = vouchersRes.map(normalizeVoucher).filter(Boolean);
+    } else if (vouchersRes && Array.isArray(vouchersRes.vouchers)) {
       vouchers = vouchersRes.vouchers.map(normalizeVoucher).filter(Boolean);
+    } else if (vouchersRes && Array.isArray(vouchersRes.items)) {
+      vouchers = vouchersRes.items.map(normalizeVoucher).filter(Boolean);
     } else {
       vouchers = [];
     }
   }
+
 
   // ---------- Render PROFILE (header + form) ----------
   function renderProfile() {
