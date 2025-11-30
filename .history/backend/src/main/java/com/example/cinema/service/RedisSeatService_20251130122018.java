@@ -73,22 +73,22 @@ public class RedisSeatService {
             redis.opsForSet().remove(redisKey, seat);
         }
     }
-    // public void saveSeatType(Long showtimeId, Long accountId, String code, String type) {
-    //     String key = typeKey(showtimeId, accountId);
-    //     redis.opsForHash().put(key, code, type);
-    //     redis.expire(key, Duration.ofMinutes(5));
-    // }
+    public void saveSeatType(Long showtimeId, Long accountId, String code, String type) {
+        String key = typeKey(showtimeId, accountId);
+        redis.opsForHash().put(key, code, type);
+        redis.expire(key, Duration.ofMinutes(5));
+    }
     
-    // // 6) XOÁ TYPE CHO GHẾ
-    // // =============================
-    // public void removeSeatType(Long showtimeId, Long accountId, String code) {
-    //     redis.opsForHash().delete(typeKey(showtimeId, accountId), code);
-    // }
-    // // 7) LẤY TYPE CỦA TẤT CẢ GHẾ
-    // // =============================
-    // public Map<Object, Object> getSeatTypes(Long showtimeId, Long accountId) {
-    //     return redis.opsForHash().entries(typeKey(showtimeId, accountId));
-    // }
+    // 6) XOÁ TYPE CHO GHẾ
+    // =============================
+    public void removeSeatType(Long showtimeId, Long accountId, String code) {
+        redis.opsForHash().delete(typeKey(showtimeId, accountId), code);
+    }
+    // 7) LẤY TYPE CỦA TẤT CẢ GHẾ
+    // =============================
+    public Map<Object, Object> getSeatTypes(Long showtimeId, Long accountId) {
+        return redis.opsForHash().entries(typeKey(showtimeId, accountId));
+    }
 
     // xoa du lieu khi booking hoan tat
     public void clearForUser(Long showtimeId, Long accountId) {

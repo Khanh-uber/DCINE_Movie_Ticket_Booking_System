@@ -78,6 +78,8 @@ public class SeatMapService {
             e.printStackTrace();
         }
         
+         // Convert seatTypes
+        Map<String, String> seatTypes = convertSeatTypes(layout.get("seat_types"));
 
         // seat-list
         List<Seat> seats = seatRepo.findSeatByHall(hallId);
@@ -100,8 +102,8 @@ public class SeatMapService {
             item.setCode(code);
             item.setCol(s.getSeatNumber());
             item.setRow(s.getRowLabel());
-            String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
-            
+            // String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
+            String zone = resolveZoneFromLayout(s.getRowLabel(), seatTypes);
             item.setZone(zone);
             // status
             if (booked.contains(code)) {

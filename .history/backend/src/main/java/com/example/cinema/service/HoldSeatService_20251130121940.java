@@ -23,7 +23,7 @@ public class HoldSeatService {
             throw new RuntimeException("Danh sách ghế trống");
         }
 
-        List<String> seatCodes = new ArrayList<>(seats);
+        List<String> seatCodes = 
 
         Set<String> booked = bookingRepo.findBookedSeats(showtimeId);
 

@@ -130,7 +130,7 @@ public class BookingService {
             if (seat == null) continue;
 
             Map<String, Object> mulMap = seatTypeRepo.getZonePrice(seat.getSeatTypeId());
-            String zone = ((String) mulMap.get("name")).toLowerCase();
+            String zone = (String) mulMap.get("name");
             Double price_mul = ((Number) mulMap.get("price_multiplier")).doubleValue();
 
             String type = typeMap.getOrDefault(code, "adult");

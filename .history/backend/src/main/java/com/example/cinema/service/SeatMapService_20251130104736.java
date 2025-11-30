@@ -78,6 +78,8 @@ public class SeatMapService {
             e.printStackTrace();
         }
         
+         // Convert seatTypes
+        Map<String, String> seatTypes = convertSeatTypes(layout.get("seat_types"));
 
         // seat-list
         List<Seat> seats = seatRepo.findSeatByHall(hallId);
@@ -88,8 +90,8 @@ public class SeatMapService {
 
         Set<String> heldByOthers = redisSeatService.getHeldSeatsExceptUser(showtimeId, accountId);
         
-    
-    
+        // ⭐️ 5. Lấy TYPE từ Redis
+        Map<Object, Object> seatTypesMap = redisSeatService.getSeatTypes(showtimeId, accountId);
         
         List<SeatMapResponse.SeatItem> items = new ArrayList<>();
         
@@ -100,8 +102,8 @@ public class SeatMapService {
             item.setCode(code);
             item.setCol(s.getSeatNumber());
             item.setRow(s.getRowLabel());
-            String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
-            
+            // String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
+            String zone = resolveZoneFromLayout(s.getRowLabel(), seatTypes);
             item.setZone(zone);
             // status
             if (booked.contains(code)) {
@@ -109,6 +111,10 @@ public class SeatMapService {
             }
             else if (heldByMe.contains(code)) {
                 item.setStatus("selected");  
+                // ⭐ Thêm TYPE nếu user đang giữ ghế
+                String seatType = (seatTypesMap.containsKey(code))
+            ? String.valueOf(seatTypesMap.get(code))
+            : "adult";
             }
             else if (heldByOthers.contains(code)) {
                 item.setStatus("held");

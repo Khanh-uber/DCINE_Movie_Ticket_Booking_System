@@ -100,8 +100,8 @@ public class SeatMapService {
             item.setCode(code);
             item.setCol(s.getSeatNumber());
             item.setRow(s.getRowLabel());
-            String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
-            
+            // String zone = resolveZoneFromLayout(s.getRowLabel(),(Map<String, String>) layout.get("seat_types"));
+            String zone = resolveZoneFromLayout(s.getRowLabel(), seatTypes);
             item.setZone(zone);
             // status
             if (booked.contains(code)) {

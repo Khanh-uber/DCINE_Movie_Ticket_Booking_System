@@ -23,7 +23,9 @@ public class HoldSeatService {
             throw new RuntimeException("Danh sách ghế trống");
         }
 
-        List<String> seatCodes = new ArrayList<>(seats);
+        List<String> seatCodes = seats.stream()
+                .map(HoldSeatRequest.SeatItem::getCode)
+                .toList();
 
         Set<String> booked = bookingRepo.findBookedSeats(showtimeId);
 
@@ -45,10 +47,25 @@ public class HoldSeatService {
 
             // Giữ ghế cho user hiện tại
             redisSeatService.holdForUser(showtimeId, accountId, seatCodes);
+             // Lưu TYPE
+            for (HoldSeatRequest.SeatItem seatItem : seats) {
+                redisSeatService.saveSeatType(
+                    showtimeId,
+                    accountId,
+                    seatItem.getCode(),
+                    seatItem.getType()
+                );
+            }
         }
         else if ("release".equalsIgnoreCase(action)) {
+
             // Trả ghế lại cho user hiện tại
             redisSeatService.releaseForUser(showtimeId, accountId, seatCodes);
+             // Xóa TYPE
+            for (HoldSeatRequest.SeatItem seatItem : seats) {
+                redisSeatService.removeSeatType(showtimeId, accountId, seatItem.getCode());
+            }
+            
         }
         else {
             throw new RuntimeException("Action không hợp lệ. Chỉ dùng 'hold' hoặc 'release'.");

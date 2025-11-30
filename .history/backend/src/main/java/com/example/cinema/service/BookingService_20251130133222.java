@@ -47,25 +47,25 @@ public class BookingService {
         this.bookingConcessionRepo = bookingConcessionRepo;
         
     }
-    // public String resolveZoneFromLayout(String row, Map<String, String> seatTypes) {
+    public String resolveZoneFromLayout(String row, Map<String, String> seatTypes) {
 
-    //     // duyệt qua từng "key" của map
-    //     for (Map.Entry<String, String> entry : seatTypes.entrySet()) {
-    //         String groupedRows = entry.getKey();  
-    //         String zoneName    = entry.getValue(); 
+        // duyệt qua từng "key" của map
+        for (Map.Entry<String, String> entry : seatTypes.entrySet()) {
+            String groupedRows = entry.getKey();  
+            String zoneName    = entry.getValue(); 
 
-    //         String[] rows = groupedRows.split(",");
+            String[] rows = groupedRows.split(",");
 
-    //         for (String r : rows) {
-    //             if (r.trim().equalsIgnoreCase(row)) {
-    //                 return zoneName.toLowerCase();  
-    //             }
-    //         }
-    //     }
+            for (String r : rows) {
+                if (r.trim().equalsIgnoreCase(row)) {
+                    return zoneName.toLowerCase();  
+                }
+            }
+        }
 
         
-    //     return "standard";
-    // }
+        return "standard";
+    }
     public BookingResponse createBooking(Long showtimeId, Long accountId, BookingRequest req){
         // Long accountId = (Long) session.getAttribute("accountId");
         // if (accountId == null) {
@@ -130,15 +130,15 @@ public class BookingService {
             if (seat == null) continue;
 
             Map<String, Object> mulMap = seatTypeRepo.getZonePrice(seat.getSeatTypeId());
-            String zone = ((String) mulMap.get("name")).toLowerCase();
+            String zone = (String) mulMap.get("name");
             Double price_mul = ((Number) mulMap.get("price_multiplier")).doubleValue();
 
-            String type = typeMap.getOrDefault(code, "adult");
+            String type = typeMap.getOrDefault(code, )
             Double price = basePrice * price_mul;
-            if (type.equals("child")) {
-                price *= 0.8;  // giảm 20%
-            }
-            Long finalPrice = Math.round(price);
+            // if (type.equals("child")) {
+            //     price *= 0.8;  // giảm 20%
+            // }
+            long finalPrice = Math.round(price);
             total += finalPrice;
 
             // insert booking_seat
@@ -150,7 +150,7 @@ public class BookingService {
             bs.setPriceAtBooking(finalPrice);
             bookingSeatRepo.save(bs);
 
-            items.add(new BookingResponse.Item(code, zone, type, finalPrice));
+            items.add(new BookingResponse.Item(code, zone, "adult", finalPrice));
         }
         
             // =======================
@@ -160,7 +160,7 @@ public class BookingService {
             bookingRepo.save(booking);
 
             BookingResponse res = new BookingResponse();
-            res.setBookingId(booking.getBookingId()); 
+            res.setBookingId(booking.getBookingId());
             res.setStatus("PENDING");
             res.setItems(items);
             res.setTotalAmount(total);

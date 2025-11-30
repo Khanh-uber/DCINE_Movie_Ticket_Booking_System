@@ -13,8 +13,8 @@ public class HoldSeatRequest {
         this.seats = seats;
         this.action = action;
     }
-    public List<String> getSeats() { return seats; }
-    public void setSeats(List<String> seats) { this.seats = seats; }
+    public List<SeatItem> getSeats() { return seats; }
+    public void setSeats(List<SeatItem> seats) { this.seats = seats; }
 
     public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }

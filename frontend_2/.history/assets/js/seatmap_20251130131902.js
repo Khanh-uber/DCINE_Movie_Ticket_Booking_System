@@ -402,7 +402,7 @@ async function loadSeatStatesFromApi() {
     // Cho phép BE dùng flag boolean
     if (s.booked) status = 'booked';
 
-    if (!['booked','held','holding','available'].includes(status)) {
+    if (!['booked','held','holding','available',].includes(status)) {
       status = 'available';
     }
     if (status === 'holding') status = 'held';

@@ -47,25 +47,25 @@ public class BookingService {
         this.bookingConcessionRepo = bookingConcessionRepo;
         
     }
-    // public String resolveZoneFromLayout(String row, Map<String, String> seatTypes) {
+    public String resolveZoneFromLayout(String row, Map<String, String> seatTypes) {
 
-    //     // duyệt qua từng "key" của map
-    //     for (Map.Entry<String, String> entry : seatTypes.entrySet()) {
-    //         String groupedRows = entry.getKey();  
-    //         String zoneName    = entry.getValue(); 
+        // duyệt qua từng "key" của map
+        for (Map.Entry<String, String> entry : seatTypes.entrySet()) {
+            String groupedRows = entry.getKey();  
+            String zoneName    = entry.getValue(); 
 
-    //         String[] rows = groupedRows.split(",");
+            String[] rows = groupedRows.split(",");
 
-    //         for (String r : rows) {
-    //             if (r.trim().equalsIgnoreCase(row)) {
-    //                 return zoneName.toLowerCase();  
-    //             }
-    //         }
-    //     }
+            for (String r : rows) {
+                if (r.trim().equalsIgnoreCase(row)) {
+                    return zoneName.toLowerCase();  
+                }
+            }
+        }
 
         
-    //     return "standard";
-    // }
+        return "standard";
+    }
     public BookingResponse createBooking(Long showtimeId, Long accountId, BookingRequest req){
         // Long accountId = (Long) session.getAttribute("accountId");
         // if (accountId == null) {
@@ -130,7 +130,7 @@ public class BookingService {
             if (seat == null) continue;
 
             Map<String, Object> mulMap = seatTypeRepo.getZonePrice(seat.getSeatTypeId());
-            String zone = ((String) mulMap.get("name")).toLowerCase();
+            String zone = (String) mulMap.get("name");
             Double price_mul = ((Number) mulMap.get("price_multiplier")).doubleValue();
 
             String type = typeMap.getOrDefault(code, "adult");
@@ -138,7 +138,7 @@ public class BookingService {
             if (type.equals("child")) {
                 price *= 0.8;  // giảm 20%
             }
-            Long finalPrice = Math.round(price);
+            long finalPrice = Math.round(price);
             total += finalPrice;
 
             // insert booking_seat

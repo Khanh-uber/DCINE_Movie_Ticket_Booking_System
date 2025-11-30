@@ -23,7 +23,7 @@ public class BookingController {
     public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request) {
         Long accountId = 1L;
         BookingResponse response =
-                bookingService.createBooking(request.getShowtimeId(), accountId, request);
+                bookingService.createBooking(request.getShowtimeId(), accountId, );
 
         return ResponseEntity.ok(response);
     }
