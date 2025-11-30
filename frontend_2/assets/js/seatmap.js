@@ -102,7 +102,7 @@ async function createBooking(showtimeId, seatsPayload) {
     }
     lastHoldCall = now;
 
-    await apiPost(`/showtimes/seatmap/${encodeURIComponent(id)}/holds`, {
+    await apiPost(`/showtimes/${encodeURIComponent(id)}/holds`, {
       seats: codes,              // ["A1","A2"]
       action: action || 'hold'   // 'hold' | 'release'
     });
@@ -293,7 +293,7 @@ if (zone === 'couple') {
 
     let detail = null;
     if (stId) {
-      detail = await apiGet(`/showtimes/${encodeURIComponent(stId)}`);
+      detail = await apiGet(`/showtimes/seatmap/${encodeURIComponent(stId)}`);
     } else {
     // --- Trường hợp mới: không có ID, gọi find theo phim/rạp/ngày/giờ ---
     const movie = q.get('movie');
@@ -307,11 +307,6 @@ if (zone === 'couple') {
     } else {
       console.warn('[seatmap] Thiếu tham số để tìm suất chiếu (movie/theater/date/time)');
     }
-  }
-
-  if (!detail) {
-    console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE.');
-    return;
   }
 
 
@@ -396,7 +391,7 @@ async function loadSeatStatesFromApi() {
 
   let data = null;
   if (id) {
-    data = await apiGet(`/showtimes/seatmap/${encodeURIComponent(id)}/seats`);
+    data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
   } else if (movie && theater && date && time) {
     const url = `/showtimes/seats?movie=${encodeURIComponent(movie)}&theater=${encodeURIComponent(theater)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
     data = await apiGet(url);
@@ -526,7 +521,7 @@ async function loadSeatStatesFromApi() {
       type: state.assigned.get(code) || 'adult'
     }));
 
-    const res = await apiPost(`/showtimes/seatmap/${encodeURIComponent(id)}/pricing-preview`, {
+    const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
       seats: seatsPayload
     });
 
