@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>D-cine — Trang chủ (Coverflow)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=8">
+  <link rel="stylesheet" href="../assets/css/base.css?v=8">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=8">
+  <link rel="stylesheet" href="../assets/css/header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/main.css?v=8">
+  <link rel="stylesheet" href="../assets/css/components.css?v=8">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9">
+</head>
+<body>
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+<section class="index-hero reveal">
+  <div class="hero-bg" style="background-image: url('../assets/images/banners/aespa-dirty-work-5120x2880-32584.jpg');"></div>
+  
+  <div class="hero-overlay">
+    <div class="container hero-content">
+      <span class="hero-subtitle">Chào mừng đến với D-cine</span>
+      
+      <h1 class="hero-title">Trải nghiệm điện ảnh<br>đỉnh cao &amp; khác biệt</h1>
+      
+      <p class="hero-desc">
+        D-cine không chỉ là rạp chiếu phim, đó là nơi cảm xúc thăng hoa cùng công nghệ hình ảnh sắc nét và âm thanh sống động. 
+        Hòa mình vào thế giới điện ảnh chân thực nhất ngay hôm nay.
+      </p>
+    </div>
+  </div>
+</section>
+  <main class="container">
+
+<!-- ========== ON THE BIG SCREEN ========== -->
+<section id="bigscreen" class="section">
+  <div class="section-head">
+    <h2>ĐANG CÔNG CHIẾU</h2>
+    <a href="movies.html?status=now" class="view-all">Xem tất cả phim</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railBigScreen" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsBigScreen" class="dots"></div>
+</section>
+
+<!-- ========== COMING SOON ========== -->
+<section id="coming" class="section">
+  <div class="section-head">
+    <h2>SẮP RA MẮT</h2>
+    <a href="movies.html?status=soon" class="view-all">Xem tất cả phim</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railComingSoon" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsComingSoon" class="dots"></div>
+</section>
+
+<section id="deals" class="section">
+  <div class="section-head">
+    <h2>ƯU ĐÃI HẤP DẪN</h2>
+  </div>
+
+  <div id="wrapDeals" class="carousel simple">
+    <button class="arrow left nav prev" aria-label="Prev">‹</button>
+
+    <div id="railDeals" class="rail">
+      </div>
+
+    <button class="arrow right nav next" aria-label="Next">›</button>
+
+    <div class="dots"></div>
+  </div>
+</section>
+    <!-- MEMBERSHIP -->
+<section class="section member reveal" id="member">
+  <div class="member-v2" data-theme="STANDARD">
+    
+    <div class="member-grid">
+      
+      <div class="col-left">
+        <div class="kicker">D-cine Loyalty</div>
+        <h2>Tích điểm – Lên hạng – Nhận quà</h2>
+        <p class="member-intro">
+          Tích lũy chi tiêu để lên hạng và được giảm trực tiếp trên tổng hóa đơn.
+          Hạng càng cao, ưu đãi càng lớn.
+        </p>
+
+        <!-- Tóm tắt hạng của người dùng (nếu đã đăng nhập) -->
+        <div class="loyalty-summary">
+          <div class="loyalty-header">
+            <div>
+              <div class="tier-label">Hạng hiện tại</div>
+              <div class="tier-value" id="loyaltyTierName">Standard</div>public BookingResponse createBooking(Long showtimeId, Long accountId, BookingRequest req){
+        // Long accountId = (Long) session.getAttribute("accountId");
+        // if (accountId == null) {
+        //     throw new RuntimeException("Bạn chưa đăng nhập");
+        // }
+        // 1 Kiem tra showtime ton tai 
+        List<Booking> pendingList = bookingRepo.findAllPendingByAccountId(accountId);
+        for (Booking b : pendingList) {
+            bookingSeatRepo.deleteSeatsByBookingId(b.getBookingId());
+            bookingRepo.deleteBookingById(b.getBookingId());
+        }
+        Showtime st = showtimeRepo.findByShowtimeId(showtimeId);
+        if (st == null){
+            throw new RuntimeException("Suất chiếu không tồn tại");
+        }
+        // 2. Lấy ghế từ Redis (pending seats)
+        Set<String> pendingSeats = redisSeatService.getHeldSeatsForUser(showtimeId, accountId);
+        if (pendingSeats.isEmpty()) {
+            throw new RuntimeException("Bạn chưa chọn ghế hoặc ghế đã hết hạn giữ.");
+        }
+
+        List<String> codes = new ArrayList<>(pendingSeats);
+        
+        
+        // 3) Kiểm tra ghế đã được đặt(BOOKED) hay chưa
+        Set<String> bookedSeats = bookingSeatRepo.findBookedSeats(showtimeId, codes);
+        if (!bookedSeats.isEmpty()) {
+            throw new RuntimeException("Ghế đã được đặt: " + bookedSeats);
+        }
+
+        // 4) Kiểm tra ghế đang (PENDING) không
+        Set<String> heldOthers = redisSeatService.getHeldSeatsExceptUser(showtimeId, accountId);
+        if (!heldOthers.isEmpty()) {
+            throw new RuntimeException("Ghế đang được giữ (pending): " + pendingSeats);
+        }
+        Map<String, String> typeMap = new HashMap<>();
+        if (req.getSeats() != null) {
+            for (BookingRequest.SeatRequest s : req.getSeats()) {
+                if (s != null && s.getCode() != null) {
+                    typeMap.put(s.getCode(), s.getType());
+                }
+            }
+        }
+        Booking booking = bookingRepo.findLatestPending(accountId);
+        if (booking == null) {
+            booking = new Booking();
+            booking.setAccountId(accountId);
+            booking.setShowtimeId(showtimeId);
+            booking.setStatus("PENDING");
+            booking.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            booking = bookingRepo.save(booking);
+        } 
+
+        Double basePrice  = showtimeRepo.findBasePrice(showtimeId);
+        
+
+        // 6) Build booking Items 
+        long total = 0;
+        List<BookingResponse.Item> items = new ArrayList<>();
+        
+
+        for (String code : codes) {
+            Seat seat = seatRepo.findSeatByCodeAndShowtime(showtimeId, code);
+            if (seat == null) continue;
+
+            Map<String, Object> mulMap = seatTypeRepo.getZonePrice(seat.getSeatTypeId());
+            String zone = ((String) mulMap.get("name")).toLowerCase();
+            Double price_mul = ((Number) mulMap.get("price_multiplier")).doubleValue();
+
+            String type = typeMap.getOrDefault(code, "adult");
+            Double price = basePrice * price_mul;
+            if (type.equals("child")) {
+                price *= 0.8;  // giảm 20%
+            }
+            Long finalPrice = Math.round(price);
+            total += finalPrice;
+
+            // insert booking_seat
+            Long seatId = seat.getSeatId();
+            BookingSeatKey key = new BookingSeatKey(booking.getBookingId(), seatId);
+
+            BookingSeat bs = new BookingSeat();
+            bs.setId(key);
+            bs.setPriceAtBooking(finalPrice);
+            bookingSeatRepo.save(bs);
+
+            items.add(new BookingResponse.Item(code, zone, type, finalPrice));
+        }
+        
+            // =======================
+            // 7) UPDATE TOTAL VÀ TRẢ VỀ
+            // =======================
+            booking.setTotalAmount(total);
+            bookingRepo.save(booking);
+
+            BookingResponse res = new BookingResponse();
+            res.setBookingId(booking.getBookingId()); 
+            res.setStatus("PENDING");
+            res.setItems(items);
+            res.setTotalAmount(total);
+
+            return res;
+    }
+            </div>
+            <div class="points-value">
+              <span id="loyaltyPoints">0</span> điểm
+            </div>
+          </div>
+
+          <div class="loyalty-progress">
+            <div class="bar">
+              <div class="fill" id="loyaltyProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="text" id="loyaltyProgressText">
+              Đăng nhập để xem tiến trình tích lũy của bạn.
+            </div>
+          </div>
+        </div>
+
+        <!-- Thang chi tiêu cần để lên hạng -->
+        <div class="price-wrap">
+          <div class="label" style="color:#888; font-size:12px; margin-bottom:4px;">
+            YÊU CẦU CHI TIÊU
+          </div>
+          <div class="amt" id="tierPrice" style="font-size:24px; font-weight:800; color:#fff">
+            0đ
+          </div>
+          <div class="price-note">
+            Đây là mức chi tiêu tích lũy cần đạt để lên hạng đang chọn.
+          </div>
+        </div>
+      </div>
+
+<div class="col-right">
+  
+  <div class="tier-tabs">
+    <button class="tier-tab" data-tier="STANDARD">Standard</button>
+    <button class="tier-tab" data-tier="SILVER">Silver</button>
+    <button class="tier-tab" data-tier="GOLD">Gold</button>
+  </div>
+
+  <div class="visual-card-wrap">
+    <div class="glass-card">
+      <div class="card-logo">D-cine</div>
+      <div class="chip"></div>
+      <div class="card-tier-name" id="cardTierName">Standard</div>
+    </div>
+  </div>
+
+  <ul class="perks-list" id="loyaltyPerks"></ul>
+
+</div>
+
+      
+    </div>
+  </div>
+</section>
+</main>
+  <!-- Footer include -->
+  <footer class="site-footer" data-version="v3">
+  <div class="sf-container">
+    <div class="sf-grid">
+      <div class="sf-brand">
+        <a class="sf-logo" href="index.html">
+          <span class="d">D</span><span class="cine">-cine</span>
+        </a>
+        <p>Trải nghiệm điện ảnh đỉnh cao – đặt vé nhanh, nhận ưu đãi thành viên.</p>
+        <div class="sf-social">
+          <a href="#" aria-label="Facebook" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v3H8v3h3v6h3v-6h3l1-3h-4V9c0-.6.4-1 1-1z" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Instagram" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+              <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor"/>
+            </svg>
+          </a>
+          <a href="#" aria-label="YouTube" class="sf-soc">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M22 12s0-3-.7-4.4a3 3 0 0 0-2.1-2.1C17.8 5 12 5 12 5s-5.8 0-7.2.5A3 3 0 0 0 2.7 7.6C2 9 2 12 2 12s0 3 .7 4.4a3 3 0 0 0 2.1 2.1C6.2 19 12 19 12 19s5.8 0 7.2-.5a3 3 0 0 0 2.1-2.1C22 15 22 12 22 12z" fill="none" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M10 15V9l6 3-6 3z" fill="currentColor"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <nav class="sf-col">
+        <h4>Danh mục</h4>
+        <ul class="sf-links">
+          <li><a href="index.html">Trang chủ</a></li>
+          <li><a href="movies.html">Phim</a></li>
+          <li><a href="movies.html?status=now">Đang chiếu</a></li>
+          <li><a href="movies.html?status=soon">Sắp ra mắt</
+        </ul>
+      </nav>
+
+      <nav class="sf-col">
+        <h4>Hỗ trợ</h4>
+        <ul class="sf-links">
+          <li><a href="theaters.html">Hệ thống rạp</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="terms.html">Điều khoản</a></li>
+          <li><a href="privacy.html">Bảo mật</a></li>
+        </ul>
+      </nav>
+
+      <div class="sf-news">
+        <h4>Nhận bản tin</h4>
+        <form class="sf-form" onsubmit="return false" novalidate>
+          <input type="email" class="sf-input" placeholder="Nhập email của bạn" aria-label="Email">
+          <button class="sf-btn" type="submit">Subscribe</button>
+        </form>
+        <small class="sf-note">Bạn có thể hủy bất cứ lúc nào.</small>
+      </div>
+    </div>
+
+    <div class="sf-bottom">
+      <p>© <span data-year>2025</span> D-cine. All rights reserved.</p> <ul class="sf-bottom-links">
+        <li><a href="terms.html">Điều khoản</a></li>
+        <li><a href="privacy.html">Bảo mật</a></li>
+        <li><a href="contact.html">Liên hệ</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+  <!-- JS -->
+  <script>
+    window.API_BASE = window.API_BASE || '/api';
+  </script>
+  <script src="../assets/js/header.js"></script>
+  <script src="../assets/js/main.js" defer></script>
+</body>
+</html>
