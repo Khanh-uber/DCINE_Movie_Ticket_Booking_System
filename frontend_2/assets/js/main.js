@@ -331,7 +331,11 @@ async function loadNotifications({ mountId='notifList', limit=20, inMenu=false }
   const API = window.API_BASE || '/api';
   let data = [];
   try{
-    const res = await fetch(`${API}/notifications?limit=${limit}`, { cache:'no-store' });
+    const res = await fetch(`${API}/notifications?limit=${limit}`, {
+  cache: 'no-store',
+  credentials: 'include'
+});
+
     if (res.ok) data = await res.json();
   }catch{}
 
@@ -1598,7 +1602,11 @@ const items = data
     const API = window.API_BASE || '/api';
     let data = [];
     try{
-      const res = await fetch(`${API}/concessions/combos`, { cache:'no-store' });
+      const res = await fetch(`${API}/concessions/combos`, {
+  cache: 'no-store',
+  credentials: 'include'
+});
+
       if (res.ok) data = await res.json();
     }catch{}
 

@@ -1,6 +1,7 @@
 // assets/js/profile.js
 (() => {
-  const API = window.API_BASE || '/api';
+  const API = window.API_BASE || 'http://localhost:8080/api';
+window.API_BASE = API;
   const toVND = (n) => (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
 
   // ---------- Utils: BE-first rồi fallback JSON ----------
@@ -461,6 +462,7 @@
       const res = await fetch(`${API}/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('Bad response');
