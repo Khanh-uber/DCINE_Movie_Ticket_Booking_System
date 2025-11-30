@@ -15,33 +15,46 @@ public class PromotionService {
 
     public List<PromotionResponse> getActivePromotions(){
         List<Voucher> vouchers = promotionRepository.findVoucherByActive();
-        
         List<PromotionResponse> plist = new ArrayList<>();
+
         for (Voucher v : vouchers){
             PromotionResponse dto = new PromotionResponse();
             dto.setId(v.getVoucherId());
             dto.setCode(v.getCode());
-            dto.setName(null);
-            dto.setDescription(null);
-            dto.setDiscountType(v.getType());
-            dto.setDiscountValue(v.getValue());
+            dto.setName(null);             // để FE tự build title từ code
+            dto.setDescription(null);      // FE tự build desc "Giảm X%..."
+
+            dto.setDiscountType(v.getType());        // PERCENT / AMOUNT
+            dto.setDiscountValue(v.getValue());      // 10 / 20000
             dto.setMinOrder(v.getMinOrder());
             dto.setMaxDiscount(null);
+
+            // --- map membership tier name ---
+            String appliesTo = "Tất cả khách hàng";
             if (v.getMembershipTierId() != null) {
-            Map<String, Object> membership = promotionRepository.getMembershipTier(v.getMembershipTierId());
-            if (membership != null && membership.containsKey("name")) {
-                dto.setAppliesTo((String) membership.get("name"));
-            } else {
-                dto.setAppliesTo("Thành viên");
+                List<Map<String, Object>> membershipList =
+                        promotionRepository.getMembershipTier(v.getMembershipTierId());
+                if (!membershipList.isEmpty()) {
+                    Map<String, Object> membership = membershipList.get(0);
+                    Object name = membership.get("name");
+                    if (name != null) {
+                        appliesTo = (String) name;
+                    } else {
+                        appliesTo = "Thành viên";
+                    }
+                } else {
+                    appliesTo = "Thành viên";
+                }
             }
-            } else {
-                dto.setAppliesTo("Tất cả khách hàng");
-            }
+            dto.setAppliesTo(appliesTo);
+
             dto.setValidFrom(v.getStartAt());
             dto.setValidTo(v.getEndAt());
             dto.setActive(true);
+
             plist.add(dto);
         }
         return plist;
     }
+
 }

@@ -15,10 +15,13 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
             """, nativeQuery = true)
     List<Voucher> findVoucherByActive();
 
-    @Query(value="""
-            select * from membership_tier mt
-            join voucher v on v.membership_tier_id = mt.tier_id 
-            where mt.tier_id = :tierId
-            """, nativeQuery =  true)
-    Map<String, Object> getMembershipTier(@Param("tierId") Long tierId);
+@Query(value = """
+        SELECT mt.tier_id AS tier_id,
+               mt.name    AS name
+        FROM membership_tier mt
+        WHERE mt.tier_id = :tierId
+        LIMIT 1
+        """, nativeQuery = true)
+List<Map<String, Object>> getMembershipTier(@Param("tierId") Long tierId);
+
 }
