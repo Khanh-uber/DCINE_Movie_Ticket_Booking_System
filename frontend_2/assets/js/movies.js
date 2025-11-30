@@ -27,63 +27,117 @@
   }
 
 function cardFrom(m, { showRating = false, showRelease = false } = {}) {
-  // Nếu có template <template id="movie-card">
-  let el;
-  if (MOVIE_TPL?.content?.firstElementChild) {
-    el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
-  } else {
-    // fallback đơn giản
-    el = document.createElement('article');
+  // fallback nếu chưa load được template
+  if (!MOVIE_TPL?.content?.firstElementChild) {
+    const el = document.createElement('article');
     el.className = 'movie-card poster';
+    el.textContent = m.title || 'Movie';
+    el.addEventListener('click', () => {
+      if (m.id) {
+        location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
+      }
+    });
+    return el;
   }
 
+  const el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
   el.dataset.id = m.id || '';
 
-  // Poster
+  // ===== Poster =====
   const img = el.querySelector('[data-img]');
   if (img) {
-    img.src = m.posterUrl || m.poster || '';
+    const poster =
+      m.posterUrl || m.poster ||
+      m.backdropUrl || m.backdrop ||
+      m.bannerUrl || m.banner || '';
+    img.src = poster;
     img.alt = m.title || 'Poster';
     img.draggable = false;
   }
 
-  // Title
-const t = el.querySelector('[data-title]');
-if (t) t.textContent = m.title || m.movieName || m.name || '';
-
-
-  // Director
-  const d = el.querySelector('[data-director]');
-  if (d) d.textContent = m.director ? `Directed by ${m.director}` : '';
-
-  // Duration + Release
-  const u = el.querySelector('[data-duration]');
-  if (u) {
-    const raw = m.duration || m.runtime || '';
-    const dur =
-      raw && /^\d+$/.test(String(raw).trim())
-        ? `${raw} phút`
-        : (raw || '');
-    const rel = showRelease && m.releaseDate ? m.releaseDate : '';
-    u.textContent = dur && rel ? `${dur} • ${rel}` : (dur || rel || '');
+  // ===== Title =====
+  const t = el.querySelector('[data-title]');
+  if (t) {
+    t.textContent =
+      m.title ||
+      m.movieName ||
+      m.name ||
+      '';
   }
 
-  // Rating (chỉ dùng để phân biệt phim đang chiếu)
+  // ===== Director (hỗ trợ List<CastDTO> giống movie-detail) =====
+  const d = el.querySelector('[data-director]');
+  if (d) {
+    let directorText = '';
+
+    if (Array.isArray(m.director)) {
+      directorText = m.director
+        .map(x => x && (x.name || x.fullName || String(x)))
+        .filter(Boolean)
+        .join(', ');
+    } else {
+      directorText = m.director || m.directorName || '';
+    }
+
+    d.textContent = directorText ? `Đạo diễn: ${directorText}` : '';
+  }
+
+  // ===== Duration + (optional) release (đọc cả durationMin) =====
+  const u = el.querySelector('[data-duration]');
+  if (u) {
+    const raw =
+      m.duration ||
+      m.runtime ||
+      m.durationMin ||
+      m.duration_min ||
+      '';
+
+    let durationText = '';
+    if (raw) {
+      const s = String(raw).trim();
+      if (/^\d+$/.test(s)) {
+        const mins = Number(s);
+        const h = Math.floor(mins / 60);
+        const rest = mins % 60;
+        if (h && rest) durationText = `${h}h ${rest}m`;
+        else if (h)    durationText = `${h}h`;
+        else           durationText = `${rest}m`;
+      } else {
+        durationText = s;
+      }
+    }
+
+    let releaseText = '';
+    if (showRelease) {
+      releaseText = m.releaseDate || m.release_date || '';
+    }
+
+    if (durationText && releaseText) {
+      u.textContent = `${durationText} • ${releaseText}`;
+    } else {
+      u.textContent = durationText || releaseText || '';
+    }
+  }
+
+  // ===== Rating =====
   const rate = el.querySelector('[data-rating]');
   if (rate) {
     if (showRating && (m.rating ?? null) !== null) {
-      rate.innerHTML = `⭐ ${Number(m.rating || 0).toFixed(1)}/10`;
+      const num = Number(m.rating);
+      const text = Number.isFinite(num) ? num.toFixed(1) : String(m.rating);
+      rate.innerHTML = `⭐ ${text}/10`;
     } else {
       rate.innerHTML = '';
     }
   }
 
-  // Genres
+  // ===== Genres =====
   const gWrap = el.querySelector('[data-genres]');
   if (gWrap) {
     const genres = Array.isArray(m.genres)
       ? m.genres
       : (typeof m.genre === 'string' ? m.genre.split(',') : []);
+
     gWrap.innerHTML = '';
     genres
       .map(x => String(x).trim())
@@ -97,13 +151,13 @@ if (t) t.textContent = m.title || m.movieName || m.name || '';
       });
   }
 
-  // Description
+  // ===== Description =====
   const desc = el.querySelector('[data-desc]');
   if (desc) {
     desc.textContent = m.synopsis || m.description || m.desc || '';
   }
 
-  // ===== Trailer button =====
+  // ===== Nút Trailer =====
   const btnT = el.querySelector('[data-trailer]');
   if (btnT) {
     const trailerUrl = m.trailerUrl || m.trailer || '';
@@ -111,7 +165,7 @@ if (t) t.textContent = m.title || m.movieName || m.name || '';
       btnT.hidden = false;
       btnT.addEventListener('click', (e) => {
         e.preventDefault();
-        e.stopPropagation(); // KHÔNG cho nổi lên card
+        e.stopPropagation();
         if (window.openTrailerModal) {
           window.openTrailerModal(trailerUrl);
         } else {
@@ -123,7 +177,7 @@ if (t) t.textContent = m.title || m.movieName || m.name || '';
     }
   }
 
-  // ===== Book button -> sang showtime cho phim đang chiếu =====
+  // ===== Nút Đặt vé (only cho phim đang chiếu) =====
   const book = el.querySelector('[data-book]');
   if (book) {
     if (!showRating) {
@@ -135,36 +189,19 @@ if (t) t.textContent = m.title || m.movieName || m.name || '';
       book.href = movieId
         ? `showtime.html?movie=${movieId}`
         : `showtime.html`;
-
-      // Cho anchor tự điều hướng, nhưng không bắn click card
-      book.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
     }
   }
 
-  // ===== Click cả card -> movie-detail (trừ 2 nút trên, trừ lúc kéo) =====
-  el.addEventListener('click', (e) => {
-    // Nếu bấm vào Trailer/Book thì bỏ (đã handle riêng)
-    if (e.target.closest('[data-trailer],[data-book]')) return;
-
-    // Nếu đang kéo coverflow thì không điều hướng
-    const rail = el.closest('.rail');
-    if (rail && rail.dataset.isDragging === '1') {
-      rail.dataset.isDragging = '0';
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-
-    const id = m.id || '';
-    if (id) {
-      location.href = `movie-detail.html?movie=${encodeURIComponent(id)}`;
+  // Click cả card -> chi tiết phim
+  el.addEventListener('click', () => {
+    if (m.id) {
+      location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
     }
   });
 
   return el;
 }
+
 
 
   // ===== [HÀM MỚI] Render 1 section (có phân trang) =====
@@ -302,18 +339,17 @@ if (query && query.trim() !== '') {
   const keyword = removeAccents(query);
 
   const results = allList.filter((m) => {
-    // Gom tất cả text có thể liên quan lại 1 chỗ
     const bagParts = [
       m.title,
       m.movieName,
       m.name,
       m.originalTitle,
-      m.vnTitle,
+      m.vnTitle, 
       m.viTitle,
       m.enTitle,
-      m.director,
-      m.directorName,
-
+      Array.isArray(m.director)
+      ? m.director.map(d => d && (d.name || d.fullName || String(d))).join(' ')
+      : (m.director || m.directorName),
       // cast / diễn viên
       Array.isArray(m.cast) ? m.cast.join(' ') : m.cast,
       Array.isArray(m.actors) ? m.actors.join(' ') : m.actors,

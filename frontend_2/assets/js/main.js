@@ -873,51 +873,103 @@ Object.assign(window, { mountPagination });
 
   // ====== UI helpers ======
   const fmtStars = (r=0) => `⭐ ${Number(r||0).toFixed(1)}`;
-
 function cardFrom(m, { showRating = false, showRelease = false } = {}) {
-  // fallback nếu chưa load được template
+
+  // ===== Fallback khi không có template =====
   if (!MOVIE_TPL?.content?.firstElementChild) {
     const el = document.createElement('article');
     el.className = 'movie-card poster';
     el.textContent = m.title || 'Movie';
-    el.addEventListener('click', () => {
-      if (m.id) location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
+
+    el.addEventListener('click', (e) => {
+      // Nếu đang kéo rail thì không điều hướng
+      const rail = el.closest('.rail');
+      if (rail && rail.dataset.isDragging === '1') {
+        rail.dataset.isDragging = '0';
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      if (m.id) {
+        location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
+      }
     });
+
     return el;
   }
 
+  // ===== Dùng template chuẩn =====
   const el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
   el.dataset.id = m.id || '';
 
-  // Poster
+  // ===== Poster =====
   const img = el.querySelector('[data-img]');
   if (img) {
-    img.src = m.posterUrl || m.poster || '';
+    const poster =
+      m.posterUrl || m.poster ||
+      m.backdropUrl || m.backdrop ||
+      m.bannerUrl || m.banner || '';
+    img.src = poster;
     img.alt = m.title || 'Poster';
     img.draggable = false;
   }
 
-  // Title / Director
+  // ===== Title =====
   const t = el.querySelector('[data-title]');
-  if (t) t.textContent = m.title || '';
+  if (t) {
+    t.textContent =
+      m.title ||
+      m.movieName ||
+      m.name ||
+      '';
+  }
 
+  // ===== Director (hỗ trợ List<CastDTO> giống movie-detail) =====
   const d = el.querySelector('[data-director]');
-  if (d) d.textContent = m.director ? `Directed by ${m.director}` : '';
+  if (d) {
+    let directorText = '';
 
-  // Duration + (optional) release
+    if (Array.isArray(m.director)) {
+      directorText = m.director
+        .map(x => x && (x.name || x.fullName || String(x)))
+        .filter(Boolean)
+        .join(', ');
+    } else {
+      directorText = m.director || m.directorName || '';
+    }
+
+    d.textContent = directorText ? `Đạo diễn: ${directorText}` : '';
+  }
+
+  // ===== Duration + (optional) release (đọc cả durationMin) =====
   const u = el.querySelector('[data-duration]');
   if (u) {
+    const raw =
+      m.duration ||
+      m.runtime ||
+      m.durationMin ||
+      m.duration_min ||
+      '';
+
     let durationText = '';
-    const durationVal = m.duration || m.runtime || '';
-    if (durationVal) {
-      durationText = /^\d+$/.test(String(durationVal).trim())
-        ? `${durationVal} phút`
-        : durationVal;
+    if (raw) {
+      const s = String(raw).trim();
+      if (/^\d+$/.test(s)) {
+        const mins = Number(s);
+        const h = Math.floor(mins / 60);
+        const rest = mins % 60;
+        if (h && rest) durationText = `${h}h ${rest}m`;
+        else if (h)    durationText = `${h}h`;
+        else           durationText = `${rest}m`;
+      } else {
+        durationText = s;
+      }
     }
 
     let releaseText = '';
-    if (showRelease && m.releaseDate) {
-      releaseText = m.releaseDate;
+    if (showRelease) {
+      releaseText = m.releaseDate || m.release_date || '';
     }
 
     if (durationText && releaseText) {
@@ -927,22 +979,25 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // Rating
+  // ===== Rating =====
   const rate = el.querySelector('[data-rating]');
   if (rate) {
     if (showRating && (m.rating ?? null) !== null) {
-      rate.innerHTML = `⭐ ${Number(m.rating || 0).toFixed(1)}/10`;
+      const num = Number(m.rating);
+      const text = Number.isFinite(num) ? num.toFixed(1) : String(m.rating);
+      rate.innerHTML = `⭐ ${text}/10`;
     } else {
       rate.innerHTML = '';
     }
   }
 
-  // Genres
+  // ===== Genres =====
   const gWrap = el.querySelector('[data-genres]');
   if (gWrap) {
     const genres = Array.isArray(m.genres)
       ? m.genres
       : (typeof m.genre === 'string' ? m.genre.split(',') : []);
+
     gWrap.innerHTML = '';
     genres
       .map(x => String(x).trim())
@@ -956,19 +1011,30 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       });
   }
 
-  // Description
+  // ===== Description =====
   const desc = el.querySelector('[data-desc]');
-  if (desc) desc.textContent = m.synopsis || m.description || m.desc || '';
+  if (desc) {
+    desc.textContent = m.synopsis || m.description || m.desc || '';
+  }
 
-  // ==== NÚT TRAILER ====
+  // ===== Nút Trailer =====
   const btnT = el.querySelector('[data-trailer]');
   if (btnT) {
     const trailerUrl = m.trailerUrl || m.trailer || '';
     if (trailerUrl) {
       btnT.hidden = false;
       btnT.addEventListener('click', (e) => {
+        // chặn bubble + chặn click khi đang kéo
+        const rail = el.closest('.rail');
+        if (rail && rail.dataset.isDragging === '1') {
+          rail.dataset.isDragging = '0';
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+
         e.preventDefault();
-        e.stopPropagation();                // chặn click card
+        e.stopPropagation();
         if (window.openTrailerModal) {
           window.openTrailerModal(trailerUrl);
         } else {
@@ -980,35 +1046,39 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // ==== NÚT ĐẶT VÉ ====
+  // ===== Nút Đặt vé (only cho phim đang chiếu) =====
   const book = el.querySelector('[data-book]');
   if (book) {
     if (!showRating) {
-      // Coming Soon: không cho đặt vé
+      // Coming soon: không cho đặt vé
       book.remove();
     } else {
       const movieId = encodeURIComponent(m.id || '');
-      const href = movieId
+      book.hidden = false;
+      book.href = movieId
         ? `showtime.html?movie=${movieId}`
         : `showtime.html`;
 
-      book.href = href;
-      book.hidden = false;
-
+      // chặn click card + chặn khi đang kéo
       book.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();                // chặn click card
-        location.href = href;
+        const rail = el.closest('.rail');
+        if (rail && rail.dataset.isDragging === '1') {
+          rail.dataset.isDragging = '0';
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        e.stopPropagation(); // chỉ cho anchor tự điều hướng
       });
     }
   }
 
-  // ==== CLICK TOÀN CARD -> MOVIE DETAIL ====
+  // ===== Click cả card -> chi tiết phim (trừ khi đang kéo) =====
   el.addEventListener('click', (e) => {
-    // nếu vừa click vào 2 nút trên thì thôi
+    // Nếu bấm vào Trailer/Book thì bỏ (đã handle riêng)
     if (e.target.closest('[data-trailer],[data-book]')) return;
 
-    // nếu đang kéo carousel thì không click
+    // Nếu đang kéo coverflow thì không điều hướng
     const rail = el.closest('.rail');
     if (rail && rail.dataset.isDragging === '1') {
       rail.dataset.isDragging = '0';
@@ -1017,18 +1087,14 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       return;
     }
 
-    const id = m.id || '';
-    if (id) {
-      location.href = `movie-detail.html?movie=${encodeURIComponent(id)}`;
+    if (m.id) {
+      location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
     }
   });
 
   return el;
 }
 
-
-
-  
 // ===== Coverflow engine (BIG SCREEN) — 5 items + auto-snap =====
 function initCoverflow(rail, dotsEl, baseLen){
   let cards = Array.from(rail.querySelectorAll('.movie-card, .poster')); // Hỗ trợ cả 2 class

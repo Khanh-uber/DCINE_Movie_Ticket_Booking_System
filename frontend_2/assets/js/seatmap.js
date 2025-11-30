@@ -284,8 +284,6 @@ if (zone === 'couple') {
     wrap.appendChild(renderHeadOrFoot());
   }
 
-  // ===== Load movie/showtime (đọc localStorage + query; merge an toàn) =====
-
 // ===== Load movie/showtime (ĐÃ FIX: Map trực tiếp theo DTO của Backend) =====
   async function loadShowAndMovie() {
     const q = new URLSearchParams(location.search);
