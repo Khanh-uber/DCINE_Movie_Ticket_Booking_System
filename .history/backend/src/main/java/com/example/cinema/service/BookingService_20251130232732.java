@@ -58,17 +58,17 @@ public class BookingService {
             bookingSeatRepo.deleteSeatsByBookingId(id);        // xóa ghế
             bookingRepo.deletePendingBookingById(id);          // xóa booking
         }
-        
-
+        // XÓA LUÔN GHẾ ĐANG GIỮ TRONG REDIS
+        redisSeatService.clearForUser(showtimeId, accountId);
         Showtime st = showtimeRepo.findByShowtimeId(showtimeId);
         if (st == null){
             throw new RuntimeException("Suất chiếu không tồn tại");
         }
         // 2. Lấy ghế từ Redis (pending seats)
-        Set<String> pendingSeats = redisSeatService.getHeldSeatsForUser(showtimeId, accountId);
-        if (pendingSeats.isEmpty()) {
-            throw new RuntimeException("Bạn chưa chọn ghế hoặc ghế đã hết hạn giữ.");
-        }
+        // Set<String> pendingSeats = redisSeatService.getHeldSeatsForUser(showtimeId, accountId);
+        // if (pendingSeats.isEmpty()) {
+        //     throw new RuntimeException("Bạn chưa chọn ghế hoặc ghế đã hết hạn giữ.");
+        // }
 
         List<String> codes = new ArrayList<>(pendingSeats);
         
@@ -137,8 +137,6 @@ public class BookingService {
             items.add(new BookingResponse.Item(code, zone, type, finalPrice));
         }
         
-            // XÓA LUÔN GHẾ ĐANG GIỮ TRONG REDIS
-        redisSeatService.clearForUser(showtimeId, accountId);
             // =======================
             // 7) UPDATE TOTAL VÀ TRẢ VỀ
             // =======================

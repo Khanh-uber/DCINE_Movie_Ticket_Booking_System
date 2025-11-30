@@ -137,8 +137,6 @@ public class BookingService {
             items.add(new BookingResponse.Item(code, zone, type, finalPrice));
         }
         
-            // XÓA LUÔN GHẾ ĐANG GIỮ TRONG REDIS
-        redisSeatService.clearForUser(showtimeId, accountId);
             // =======================
             // 7) UPDATE TOTAL VÀ TRẢ VỀ
             // =======================

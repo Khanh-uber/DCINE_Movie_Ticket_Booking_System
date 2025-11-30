@@ -58,8 +58,6 @@ public class BookingService {
             bookingSeatRepo.deleteSeatsByBookingId(id);        // xóa ghế
             bookingRepo.deletePendingBookingById(id);          // xóa booking
         }
-        
-
         Showtime st = showtimeRepo.findByShowtimeId(showtimeId);
         if (st == null){
             throw new RuntimeException("Suất chiếu không tồn tại");
@@ -137,8 +135,6 @@ public class BookingService {
             items.add(new BookingResponse.Item(code, zone, type, finalPrice));
         }
         
-            // XÓA LUÔN GHẾ ĐANG GIỮ TRONG REDIS
-        redisSeatService.clearForUser(showtimeId, accountId);
             // =======================
             // 7) UPDATE TOTAL VÀ TRẢ VỀ
             // =======================
