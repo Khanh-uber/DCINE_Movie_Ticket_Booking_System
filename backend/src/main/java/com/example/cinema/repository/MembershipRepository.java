@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MembershipRepository extends JpaRepository<Membership, Long> {
-    // Không cần viết gì thêm, JpaRepository đã có sẵn findAll()
 }

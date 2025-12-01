@@ -11,6 +11,9 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
 
     @Query(value="""
             select * from voucher
+            where start_at <= CURRENT_TIMESTAMP
+              and end_at >= CURRENT_TIMESTAMP
+              and (usage_limit IS NULL OR used_count < usage_limit)
             """, nativeQuery = true)
     List<Voucher> findVoucherByActive();
 
@@ -22,5 +25,4 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
         limit 1
         """, nativeQuery = true)
 List<MembershipProjection> getMembershipTier(@Param("tierId") Long tierId);
-
 }
