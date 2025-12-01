@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/memberships") 
+@RequestMapping("/api/memberships")
+@CrossOrigin(origins = "*") 
 public class MembershipController {
 
     private final MembershipService membershipService;
