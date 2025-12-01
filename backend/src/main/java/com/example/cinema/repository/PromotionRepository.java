@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Map;
 
 public interface PromotionRepository extends JpaRepository<Voucher, Long> {
 
@@ -16,12 +15,12 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
     List<Voucher> findVoucherByActive();
 
 @Query(value = """
-        SELECT mt.tier_id AS tier_id,
-               mt.name    AS name
-        FROM membership_tier mt
-        WHERE mt.tier_id = :tierId
-        LIMIT 1
+        select mt.tier_id as tierId,
+               mt.name    as name
+        from membership_tier mt
+        where mt.tier_id = :tierId
+        limit 1
         """, nativeQuery = true)
-List<Map<String, Object>> getMembershipTier(@Param("tierId") Long tierId);
+List<MembershipProjection> getMembershipTier(@Param("tierId") Long tierId);
 
 }
