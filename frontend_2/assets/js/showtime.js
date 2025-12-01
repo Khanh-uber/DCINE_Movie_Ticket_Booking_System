@@ -11,12 +11,12 @@
   async function getJSON(apiPath, localPath) {
     // Ưu tiên API, nếu lỗi thì dùng Local JSON làm fallback
     try {
-      const r = await fetch(apiPath, { cache: 'no-store' });
+      const r = await fetch(apiPath, { cache: 'no-store', credentials: 'include' });
       if (r.ok) return await r.json();
     } catch {}
     if (localPath) {
       try {
-        const r2 = await fetch(localPath, { cache: 'no-store' });
+        const r2 = await fetch(localPath, { cache: 'no-store', credentials: 'include' });
         return await r2.json();
       } catch (e) { console.warn(`Fallback failed: ${localPath}`, e); }
     }
@@ -659,20 +659,17 @@ window.changeWeek = (step) => {
 
      renderDates();
 
-$('#btnContinue').onclick = () => {
-  if (!state.selectedShowtime) return;
+     $('#btnContinue').onclick = () => {
+          if (!state.selectedShowtime) return;
 
-  const s = state.selectedShowtime;
-  const movieId = state.movieId;
+          const s = state.selectedShowtime;
 
-  location.href =
-    'seat-map.html'
-    + `?showtimeId=${encodeURIComponent(s.id)}`
-    + (movieId ? `&movie=${encodeURIComponent(movieId)}` : '')
-    + `&theater=${encodeURIComponent(s.theater)}`
-    + `&date=${encodeURIComponent(s.date)}`
-    + `&time=${encodeURIComponent(s.time)}`;
-};
+          const mvParam = state.movieId ? `&movie=${state.movieId}` : '';
+          const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
+
+          location.href =
+            `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}`;
+      };
 
   });
 

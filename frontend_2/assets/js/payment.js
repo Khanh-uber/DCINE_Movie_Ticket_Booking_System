@@ -31,7 +31,7 @@
     // API trước
     if (state.backend.enabled && apiPath) {
       try {
-        const res = await fetch(API + apiPath, { cache: 'no-store' });
+        const res = await fetch(API + apiPath, { cache: 'no-store', credentials: 'include' });
         if (res.ok) {
           return await res.json();
         }
@@ -44,7 +44,7 @@
     // Fallback file local
     if (!localPath) return null;
     try {
-      const res = await fetch(localPath, { cache: 'no-store' });
+      const res = await fetch(localPath, { cache: 'no-store', credentials: 'include' });
       if (res.ok) return await res.json();
     } catch (err) {
       console.warn('[payment] local JSON error', localPath, err);
@@ -106,7 +106,8 @@
     if (state.backend.enabled) {
       try {
         const res = await fetch(API + '/checkout/summary', {
-          cache: 'no-store'
+          cache: 'no-store',
+          credentials: 'include'
         });
         if (res.ok) {
           const data = await res.json();
@@ -635,7 +636,8 @@
           body: JSON.stringify({
             code: trimmed,
             order: state.order
-          })
+          }),
+          credentials: 'include'
         });
         if (res.ok) {
           const data = await res.json();
@@ -899,7 +901,8 @@
                 combos: state.order.combos || [],
                 grandTotal: state.order.grandTotal
             }
-          })
+          }),
+          credentials: 'include'
         });
         if (res.ok) {
           backendData = await res.json();

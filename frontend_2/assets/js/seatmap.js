@@ -55,31 +55,36 @@
   let lastHoldCall = 0;
   const HOLD_THROTTLE_MS = 300;
 
-  async function apiGet(path) {
-    try {
-      const res = await fetch(API + path, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
-    } catch (err) {
-      console.error('[seatmap] GET', path, err);
-      return null;
-    }
+async function apiGet(path) {
+  try {
+    const res = await fetch(API + path, {
+      cache: 'no-store',
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (err) {
+    console.error('[seatmap] GET', path, err);
+    return null;
   }
+}
 
-  async function apiPost(path, body) {
-    try {
-      const res = await fetch(API + path, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify(body || {})
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json().catch(() => null);
-    } catch (err) {
-      console.error('[seatmap] POST', path, err);
-      return null;
-    }
+async function apiPost(path, body) {
+  try {
+    const res = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json().catch(() => null);
+  } catch (err) {
+    console.error('[seatmap] POST', path, err);
+    return null;
   }
+}
+
 async function createBooking(showtimeId, seatsPayload) {
   // seatsPayload: [{ code, type }]
   return await apiPost('/bookings', {
@@ -112,7 +117,7 @@ async function createBooking(showtimeId, seatsPayload) {
     seats:{},                      // { "A1": {zone, state} }
     selected:new Set(),            // Set<"A1">
     assigned:new Map(),            // Map<"A1","adult"|"child">
-    show:{ id:null, theater:'D-Cine', date:'', time:'', format:'' },
+    show:{ id:null, theater:'D-Cine', date:'', time:'', end: '', format:'' },
     movie:{ id:null, title:'—', posterUrl:'', trailerUrl:'', year:'', genres:[], duration:'' }
   };
 
@@ -288,6 +293,8 @@ if (zone === 'couple') {
   async function loadShowAndMovie() {
     const q = new URLSearchParams(location.search);
     const stId = q.get('showtimeId') || q.get('st') || q.get('showtime') || null;
+    const start = q.get('start');
+    const end = q.get('end');
 
     let detail = null;
     if (stId) {
@@ -303,6 +310,7 @@ if (zone === 'couple') {
       state.show.theater = st.theaterName;
       state.show.date    = st.showDate;
       state.show.time    = st.startTime;
+      state.show.end     = st.endTime;
       state.show.format  = st.formatName;
 
       // 2. Map thông tin phim (nằm trực tiếp trong object suất chiếu)
@@ -350,7 +358,10 @@ if (zone === 'couple') {
 
     $('#mvTheater').textContent = state.show.theater || 'D-Cine';
     $('#mvDate').textContent    = state.show.date || '--/--/----';
-    $('#mvTime').textContent    = state.show.time || '--:--';
+    const fmt = t => t ? t.substring(0,5) : null;
+    $('#mvTime').textContent = state.show.end
+    ? `${fmt(state.show.time)} - ${fmt(state.show.end)}`
+    : (fmt(state.show.time) || '--:--');
     $('#mvFormat').textContent  = state.show.format || '2D';
 
     // Logic nút Trailer
@@ -670,6 +681,7 @@ async function onContinue(goTo = 'concessions.html') {
       theater:    state.show.theater,
       date:       state.show.date,
       time:       state.show.time,
+      endTime:    state.show.end,
       movieId:    state.movie.id,
       movieTitle: state.movie.title
     }
