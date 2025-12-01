@@ -19,7 +19,7 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
 
         @Query(value = """
                 select mt.tier_id as tierId,
-                        mt.name    as name
+                mt.name    as name
                 from membership_tier mt
                 where mt.tier_id = :tierId
                 limit 1

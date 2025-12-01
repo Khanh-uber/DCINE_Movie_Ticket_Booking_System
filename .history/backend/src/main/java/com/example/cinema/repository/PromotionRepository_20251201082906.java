@@ -17,12 +17,12 @@ public interface PromotionRepository extends JpaRepository<Voucher, Long> {
                 """, nativeQuery = true)
         List<Voucher> findVoucherByActive();
 
-        @Query(value = """
-                select mt.tier_id as tierId,
-                        mt.name    as name
-                from membership_tier mt
-                where mt.tier_id = :tierId
-                limit 1
-                """, nativeQuery = true)
-        List<MembershipProjection> getMembershipTier(@Param("tierId") Long tierId);
-        }
+@Query(value = """
+        select mt.tier_id as tierId,
+               mt.name    as name
+        from membership_tier mt
+        where mt.tier_id = :tierId
+        limit 1
+        """, nativeQuery = true)
+List<MembershipProjection> getMembershipTier(@Param("tierId") Long tierId);
+}

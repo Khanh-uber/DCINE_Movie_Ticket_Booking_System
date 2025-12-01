@@ -3,7 +3,11 @@
 -- Host: localhost    Database: dcine_schema
 -- ------------------------------------------------------
 -- Server version	8.0.43
+<<<<<<< HEAD
 USE dcine_schema;
+=======
+use dcine_schema;
+>>>>>>> ba77c7f1ae7dc8fb3c74935660fa51f759b9938c
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
