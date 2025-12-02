@@ -8,6 +8,37 @@
   const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
   const throttle=(fn,ms=16)=>{ let t=0; return (...a)=>{ const n=Date.now(); if(n-t>ms){ t=n; fn(...a);} } };
 
+    window.updateHeaderUser = function(user) {
+    const guest = document.getElementById('guestAction');
+    const userChip = document.getElementById('userAction');
+    const nameEl = document.getElementById('userName');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarFallback = document.getElementById('avatarFallback');
+
+    if (!guest || !userChip || !nameEl || !avatarImg || !avatarFallback) return;
+
+    if (!user) {
+      guest.style.display = '';
+      userChip.style.display = 'none';
+      return;
+    }
+
+    const displayName = user.fullName || user.name || user.username || 'User';
+    nameEl.textContent = displayName;
+
+    if (user.avatarUrl) {
+      avatarImg.src = user.avatarUrl;
+      avatarImg.style.display = 'block';
+      avatarFallback.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      avatarFallback.style.display = 'inline-flex';
+      avatarFallback.textContent = displayName.charAt(0).toUpperCase();
+    }
+
+    guest.style.display = 'none';
+    userChip.style.display = 'flex';
+  };
 // ===== Movie-card template loader =====
 let MOVIE_TPL = null;
 
@@ -534,17 +565,6 @@ function openTrailerModal(url) {
     });
 }
 
-// Confirm + QuickLogin giữ nguyên như cũ...
-// (phần openConfirm, openQuickLogin giữ nguyên)
-
-
-
-/* ====== Helpers: các use-case thường gặp ====== */
-
-
-
-
-// 2) Confirm – trả Promise<boolean>
 function openConfirm({ title='Xác nhận', message='Bạn chắc chứ?', okText='Đồng ý', cancelText='Hủy' } = {}){
   return new Promise(async (resolve)=>{
     const html = `<div style="padding:6px 4px 0">${message}</div>`;
