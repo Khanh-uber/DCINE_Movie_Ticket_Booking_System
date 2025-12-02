@@ -181,7 +181,7 @@ window.API_BASE = API;
     const [profileRes, bookingsRes, vouchersRes] = await Promise.all([
       getJSON(`${API}/profile`, '../data/profile.json'),
       getJSON(`${API}/profile/bookings`, '../data/profile-bookings.json'),
-      getJSON(`${API}/deals`, '../data/profile-vouchers.json')
+      getJSON(`${API}/promotions`, '../data/profile-vouchers.json')
     ]);
 
     if (profileRes) {
