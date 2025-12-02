@@ -18,7 +18,9 @@
     const y = mount.querySelector('[data-year]');
     if (y) y.textContent = new Date().getFullYear();
     const grid = mount.querySelector('.sf-grid');
-    console.table([...grid.children].map(n => n.className));
+    if (grid) {
+      console.table([...grid.children].map(n => n.className));
+    }
   }
 
   load();

@@ -11,7 +11,7 @@ import com.example.cinema.dto.PromotionResponse;
 import com.example.cinema.service.PromotionService;
 
 @RestController
-@RequestMapping("/api/deals")
+@RequestMapping("/api/promotions")
 public class PromotionController {
 
     private final PromotionService promotionService;

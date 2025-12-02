@@ -25,28 +25,16 @@
       imageUrl: null
     }
   };
-
-  // ============================================================
-  // [QUAN TRỌNG] HÀM CỨU DỮ LIỆU & CHUẨN HÓA MÃ ĐƠN HÀNG
-  // Hàm này sẽ được gọi cho CẢ 3 phương thức: Card, Wallet, Bank
-  // ============================================================
   function enrichPaymentData(payment) {
       if (!payment) return null;
 
       try {
-          // ... (Phần chuẩn hóa orderId, cứu Tên rạp, Tên phim giữ nguyên) ...
 
           const rawCart = localStorage.getItem('concessions_cart');
           let cartData = rawCart ? JSON.parse(rawCart) : {};
 
           const rawBooking = localStorage.getItem('booking_cart');
           let bookingData = rawBooking ? JSON.parse(rawBooking) : {};
-
-          // Cứu các trường dữ liệu
-          // (Logic cứu dữ liệu tên Rạp, Tên Phim giữ nguyên)
-          // ... 
-
-          // --- Cứu Ngày & Giờ (START + END) ---
           const realDate = 
               cartData.showDate || cartData.date || (cartData.ticket && cartData.ticket.showDate) ||
               (cartData.meta && cartData.meta.date) || 
@@ -272,7 +260,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-          cache: 'no-store'
+          cache: 'no-store',
+          credentials: 'include'
         });
         if (res.ok) {
           const data = await res.json();
@@ -819,22 +808,31 @@
     }
   }
 
-  function initVoucher() {
-    ensurePromotionsLoaded().then(list => {
-        const select = $('#voucherSelect');
-        if (!select) return;
-        select.innerHTML = ['<option value="">Chọn từ danh sách</option>', ...list.filter(p => p && p.code).map(p => `<option value="${p.code}">${p.code} — ${p.name || ''}</option>`)].join('');
-    }).catch(() => {});
-    
-    const applyBtn = $('#btnApplyVoucher');
-    if (applyBtn) applyBtn.addEventListener('click', () => {
-        const input = $('#voucherCode');
-        // Logic apply voucher giữ nguyên như cũ, viết gọn lại ở đây
-        const code = input ? input.value : '';
-        // (Giả sử bạn giữ logic applyVoucher cũ, mình lược bớt để tập trung vào logic payment)
-        alert(`Đã nhập mã: ${code} (Demo)`);
+function initVoucher() {
+  ensurePromotionsLoaded().then(list => {
+    const select = $('#voucherSelect');
+    if (!select) return;
+    select.innerHTML = [
+      '<option value="">Chọn từ danh sách</option>',
+      ...list
+        .filter(p => p && p.code)
+        .map(p => `<option value="${p.code}">${p.code} — ${p.name || ''}</option>`)
+    ].join('');
+    select.addEventListener('change', (e) => {
+      const code = e.target.value || '';
+      const input = $('#voucherCode');
+      if (input) input.value = code;
+      if (code) applyVoucher(code); 
     });
-  }
+  }).catch(() => {});
+  const applyBtn = $('#btnApplyVoucher');
+  if (applyBtn) applyBtn.addEventListener('click', () => {
+    const input = $('#voucherCode');
+    const code = input ? input.value : '';
+    applyVoucher(code);
+  });
+}
+
 
   function validatePayment() {
       const num = $('#cardNumber')?.value.replace(/\s+/g,'')||'';

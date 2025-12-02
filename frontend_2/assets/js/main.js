@@ -8,6 +8,37 @@
   const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
   const throttle=(fn,ms=16)=>{ let t=0; return (...a)=>{ const n=Date.now(); if(n-t>ms){ t=n; fn(...a);} } };
 
+    window.updateHeaderUser = function(user) {
+    const guest = document.getElementById('guestAction');
+    const userChip = document.getElementById('userAction');
+    const nameEl = document.getElementById('userName');
+    const avatarImg = document.getElementById('avatarImg');
+    const avatarFallback = document.getElementById('avatarFallback');
+
+    if (!guest || !userChip || !nameEl || !avatarImg || !avatarFallback) return;
+
+    if (!user) {
+      guest.style.display = '';
+      userChip.style.display = 'none';
+      return;
+    }
+
+    const displayName = user.fullName || user.name || user.username || 'User';
+    nameEl.textContent = displayName;
+
+    if (user.avatarUrl) {
+      avatarImg.src = user.avatarUrl;
+      avatarImg.style.display = 'block';
+      avatarFallback.style.display = 'none';
+    } else {
+      avatarImg.style.display = 'none';
+      avatarFallback.style.display = 'inline-flex';
+      avatarFallback.textContent = displayName.charAt(0).toUpperCase();
+    }
+
+    guest.style.display = 'none';
+    userChip.style.display = 'flex';
+  };
 // ===== Movie-card template loader =====
 let MOVIE_TPL = null;
 
@@ -534,17 +565,6 @@ function openTrailerModal(url) {
     });
 }
 
-// Confirm + QuickLogin giữ nguyên như cũ...
-// (phần openConfirm, openQuickLogin giữ nguyên)
-
-
-
-/* ====== Helpers: các use-case thường gặp ====== */
-
-
-
-
-// 2) Confirm – trả Promise<boolean>
 function openConfirm({ title='Xác nhận', message='Bạn chắc chứ?', okText='Đồng ý', cancelText='Hủy' } = {}){
   return new Promise(async (resolve)=>{
     const html = `<div style="padding:6px 4px 0">${message}</div>`;
@@ -828,22 +848,6 @@ Object.assign(window, { mountPagination });
     document.body.appendChild(s);
   }
 
-  async function mountFooter() {
-    const footerContainer = document.querySelector("footer, #footer-include");
-    if (!footerContainer) return;
-    
-    const res = await fetch("../../html/footer.html", { cache: "no-store" });
-    const html = await res.text();
-    footerContainer.outerHTML = html;
-
-    // nếu có footer.js (giống header.js)
-    if (!window.footerMounted) {
-      const script = document.createElement("script");
-      script.src = "../assets/js/footer.js";
-      document.body.appendChild(script);
-      window.footerMounted = true;
-    }
-  }
 
   // ====== Reveal on scroll ======
   const io = new IntersectionObserver((es)=>{
@@ -1383,7 +1387,7 @@ async function loadDealsCarousel() {
 
   // 1) Ưu tiên gọi BE – ghép từ bảng voucher + membership_tier
   try {
-    const res = await fetch(`${API}/deals`, { cache: 'no-store', credentials: 'include' });
+    const res = await fetch(`${API}/promotions`, { cache: 'no-store', credentials: 'include' });
     if (res.ok) {
       const json = await res.json();
       if (Array.isArray(json)) data = json;
@@ -1391,7 +1395,7 @@ async function loadDealsCarousel() {
       else if (Array.isArray(json.deals)) data = json.deals;
     }
   } catch (err) {
-    console.warn('[Deals] API /deals lỗi, fallback JSON', err);
+    console.warn('[Deals] API /promotions lỗi, fallback JSON', err);
   }
 
   // 2) Fallback đọc từ file JSON cục bộ (xuất từ DB)
@@ -1907,7 +1911,6 @@ rail.addEventListener('scroll', () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await mountHeader();
-    await mountFooter();
     document.body.classList.add('ready');
     if (document.querySelector('#hero')) loadHero();
     loadOnTheBigScreen();

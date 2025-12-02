@@ -252,20 +252,17 @@ const token = json?.data?.accessToken || json?.accessToken;
 	if (backBtn) {
 		backBtn.addEventListener('click', (e) => {
 		e.preventDefault();
-
 		const token = localStorage.getItem('accessToken');
-		if (!token) {
-			if (document.referrer) {
-			history.back();
-			} else {
-			location.href = HOME_URL; 
-			}
+		if (token) {
+			location.href = nextUrl || HOME_URL;
 			return;
 		}
-		if (nextUrl) {
-			location.href = nextUrl;
+		const ref = document.referrer ? document.referrer.toLowerCase() : '';
+		const isAuthLoop = ref.includes('signup') || ref.includes('forgot') || ref.includes('login');
+		if (ref && !isAuthLoop) {
+			history.back();
 		} else {
-			location.href = HOME_URL;
+			location.href = HOME_URL; 
 		}
 		});
 	}
