@@ -656,23 +656,24 @@ window.changeWeek = (step) => {
 
      renderDates();
 
-    $('#btnContinue').onclick = () => {
-      if (!state.selectedShowtime) return;
+$('#btnContinue').onclick = () => {
+  if (!state.selectedShowtime) return;
+  const s = state.selectedShowtime;
+  const mvParam   = state.movieId ? `&movie=${state.movieId}` : '';
+  const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
+  const fmtParam  = s.format ? `&format=${encodeURIComponent(s.format)}` : '';
+  const targetUrl = `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}${fmtParam}`;
 
-      const s = state.selectedShowtime;
-      const mvParam   = state.movieId ? `&movie=${state.movieId}` : '';
-      const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
+  const token = localStorage.getItem('accessToken');
+  if (!token) {
+    const loginUrl = `D_cine_login.html?next=${encodeURIComponent(targetUrl)}`;
+    location.href = loginUrl;
+    return;
+  }
 
-      const targetUrl = `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}`;
+  location.href = targetUrl;
+};
 
-      const token = localStorage.getItem('accessToken'); 
-      if (!token) {
-        const loginUrl = `D_cine_login.html?next=${encodeURIComponent(targetUrl)}`;
-        location.href = loginUrl;
-        return;
-      }
-      location.href = targetUrl;
-    };
 
   });
 

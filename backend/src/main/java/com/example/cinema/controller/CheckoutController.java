@@ -10,7 +10,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/checkout")
-@CrossOrigin("*")
 @RequiredArgsConstructor
 public class CheckoutController {
 

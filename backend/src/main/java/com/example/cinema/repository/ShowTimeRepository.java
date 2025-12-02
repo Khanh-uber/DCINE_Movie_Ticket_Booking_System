@@ -66,7 +66,7 @@ List<Map<String,Object>> findShowtimesForFE(
                         st.start_at AS start_at, 
                         h.hall_id,
                         st.base_price,
-                        
+                        rt.name as format_name,
                         st.movie_id  AS movieId,
                         m.title AS movieTitle,
                         YEAR(m.release_date) AS release_year,
@@ -77,6 +77,8 @@ List<Map<String,Object>> findShowtimesForFE(
                 join movie m        ON m.movie_id = st.movie_id
                 JOIN hall h         ON h.hall_id = st.hall_id
                 JOIN theater t      ON t.theater_id = h.theater_id
+                JOIN seat_layout sl ON sl.seat_layout_id = h.seat_layout_id
+                JOIN room_type rt   ON rt.room_type_id = sl.room_type_id
                 where st.showtime_id = :id
                 """, nativeQuery = true)
     Map<String, Object> findShowtimeDetailRaw(@Param("id") Long id);
