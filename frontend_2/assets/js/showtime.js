@@ -644,12 +644,9 @@ window.changeWeek = (step) => {
 
      await loadData();
 
-     // Logic chọn mặc định thông minh:
-     // Nếu chưa chọn Vùng, tìm vùng "Hồ Chí Minh" làm default
      if (!state.selProvId) {
         const hcm = state.provinces.find(p => (p.province_name||p.name).includes('Hồ Chí Minh'));
         state.selProvId = hcm ? String(hcm.province_id || hcm.id) : (state.provinces[0]?.province_id || null);
-        // Mặc định vị trí là "Tất cả"
         state.selLocId = 'all'; 
      }
 
@@ -659,17 +656,23 @@ window.changeWeek = (step) => {
 
      renderDates();
 
-     $('#btnContinue').onclick = () => {
-          if (!state.selectedShowtime) return;
+    $('#btnContinue').onclick = () => {
+      if (!state.selectedShowtime) return;
 
-          const s = state.selectedShowtime;
+      const s = state.selectedShowtime;
+      const mvParam   = state.movieId ? `&movie=${state.movieId}` : '';
+      const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
 
-          const mvParam = state.movieId ? `&movie=${state.movieId}` : '';
-          const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
+      const targetUrl = `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}`;
 
-          location.href =
-            `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}`;
-      };
+      const token = localStorage.getItem('accessToken'); 
+      if (!token) {
+        const loginUrl = `D_cine_login.html?next=${encodeURIComponent(targetUrl)}`;
+        location.href = loginUrl;
+        return;
+      }
+      location.href = targetUrl;
+    };
 
   });
 
