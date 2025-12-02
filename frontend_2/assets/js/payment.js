@@ -25,11 +25,6 @@
       imageUrl: null
     }
   };
-
-  // ============================================================
-  // [QUAN TRỌNG] HÀM CỨU DỮ LIỆU & CHUẨN HÓA MÃ ĐƠN HÀNG
-  // Hàm này sẽ được gọi cho CẢ 3 phương thức: Card, Wallet, Bank
-  // ============================================================
   function enrichPaymentData(payment) {
       if (!payment) return null;
 
@@ -812,22 +807,31 @@
     }
   }
 
-  function initVoucher() {
-    ensurePromotionsLoaded().then(list => {
-        const select = $('#voucherSelect');
-        if (!select) return;
-        select.innerHTML = ['<option value="">Chọn từ danh sách</option>', ...list.filter(p => p && p.code).map(p => `<option value="${p.code}">${p.code} — ${p.name || ''}</option>`)].join('');
-    }).catch(() => {});
-    
-    const applyBtn = $('#btnApplyVoucher');
-    if (applyBtn) applyBtn.addEventListener('click', () => {
-        const input = $('#voucherCode');
-        // Logic apply voucher giữ nguyên như cũ, viết gọn lại ở đây
-        const code = input ? input.value : '';
-        // (Giả sử bạn giữ logic applyVoucher cũ, mình lược bớt để tập trung vào logic payment)
-        alert(`Đã nhập mã: ${code} (Demo)`);
+function initVoucher() {
+  ensurePromotionsLoaded().then(list => {
+    const select = $('#voucherSelect');
+    if (!select) return;
+    select.innerHTML = [
+      '<option value="">Chọn từ danh sách</option>',
+      ...list
+        .filter(p => p && p.code)
+        .map(p => `<option value="${p.code}">${p.code} — ${p.name || ''}</option>`)
+    ].join('');
+    select.addEventListener('change', (e) => {
+      const code = e.target.value || '';
+      const input = $('#voucherCode');
+      if (input) input.value = code;
+      if (code) applyVoucher(code); 
     });
-  }
+  }).catch(() => {});
+  const applyBtn = $('#btnApplyVoucher');
+  if (applyBtn) applyBtn.addEventListener('click', () => {
+    const input = $('#voucherCode');
+    const code = input ? input.value : '';
+    applyVoucher(code);
+  });
+}
+
 
   function validatePayment() {
       const num = $('#cardNumber')?.value.replace(/\s+/g,'')||'';
