@@ -2,7 +2,6 @@ package com.example.cinema.service;
 
 import org.springframework.stereotype.Service;
 import com.example.cinema.entity.*;
-import com.example.cinema.dto.ShowtimeDetailDTO;
 import com.example.cinema.dto.ShowtimeDetailResponse;
 import com.example.cinema.dto.ShowtimeSeatMapResponse;
 import com.example.cinema.repository.MovieRepository;

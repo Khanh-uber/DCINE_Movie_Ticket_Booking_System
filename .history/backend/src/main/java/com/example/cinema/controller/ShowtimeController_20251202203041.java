@@ -1,7 +1,6 @@
 package com.example.cinema.controller;
 
 import com.example.cinema.dto.ShowtimeDetailDTO;
-import com.example.cinema.dto.ShowtimeSeatMapResponse;
 import com.example.cinema.service.ShowtimeDetailService;
 import com.example.cinema.service.ShowtimeService;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +34,8 @@ public class ShowtimeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShowtimeSeatMapResponse> getShowtimeDetail(@PathVariable Long id) {
-        ShowtimeSeatMapResponse dto = stService.getSeatMapDetail(id);
+    public ResponseEntity<ShowtimeSeatMapRes> getShowtimeDetail(@PathVariable Long id) {
+        ShowtimeDetailDTO dto = service.getShowtimeDetail(id);
         return ResponseEntity.ok(dto);
     }
 }
