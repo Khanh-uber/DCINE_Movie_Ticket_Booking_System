@@ -1,9 +1,6 @@
 package com.example.cinema.controller;
 
 import com.example.cinema.dto.ShowtimeDetailDTO;
-import com.example.cinema.dto.ShowtimeDetailResponse;
-import com.example.cinema.dto.ShowtimeSeatMapResponse;
-import com.example.cinema.service.ShowtimeDetailService;
 import com.example.cinema.service.ShowtimeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +13,9 @@ import java.util.Map;
 public class ShowtimeController {
 
     private final ShowtimeService service;
-    private final ShowtimeDetailService stService;
 
-    public ShowtimeController(ShowtimeService service, ShowtimeDetailService stService) {
+    public ShowtimeController(ShowtimeService service) {
         this.service = service;
-        this.stService = stService;
     }
 
     @GetMapping
@@ -36,8 +31,8 @@ public class ShowtimeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShowtimeSeatMapResponse> getShowtimeDetail(@PathVariable Long id) {
-        ShowtimeSeatMapResponse dto = stService.getSeatMapDetail(id);
+    public ResponseEntity<ShowtimeDetailDTO> getShowtimeDetail(@PathVariable Long id) {
+        ShowtimeDetailDTO dto = service.getShowtimeDetail(id);
         return ResponseEntity.ok(dto);
     }
 }

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D-CINE | Xác nhận thanh toán</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+
+    .wrap {
+      max-width: 480px;
+      margin: auto;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #e62429;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .info-box {
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #333;
+    }
+
+    .row {
+      display: flex;
+      /* align-items: flex-start giúp chữ không bị rơi xuống giữa dòng nếu tên phim dài */
+      align-items: flex-start; 
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+
+    /* CỘT NHÃN (Bên trái) */
+    .row span:first-child {
+      color: #999;
+      font-size: 14px;
+      width: 100px; /* Cố định độ rộng nhãn */
+      min-width: 100px; 
+      flex-shrink: 0;
+    }
+
+    /* CỘT NỘI DUNG (Bên phải) */
+    .row span:last-child {
+      flex: 1; 
+      text-align: right; /* CĂN LỀ PHẢI CHO TẤT CẢ */
+      color: #fff;
+      word-break: break-word; /* Tự xuống dòng nếu chữ quá dài */
+      font-weight: 500;
+    }
+
+    /* Style riêng cho Tên Phim & Rạp để nổi bật hơn */
+    #movieTitle, #theaterName {
+      /* Bỏ text-align: left đi, mặc định nó sẽ theo cha là right */
+      font-weight: bold;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    
+    #theaterName {
+        color: #ddd; /* Màu rạp nhạt hơn xíu cho phân cấp */
+        font-weight: 600;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px dashed #444;
+      margin: 15px 0;
+    }
+
+    .total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #e62429;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      background: #e62429;
+      border: none;
+      border-radius: 8px;
+      margin-top: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: background 0.2s;
+    }
+
+    .btn:active {
+      background: #c21c20;
+    }
+
+    .success {
+      text-align: center;
+      color: #00ff99;
+      font-size: 16px;
+      margin-top: 15px;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h2>XÁC NHẬN THANH TOÁN</h2>
+
+    <div id="orderBox" class="info-box">
+      <div class="row"><span>Mã đơn hàng:</span><span id="orderId">...</span></div>
+      <div class="row"><span>Phim:</span><span id="movieTitle">...</span></div>
+      <div class="row"><span>Rạp:</span><span id="theaterName">...</span></div>
+      <div class="row"><span>Ngày chiếu:</span><span id="showDate">...</span></div>
+      <div class="row"><span>Suất chiếu:</span><span id="showTime">...</span></div>
+      <div class="row"><span>Ghế:</span><span id="seatList">...</span></div>
+    </div>
+
+    <div id="moneyBox" class="info-box">
+      <div class="row"><span>Tiền vé:</span><span id="ticketAmount">0đ</span></div>
+      <div class="row"><span>Combo:</span><span id="comboAmount">0đ</span></div>
+      <div class="row"><span>VAT (8%):</span><span id="vat">0đ</span></div>
+      <div class="row"><span>Giảm giá:</span><span id="discount">0đ</span></div>
+
+      <hr class="divider" />
+
+      <div class="row total">
+        <span>TỔNG TIỀN:</span><span id="grandTotal">0đ</span>
+      </div>
+    </div>
+
+    <button class="btn" id="btnPay">XÁC NHẬN THANH TOÁN</button>
+    <div class="success" id="successMsg">Thanh toán thành công ✔</div>
+  </div>
+
+  <script>
+    // ============================================
+    // CONFIG
+    // ============================================
+    // QUAN TRỌNG: Bạn cần đổi IP này thành IP của Backend (10.45.69.10)
+    const API = "http://10.45.69.10:8080/api"; 
+
+    // Lấy transactionId từ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const transactionId = urlParams.get("trans");
+
+    if (!transactionId) {
+      alert("QR không hợp lệ (thiếu transactionId).");
+    }
+
+    // Format tiền
+    function toVND(x) {
+      return Number(x).toLocaleString("vi-VN") + "đ";
+    }
+
+    // Hiển thị UI
+    function fillUI(order) {
+      if (!order) return;
+
+      // Cố gắng lấy dữ liệu từ các nguồn khác nhau: Order gốc (BE response) hoặc ticketData
+      const ticketData = order.ticket || order.metadata || {}; 
+      
+      // 1. Xử lý các trường chính
+      const orderId = order.orderId || order.id || order.bookingId || '...';
+      const movieTitle = order.movieTitle || ticketData.movieTitle || '...';
+      const theaterName = order.theaterName || ticketData.theaterName || '...';
+      
+      const seats = (order.seats && Array.isArray(order.seats)) ? order.seats.join(", ") : 
+                    (ticketData.seats && Array.isArray(ticketData.seats)) ? ticketData.seats.join(", ") : '...';
+
+      // 2. [FIX] Xử lý Ngày và Giờ (Lấy từ cấp độ cao nhất)
+      // Dùng các tên trường đã thống nhất trong payment.js (showDate, showTime)
+      const rawDate = order.showDate || order.date || ticketData.showDate || ticketData.date || '...';
+      const rawTime = order.showTime || order.time || ticketData.showTime || ticketData.time || '...';
+      const endTime = order.endTime || ticketData.endTime || "";
+      
+      // Tạo chuỗi hiển thị Start ~ End
+      let timeDisplay = rawTime;
+      if (rawTime !== "..." && endTime) {
+          timeDisplay = `${rawTime} ~ ${endTime}`;
+      }
+
+      // 3. Xử lý tiền (totals)
+      // Tùy theo BE, totals có thể nằm ở order.totals hoặc order._computedTotals
+      const totals = order.totals || order._computedTotals || {}; 
+      const ticketAmount = totals.ticketAmount || 0;
+      const comboAmount = totals.combosAmount || 0;
+      
+      // Gán vào UI
+      document.getElementById("orderId").textContent = orderId;
+      document.getElementById("movieTitle").textContent = movieTitle;
+      document.getElementById("theaterName").textContent = theaterName;
+      document.getElementById("seatList").textContent = seats;
+
+      // Gán Ngày và Suất chiếu
+      document.getElementById("showDate").textContent = rawDate;
+      document.getElementById("showTime").textContent = timeDisplay; // Giờ chiếu (Start ~ End)
+
+      document.getElementById("ticketAmount").textContent = toVND(ticketAmount);
+      document.getElementById("comboAmount").textContent = toVND(comboAmount);
+      document.getElementById("vat").textContent = toVND(totals.vat || 0); 
+      document.getElementById("discount").textContent = "-" + toVND(totals.discountAmount || 0);
+      
+      // Tổng tiền cuối cùng
+      document.getElementById("grandTotal").textContent = toVND(order.total || totals.grandTotal || totals.grand || 0);
+    }
+    // Lấy data từ backend
+    async function loadOrderInfo() {
+      try {
+        const res = await fetch(`${API}/checkout/order?trans=${transactionId}`);
+        if (!res.ok) {
+            alert("Lỗi server: " + res.status);
+            return;
+        }
+        const data = await res.json();
+        fillUI(data);
+      } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+        console.log("Không lấy được đơn hàng:", e);
+      }
+    }
+
+    // Bấm nút thanh toán -> gọi mark-paid
+    document.getElementById("btnPay").addEventListener("click", async () => {
+      try {
+        const res = await fetch(`${API}/checkout/mark-paid?trans=${transactionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // Body không cần thiết cho request này, nhưng giữ nguyên để tránh lỗi nếu BE cần
+          body: JSON.stringify({ transactionId }) 
+        });
+
+        if (res.ok) {
+          document.getElementById("successMsg").style.display = "block";
+
+          // Callback về FE desktop (cửa sổ đã mở QR)
+          if (window.opener && window.opener.DCINE_MARK_PAYMENT_PAID) {
+            const data = await res.json();
+            // Hàm DCINE_MARK_PAYMENT_PAID sẽ được gọi để đóng cửa sổ/chuyển sang trang confirmation
+            window.opener.DCINE_MARK_PAYMENT_PAID(data);
+          }
+
+        } else {
+          alert("Thanh toán thất bại!");
+        }
+      } catch (err) {
+        alert("Không thể gửi yêu cầu thanh toán.");
+      }
+    });
+
+    // Init
+    loadOrderInfo();
+  </script>
+</body>
+</html>
