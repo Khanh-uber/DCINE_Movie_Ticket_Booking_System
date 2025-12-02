@@ -36,7 +36,7 @@ public class ShowtimeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ShowtimeSeatMapResponse> getShowtimeDetail(@PathVariable Long id) {
-        ShowtimeSeatMapResponse dto = stService.getSeatMapDetail(id);
+        ShowtimeSeatMapResponse dto = stService.getShowtimeDetail(id);
         return ResponseEntity.ok(dto);
     }
 }

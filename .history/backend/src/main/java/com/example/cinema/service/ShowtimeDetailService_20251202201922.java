@@ -25,6 +25,12 @@ public class ShowtimeDetailService {
         this.movieRepo = movieRepo;
         this.seatTypeRepo = seatTypeRepo;
     }
+    
+    public ShowtimeDetailService(ShowTimeRepository showtimeRepo, MovieRepository movieRepo, SeatTypeRepository seatTypeRepo) {
+        this.showtimeRepo = showtimeRepo;
+        this.movieRepo = movieRepo;
+        this.seatTypeRepo = seatTypeRepo;
+    }
     public ShowtimeSeatMapResponse getSeatMapDetail(Long id){
         Map<String, Object> st = showtimeRepo.findShowtimeDetailRaw(id);
         if (st == null)
