@@ -55,31 +55,36 @@
   let lastHoldCall = 0;
   const HOLD_THROTTLE_MS = 300;
 
-  async function apiGet(path) {
-    try {
-      const res = await fetch(API + path, { cache: 'no-store' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
-    } catch (err) {
-      console.error('[seatmap] GET', path, err);
-      return null;
-    }
+async function apiGet(path) {
+  try {
+    const res = await fetch(API + path, {
+      cache: 'no-store',
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch (err) {
+    console.error('[seatmap] GET', path, err);
+    return null;
   }
+}
 
-  async function apiPost(path, body) {
-    try {
-      const res = await fetch(API + path, {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify(body || {})
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json().catch(() => null);
-    } catch (err) {
-      console.error('[seatmap] POST', path, err);
-      return null;
-    }
+async function apiPost(path, body) {
+  try {
+    const res = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}),
+      credentials: 'include'
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json().catch(() => null);
+  } catch (err) {
+    console.error('[seatmap] POST', path, err);
+    return null;
   }
+}
+
 async function createBooking(showtimeId, seatsPayload) {
   // seatsPayload: [{ code, type }]
   return await apiPost('/bookings', {

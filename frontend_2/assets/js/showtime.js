@@ -11,12 +11,12 @@
   async function getJSON(apiPath, localPath) {
     // Ưu tiên API, nếu lỗi thì dùng Local JSON làm fallback
     try {
-      const r = await fetch(apiPath, { cache: 'no-store' });
+      const r = await fetch(apiPath, { cache: 'no-store', credentials: 'include' });
       if (r.ok) return await r.json();
     } catch {}
     if (localPath) {
       try {
-        const r2 = await fetch(localPath, { cache: 'no-store' });
+        const r2 = await fetch(localPath, { cache: 'no-store', credentials: 'include' });
         return await r2.json();
       } catch (e) { console.warn(`Fallback failed: ${localPath}`, e); }
     }

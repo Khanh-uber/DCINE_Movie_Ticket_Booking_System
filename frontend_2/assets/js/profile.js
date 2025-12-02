@@ -408,11 +408,6 @@ window.API_BASE = API;
 
     if (img) img.src = url;
     if (currentUser) currentUser.avatar = url;
-
-    // TODO upload:
-    // const formData = new FormData();
-    // formData.append('avatar', file);
-    // fetch(`${API}/profile/avatar`, { method: 'POST', body: formData });
   }
 
   // ---------- Global handlers ----------

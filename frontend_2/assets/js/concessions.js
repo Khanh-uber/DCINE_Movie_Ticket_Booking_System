@@ -44,10 +44,11 @@ const CAT_CONFIG = {
   async function getJSON(apiPath, localPath) {
     if (apiPath) {
       try {
-        const res = await fetch(API + apiPath, { cache: 'no-store' });
-        if (res.ok) {
-          return await res.json();
-        }
+        const res = await fetch(API + apiPath, {
+          cache: 'no-store',
+          credentials: 'include'
+        });
+        if (res.ok) return await res.json();
       } catch (err) {
         console.warn('[concessions] API error, fallback to local', err);
       }
@@ -267,7 +268,7 @@ const CAT_CONFIG = {
   async function loadTicketAndCart() {
     if (state.backend.enabled) {
       try {
-        const res = await fetch(API + state.backend.summaryPath, { cache: 'no-store' });
+        const res = await fetch(API + state.backend.summaryPath, {cache: 'no-store', credentials: 'include'});
         if (res.ok) {
           const data = await res.json();
           applyBackendSummary(data);
@@ -324,7 +325,8 @@ const CAT_CONFIG = {
       const res = await fetch(API + state.backend.cartPath, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        credentials: 'include'
       });
       if (!res.ok) {
         throw new Error('HTTP ' + res.status);

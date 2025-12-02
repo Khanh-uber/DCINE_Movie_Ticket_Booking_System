@@ -96,7 +96,7 @@
   async function getJSON(apiPath, localPath) {
     if (state.backend.enabled && apiPath) {
       try {
-        const res = await fetch(API + apiPath, { cache: 'no-store' });
+        const res = await fetch(API + apiPath, { cache: 'no-store', credentials: 'include' });
         if (res.ok) {
           return await res.json();
         }
@@ -108,7 +108,7 @@
     }
     if (!localPath) return null;
     try {
-      const res = await fetch(localPath, { cache: 'no-store' });
+      const res = await fetch(localPath, { cache: 'no-store', credentials: 'include' });
       if (res.ok) return await res.json();
     } catch (err) {
       console.warn('[payment] local JSON error', localPath, err);
@@ -241,7 +241,10 @@
     let orderPayload = null;
     if (state.backend.enabled) {
       try {
-        const res = await fetch(API + '/checkout/summary', { cache: 'no-store' });
+        const res = await fetch(API + '/checkout/summary', {
+          cache: 'no-store',
+          credentials: 'include'
+        });
         if (res.ok) {
           const data = await res.json();
           const order = parseOrder(data);
@@ -658,6 +661,164 @@
     return state.promotions.list;
   }
 
+  function fillVoucherSelect(list) {
+    const select = $('#voucherSelect');
+    if (!select) return;
+    const options = [
+      '<option value="">Chọn từ danh sách</option>',
+      ...list
+        .filter((p) => p && p.code)
+        .map(
+          (p) =>
+            `<option value="${p.code}">${p.code} — ${p.name || p.title || ''}</option>`
+        )
+    ];
+    select.innerHTML = options.join('');
+  }
+
+  function isPromoValidForOrder(promo, totals) {
+    if (!promo || !promo.code) return false;
+    if (promo.isActive === false) return false;
+
+    // Kiểm tra minOrder
+    if (
+      typeof promo.minOrder === 'number' &&
+      totals.subTotal < promo.minOrder
+    ) {
+      return false;
+    }
+
+    // Kiểm tra ngày
+    const now = new Date();
+
+    if (promo.validFrom) {
+      const from = new Date(promo.validFrom);
+      if (now < from) return false;
+    }
+    if (promo.validTo) {
+      const to = new Date(promo.validTo);
+      if (now > to) return false;
+    }
+
+    return true;
+  }
+
+  function calcDiscountFromPromo(promo, totals) {
+    if (!promo) return 0;
+    const type = promo.discountType || promo.type;
+    const value = Number(promo.discountValue || promo.value || 0);
+    if (!value) return 0;
+
+    const base = totals.subTotal + totals.vat; // giảm trên tổng tạm tính + VAT
+    if (type === 'percent') {
+      return Math.min(base, Math.round((base * value) / 100));
+    }
+    // flat
+    return Math.min(base, value);
+  }
+
+  async function applyVoucher(code) {
+    const msgEl = $('#voucherMessage');
+    if (msgEl) {
+      msgEl.textContent = '';
+      msgEl.classList.remove('ok', 'err');
+    }
+
+    if (!state.order) return;
+
+    const trimmed = (code || '').trim().toUpperCase();
+    if (!trimmed) {
+      if (msgEl) {
+        msgEl.textContent = 'Vui lòng nhập mã.';
+        msgEl.classList.add('err');
+      }
+      return;
+    }
+
+    // BE trước: /checkout/apply-voucher
+    if (state.backend.enabled) {
+      try {
+        const res = await fetch(API + '/checkout/apply-voucher', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: trimmed,
+            order: state.order
+          }),
+          credentials: 'include'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const order = parseOrder(data);
+          if (order) {
+            // Chèn discountCode/discountAmount nếu BE trả ở root
+            if (typeof data.discountAmount === 'number') {
+              order.discount = {
+                code: data.discountCode || trimmed,
+                amount: data.discountAmount
+              };
+            }
+            state.order = order;
+            renderOrderSummary();
+            if (msgEl) {
+              const totals = state.order._computedTotals || getTotals(state.order);
+              msgEl.textContent =
+                totals.discountAmount > 0
+                  ? `Đã áp dụng mã ${trimmed}.`
+                  : `Áp dụng mã ${trimmed} thành công.`;
+              msgEl.classList.add('ok');
+            }
+            return;
+          }
+        } else {
+          console.warn(
+            '[payment] /checkout/apply-voucher not ok',
+            res.status
+          );
+          state.backend.enabled = false;
+          state.backend.lastError = 'HTTP ' + res.status;
+        }
+      } catch (err) {
+        console.warn('[payment] /checkout/apply-voucher error', err);
+        state.backend.enabled = false;
+        state.backend.lastError = String(err);
+      }
+    }
+
+    // Fallback: tự check promotions.json
+    const list = await ensurePromotionsLoaded();
+    const totals =
+      state.order._computedTotals || getTotals(state.order);
+    const promo = list.find(
+      (p) => p && String(p.code || '').toUpperCase() === trimmed
+    );
+
+    if (!promo || !isPromoValidForOrder(promo, totals)) {
+      if (msgEl) {
+        msgEl.textContent =
+          '⚠️ Mã không hợp lệ hoặc đã hết hạn.';
+        msgEl.classList.add('err');
+      }
+      // clear discount
+      state.order._voucher = { code: '', amount: 0 };
+      renderOrderSummary();
+      return;
+    }
+
+    const discount = calcDiscountFromPromo(promo, totals);
+    state.order._voucher = {
+      code: promo.code,
+      amount: discount,
+      type: promo.discountType || promo.type || 'flat'
+    };
+
+    renderOrderSummary();
+    if (msgEl) {
+      msgEl.textContent = `Đã áp dụng mã ${promo.code}.`;
+      msgEl.classList.add('ok');
+    }
+  }
+
   function initVoucher() {
     ensurePromotionsLoaded().then(list => {
         const select = $('#voucherSelect');
@@ -788,7 +949,8 @@
                 combos: state.order.combos || [],
                 grandTotal: state.order._computedTotals ? state.order._computedTotals.grand : state.order.grandTotal
             }
-          })
+          }),
+          credentials: 'include'
         });
         if (res.ok) backendData = await res.json();
       } catch (err) { state.backend.enabled = false; }
