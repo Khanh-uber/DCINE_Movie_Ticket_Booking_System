@@ -1,5 +1,7 @@
 package com.example.cinema.dto;
+
 import java.util.*;
+
 public class ConcessionResponse {
 
     private TicketInfo ticket;
@@ -17,16 +19,20 @@ public class ConcessionResponse {
     public Totals getTotals() {return totals;}
     public void setTotals(Totals totals){this.totals = totals;}
 
+    // ================= TICKET INFO =================
     public static class TicketInfo{
         private Long showtimeId;
         private String movieTitle;
         private String date;
         private String time;
+        private String endTime;
+        private String theaterName; 
         private List<SeatItems> items;
         private Long totalAmount;
         // private Map<String, Object> meta;
 
         public TicketInfo(){}
+        
         public Long getShowtimeId(){return showtimeId;}
         public void setShowtimeId(Long showtimeId){this.showtimeId = showtimeId;}
 
@@ -39,23 +45,32 @@ public class ConcessionResponse {
         public String getTime(){return time;}
         public void setTime(String time){this.time = time;}
 
-        public List<SeatItems> getItems(){return items;}
-        public void setItems(List<SeatItems> items){this.items = items;}
+        public String getEndTime() { return endTime; }
+        public void setEndTime(String endTime) { this.endTime = endTime; }
 
+        public String getTheaterName(){return theaterName;}
+        public void setTheaterName(String theaterName){this.theaterName = theaterName;}
+
+        public List<SeatItems> getSeatItems(){return items;}
+        public void setSeatItems(List<SeatItems> items){this.items = items;}
+
+        // Đã sửa lại tên hàm cho đúng chuẩn getter (getTotalAmount)
         public Long getTotalAmount(){return totalAmount;}
+        // Đã sửa lỗi chính tả (Amount chữ thường)
         public void setTotalAmount(Long totalAmount){this.totalAmount = totalAmount;}
-
-        // public Map<String, Object> getMeta(){return meta;}
-        // public void setMeta(Map<String, Object> meta){this.meta = meta;}
-        
     }
+
+    // ================= SEAT ITEMS =================
     public static class SeatItems {
         private String code;
         private String zone;
         private String type;
         private Long price;
+        
         public SeatItems(){}
-        public String geZone(){return zone;}
+        
+        // Đã sửa lỗi chính tả geZone -> getZone để JSON map đúng key
+        public String getZone(){return zone;} 
         public void setZone(String zone){this.zone = zone;}
 
         public String getCode(){return code;}
@@ -64,12 +79,11 @@ public class ConcessionResponse {
         public String getType(){return type;}
         public void setType(String type){this.type = type;}
 
-        public Long getPrice(){
-            return price;
-        }
+        public Long getPrice(){ return price; }
         public void setPrice(Long price){this.price = price;}
     }
 
+    // ================= COMBO ITEM =================
     public static class ComboItem {
         private Long comboId;
         private String title;
@@ -83,75 +97,35 @@ public class ConcessionResponse {
 
         public ComboItem(){}
 
-        //getter setter
-        public Long getComboId() {
-            return comboId;
-        }
+        public Long getComboId() { return comboId; }
+        public void setComboId(Long comboId) { this.comboId = comboId; }
 
-        public void setComboId(Long comboId) {
-            this.comboId = comboId;
-        }
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
 
-        public String getTitle() {
-            return title;
-        }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
 
-        public void setTitle(String title) {
-            this.title = title;
-        }
+        public String getVariant() { return variant; }
+        public void setVariant(String variant) { this.variant = variant; }
 
-        public String getCode() {
-            return code;
-        }
+        public String getVariantLabel() { return variantLabel; }
+        public void setVariantLabel(String variantLabel) { this.variantLabel = variantLabel; }
 
-        public void setCode(String code) {
-            this.code = code;
-        }
+        public Double getUnitPrice() { return unitPrice; }
+        public void setUnitPrice(Double unitPrice) { this.unitPrice = unitPrice; }
 
-        public String getVariant() {
-            return variant;
-        }
+        public Integer getQty() { return qty; }
+        public void setQty(Integer qty) { this.qty = qty; }
 
-        public void setVariant(String variant) {
-            this.variant = variant;
-        }
-
-        public String getVariantLabel() {
-            return variantLabel;
-        }
-
-        public void setVariantLabel(String variantLabel) {
-            this.variantLabel = variantLabel;
-        }
-
-        public Double getUnitPrice() {
-            return unitPrice;
-        }
-
-        public void setUnitPrice(Double unitPrice) {
-            this.unitPrice = unitPrice;
-        }
-
-        public Integer getQty() {
-            return qty;
-        }
-
-        public void setQty(Integer qty) {
-            this.qty = qty;
-        }
-
-        public Double getLineTotal() {
-            return lineTotal;
-        }
-
-        public void setLineTotal(Double lineTotal) {
-            this.lineTotal = lineTotal;
-        }
+        public Double getLineTotal() { return lineTotal; }
+        public void setLineTotal(Double lineTotal) { this.lineTotal = lineTotal; }
+        
         public String getImageUrl(){return imageUrl;}
         public void setImageUrl(String imageUrl){this.imageUrl = imageUrl;}
     }
     
-
+    // ================= TOTALS =================
     public static class Totals{
         private Long ticketAmount;
         private Long combosAmount;

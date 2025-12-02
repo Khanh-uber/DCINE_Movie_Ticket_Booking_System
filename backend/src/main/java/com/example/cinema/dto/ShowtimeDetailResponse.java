@@ -37,6 +37,7 @@ public class ShowtimeDetailResponse {
         private String theaterName;
         private String date;
         private String time;
+        private String endTime;
         private String format;
 
         public ShowtimeInfo() {}
@@ -52,6 +53,9 @@ public class ShowtimeDetailResponse {
 
         public String getTime() { return time; }
         public void setTime(String time) { this.time = time; }
+
+        public String getEndTime() { return endTime; }
+        public void setEndTime(String endTime) { this.endTime = endTime; }
 
         public String getFormat() { return format; }
         public void setFormat(String format) { this.format = format; }

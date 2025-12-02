@@ -400,11 +400,15 @@ body.page-profile {
 .edit-actions {
     display: none;
     margin-top: 18px;
-    display: none;
     justify-content: flex-end;
     gap: 10px;
 }
-
+#tab-security .edit-actions {
+    display: flex;
+    margin-top: 18px;
+    justify-content: flex-end;
+    gap: 10px;
+}
 .btn-primary,
 .btn-ghost {
     padding: 9px 18px;

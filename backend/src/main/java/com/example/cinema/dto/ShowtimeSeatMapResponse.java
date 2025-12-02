@@ -10,6 +10,7 @@ public class ShowtimeSeatMapResponse {
     private String theaterName;
     private String showDate;      // yyyy-MM-dd
     private String startTime;     // HH:mm
+    private String endTime;       // HH:mm
     private String formatName;
 
     // ===== MOVIE INFO =====
@@ -68,6 +69,9 @@ public class ShowtimeSeatMapResponse {
     public String getStartTime() { return startTime; }
     public void setStartTime(String startTime) { this.startTime = startTime; }
 
+    public String getEndTime() { return endTime; }
+    public void setEndTime(String endTime) { this.endTime = endTime; }
+    
     public String getFormatName() { return formatName; }
     public void setFormatName(String formatName) { this.formatName = formatName; }
 

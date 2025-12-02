@@ -16,6 +16,7 @@ public class ShowtimeDetailDTO {
     private String theaterName;
     private String showDate;
     private String startTime;
+    private String endTime;
     private String formatName;
     private String releaseYear;
     private Integer durationMin;
@@ -32,6 +33,7 @@ public class ShowtimeDetailDTO {
         dto.setTheaterName((String)m.get("theaterName"));
         dto.setShowDate(String.valueOf(m.get("showDate")));
         dto.setStartTime(String.valueOf(m.get("startTime")));
+        dto.setEndTime(String.valueOf(m.get("endTime")));
         dto.setFormatName((String)m.get("formatName"));
         dto.setReleaseYear(String.valueOf(m.get("releaseYear")));
         dto.setDurationMin(m.get("durationMin") != null ? ((Number)m.get("durationMin")).intValue() : null);
