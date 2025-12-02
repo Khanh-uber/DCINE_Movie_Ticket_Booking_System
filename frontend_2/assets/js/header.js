@@ -1,4 +1,4 @@
-// header.js
+
 (() => {
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
@@ -28,7 +28,6 @@
       }
     });
 
-    // Bắt sự kiện Enter (thường form tự handle, nhưng thêm cho chắc)
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -38,7 +37,6 @@
       }
     });
 
-    // Click ra ngoài thì đóng
     document.addEventListener('click', (e) => {
       if (!searchBtn.contains(e.target) && !searchForm.contains(e.target)) {
         if (!searchInput.value) { 
@@ -94,22 +92,18 @@
       const file = url.pathname.split('/').pop() || 'index.html';
       const search = url.search || '';
       const hash = url.hash || '';
-      const next = `${file}${search}${hash}`; // ví dụ: "showtime.html?movie=3"
-
-      // Login page nằm cùng folder với các page .html
+      const next = `${file}${search}${hash}`; 
       const loginUrl = `D_cine_login.html?next=${encodeURIComponent(next)}`;
       location.href = loginUrl;
     });
   }
-  
+
   $$('.scroll-link').forEach(link => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');
       if (href.includes('#')) {
         const hash = href.split('#')[1];
         const target = document.getElementById(hash);
-        
-        // Chỉ cuộn nếu đang ở trang chủ và tìm thấy section
         const isHome = location.pathname.endsWith('index.html') || location.pathname === '/' || location.pathname.endsWith('/');
         
         if (isHome && target) {

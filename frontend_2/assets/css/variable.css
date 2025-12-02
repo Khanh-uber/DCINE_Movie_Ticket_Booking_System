@@ -112,8 +112,6 @@
   --footer-bg:#0B0B0B;
   --footer-stroke:#1E1E1E;
 }
-
-/* ========== Alias tương thích (KHÔNG cần sửa file cũ) ===================== */
 /* Brand */
 :root{
   --accent: var(--brand);

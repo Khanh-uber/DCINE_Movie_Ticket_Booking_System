@@ -34,19 +34,12 @@
       if (!payment) return null;
 
       try {
-          // ... (Phần chuẩn hóa orderId, cứu Tên rạp, Tên phim giữ nguyên) ...
 
           const rawCart = localStorage.getItem('concessions_cart');
           let cartData = rawCart ? JSON.parse(rawCart) : {};
 
           const rawBooking = localStorage.getItem('booking_cart');
           let bookingData = rawBooking ? JSON.parse(rawBooking) : {};
-
-          // Cứu các trường dữ liệu
-          // (Logic cứu dữ liệu tên Rạp, Tên Phim giữ nguyên)
-          // ... 
-
-          // --- Cứu Ngày & Giờ (START + END) ---
           const realDate = 
               cartData.showDate || cartData.date || (cartData.ticket && cartData.ticket.showDate) ||
               (cartData.meta && cartData.meta.date) || 

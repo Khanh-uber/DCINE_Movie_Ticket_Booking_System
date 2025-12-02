@@ -828,22 +828,6 @@ Object.assign(window, { mountPagination });
     document.body.appendChild(s);
   }
 
-  async function mountFooter() {
-    const footerContainer = document.querySelector("footer, #footer-include");
-    if (!footerContainer) return;
-    
-    const res = await fetch("../../html/footer.html", { cache: "no-store" });
-    const html = await res.text();
-    footerContainer.outerHTML = html;
-
-    // nếu có footer.js (giống header.js)
-    if (!window.footerMounted) {
-      const script = document.createElement("script");
-      script.src = "../assets/js/footer.js";
-      document.body.appendChild(script);
-      window.footerMounted = true;
-    }
-  }
 
   // ====== Reveal on scroll ======
   const io = new IntersectionObserver((es)=>{
@@ -1383,7 +1367,7 @@ async function loadDealsCarousel() {
 
   // 1) Ưu tiên gọi BE – ghép từ bảng voucher + membership_tier
   try {
-    const res = await fetch(`${API}/deals`, { cache: 'no-store', credentials: 'include' });
+    const res = await fetch(`${API}/promotions`, { cache: 'no-store', credentials: 'include' });
     if (res.ok) {
       const json = await res.json();
       if (Array.isArray(json)) data = json;
@@ -1391,7 +1375,7 @@ async function loadDealsCarousel() {
       else if (Array.isArray(json.deals)) data = json.deals;
     }
   } catch (err) {
-    console.warn('[Deals] API /deals lỗi, fallback JSON', err);
+    console.warn('[Deals] API /promotions lỗi, fallback JSON', err);
   }
 
   // 2) Fallback đọc từ file JSON cục bộ (xuất từ DB)
@@ -1907,7 +1891,6 @@ rail.addEventListener('scroll', () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await mountHeader();
-    await mountFooter();
     document.body.classList.add('ready');
     if (document.querySelector('#hero')) loadHero();
     loadOnTheBigScreen();

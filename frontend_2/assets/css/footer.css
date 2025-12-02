@@ -57,3 +57,10 @@
 .sf-bottom-links{ display:flex; gap:14px; margin:0; padding:0; list-style:none; }
 .sf-bottom-links a{ color:#bdbdbd; }
 .sf-bottom-links a:hover{ color:#fff; }
+.site-footer nav,
+.site-footer .sf-col,
+.site-footer .sf-news {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
