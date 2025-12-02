@@ -41,19 +41,15 @@
     // Click ra ngoài thì đóng
     document.addEventListener('click', (e) => {
       if (!searchBtn.contains(e.target) && !searchForm.contains(e.target)) {
-        if (!searchInput.value) { // Chỉ đóng khi không có chữ đang nhập dở
+        if (!searchInput.value) { 
              searchForm.classList.remove('open');
         }
       }
     });
   }
 
-  // 3. XỬ LÝ ĐĂNG NHẬP / AVATAR (Quan trọng)
   function checkAuth() {
-    // Lấy token từ LocalStorage (bạn kiểm tra xem code login của bạn lưu tên là gì nhé)
-    // Giả sử key là 'accessToken'
     const token = localStorage.getItem('accessToken'); 
-    
     const guestGroup = $('#guestAction');
     const userGroup = $('#userAction');
 
@@ -89,8 +85,23 @@
   }
 
   checkAuth();
+  const loginLink = document.querySelector('#guestAction .btn-text');
+  if (loginLink) {
+    loginLink.addEventListener('click', (e) => {
+      e.preventDefault();
 
-  // 4. Smooth Scroll cho Voucher / Thành viên
+      const url = new URL(location.href);
+      const file = url.pathname.split('/').pop() || 'index.html';
+      const search = url.search || '';
+      const hash = url.hash || '';
+      const next = `${file}${search}${hash}`; // ví dụ: "showtime.html?movie=3"
+
+      // Login page nằm cùng folder với các page .html
+      const loginUrl = `D_cine_login.html?next=${encodeURIComponent(next)}`;
+      location.href = loginUrl;
+    });
+  }
+  
   $$('.scroll-link').forEach(link => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');

@@ -170,7 +170,6 @@ window.API_BASE = API;
     if (Array.isArray(membershipTiers) && membershipTiers.length) {
       return membershipTiers;
     }
-    // fallback cấu hình tĩnh (ít, không chứa data user)
     return [
       { name: 'Standard', min: 0 },
       { name: 'Silver',   min: 1000000 },
@@ -463,7 +462,7 @@ window.API_BASE = API;
       if (!res.ok) throw new Error('Bad response');
       const data = await res.json().catch(() => null);
       if (data && data.user) currentUser = normalizeUser(data.user);
-      alert('✅ Cập nhật hồ sơ thành công.');
+      alert('Cập nhật hồ sơ thành công.');
     } catch (err) {
       console.warn('[Profile] PUT /profile lỗi, chỉ cập nhật FE.', err);
       alert('Đã cập nhật trên giao diện. Khi BE xong hãy nối API PUT /profile.');
@@ -472,7 +471,6 @@ window.API_BASE = API;
     window.toggleEdit();
     renderProfile();
   };
-
   window.changePassword = async () => {
     const oldP = document.getElementById('old-pass')?.value;
     const newP = document.getElementById('new-pass')?.value;
@@ -486,25 +484,41 @@ window.API_BASE = API;
       alert('Mật khẩu xác nhận không khớp!');
       return;
     }
-
     try {
       const res = await fetch(`${API}/profile/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPassword: oldP, newPassword: newP }),
-        credentials: 'include'
+        credentials: 'include',
+        body: JSON.stringify({
+          oldPassword: oldP,
+          newPassword: newP,
+        }),
       });
-      if (!res.ok) throw new Error('Bad response');
-      alert('✅ Đổi mật khẩu thành công.');
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (_) {
+      }
+      if (!res.ok) {
+        const msg =
+          (data && (data.message || data.error)) ||
+          'Mật khẩu hiện tại không đúng hoặc yêu cầu không hợp lệ.';
+        alert(msg);
+        return;
+      }
+      const msg =
+        (data && (data.message || data.msg)) ||
+        'Đổi mật khẩu thành công.';
+      alert(msg);
+      document.getElementById('old-pass').value = '';
+      document.getElementById('new-pass').value = '';
+      document.getElementById('confirm-pass').value = '';
     } catch (err) {
-      console.warn('[Profile] PUT /profile/password lỗi (mock thành công).', err);
-      alert('Đã gửi yêu cầu đổi mật khẩu (mock). Khi BE xong hãy nối API PUT /profile/password.');
+      console.warn('[Profile] PUT /profile/password lỗi mạng.', err);
+      alert('Không thể kết nối máy chủ, vui lòng thử lại sau.');
     }
-
-    document.getElementById('old-pass').value = '';
-    document.getElementById('new-pass').value = '';
-    document.getElementById('confirm-pass').value = '';
   };
+
 
 window.logout = () => {
   if (confirm('Đăng xuất khỏi tài khoản?')) {
