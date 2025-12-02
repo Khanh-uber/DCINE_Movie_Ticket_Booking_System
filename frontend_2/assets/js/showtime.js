@@ -659,20 +659,17 @@ window.changeWeek = (step) => {
 
      renderDates();
 
-$('#btnContinue').onclick = () => {
-  if (!state.selectedShowtime) return;
+     $('#btnContinue').onclick = () => {
+          if (!state.selectedShowtime) return;
 
-  const s = state.selectedShowtime;
-  const movieId = state.movieId;
+          const s = state.selectedShowtime;
 
-  location.href =
-    'seat-map.html'
-    + `?showtimeId=${encodeURIComponent(s.id)}`
-    + (movieId ? `&movie=${encodeURIComponent(movieId)}` : '')
-    + `&theater=${encodeURIComponent(s.theater)}`
-    + `&date=${encodeURIComponent(s.date)}`
-    + `&time=${encodeURIComponent(s.time)}`;
-};
+          const mvParam = state.movieId ? `&movie=${state.movieId}` : '';
+          const timeParam = `&start=${encodeURIComponent(s.time)}&end=${encodeURIComponent(s.endTime || '')}`;
+
+          location.href =
+            `seat-map.html?showtimeId=${encodeURIComponent(s.id)}${mvParam}${timeParam}`;
+      };
 
   });
 

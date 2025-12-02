@@ -2,6 +2,7 @@ package com.example.cinema.service;
 
 import org.springframework.stereotype.Service;
 import com.example.cinema.entity.*;
+import com.example.cinema.dto.ShowtimeDetailDTO;
 import com.example.cinema.dto.ShowtimeDetailResponse;
 import com.example.cinema.dto.ShowtimeSeatMapResponse;
 import com.example.cinema.repository.MovieRepository;
@@ -33,19 +34,31 @@ public class ShowtimeDetailService {
         if (movieId == null) {
             throw new RuntimeException("Movie not found for showtime");
         }
+
         Timestamp ts = (Timestamp) st.get("start_at");
         LocalDateTime startAt = ts.toLocalDateTime();
+        
+        Timestamp endTs = (Timestamp) st.get("end_at");
+        LocalDateTime endAt = endTs != null ? endTs.toLocalDateTime() : null;
 
         ShowtimeDetailResponse.ShowtimeInfo stInfo = new ShowtimeDetailResponse.ShowtimeInfo();
         String date = startAt.toLocalDate().toString(); // yyyy-MM-dd
         String time = startAt.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        
+        String endTime = null;                          
+        if (endAt != null) {
+            endTime = endAt.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+
         Long showtimeId = ((Number) st.get("showtime_id")).longValue();
         String theaterName = (String) st.get("theater_name");
-        stInfo.setDate(date);
-        stInfo.setFormat("2D");
+
         stInfo.setId(showtimeId);
+        stInfo.setDate(date);
+        stInfo.setTime(time); 
+        stInfo.setEndTime(endTime);                   
+        stInfo.setFormat("2D");
         stInfo.setTheaterName(theaterName);
-        stInfo.setTime(time);
 
         ShowtimeDetailResponse res = new ShowtimeDetailResponse();
 
@@ -132,6 +145,14 @@ public class ShowtimeDetailService {
         res.setShowDate(date);
         res.setStartTime(time);
         res.setFormatName("2D");  // FE mặc định 2D
+        Timestamp endTs = (Timestamp) st.get("end_at");
+        String endTime = null;
+        if (endTs != null) {
+            LocalDateTime endAt = endTs.toLocalDateTime();
+            endTime = endAt.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+
+        res.setEndTime(endTime);
         
         // ==== MOVIE INFO ====
         Movie m = movieRepo.findByMovieId(movieId);
