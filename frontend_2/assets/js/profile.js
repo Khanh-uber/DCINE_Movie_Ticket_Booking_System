@@ -4,7 +4,6 @@
 window.API_BASE = API;
   const toVND = (n) => (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
 
-  // ---------- Utils: BE-first rồi fallback JSON ----------
   async function getJSON(apiPath, localPath) {
     // 1. Gọi BE
     if (apiPath) {
@@ -170,7 +169,6 @@ window.API_BASE = API;
     if (Array.isArray(membershipTiers) && membershipTiers.length) {
       return membershipTiers;
     }
-    // fallback cấu hình tĩnh (ít, không chứa data user)
     return [
       { name: 'Standard', min: 0 },
       { name: 'Silver',   min: 1000000 },
@@ -437,74 +435,103 @@ window.API_BASE = API;
     if (btnEdit) btnEdit.style.display = disabled ? 'none' : 'inline-flex';
   };
 
-  window.saveProfile = async () => {
-    if (!currentUser) return;
+window.saveProfile = async () => {
+  if (!currentUser) return;
 
-    const getVal = (id) => (document.getElementById(id)?.value ?? '');
+  const getVal = (id) => (document.getElementById(id)?.value ?? '');
 
-    const payload = {
-      fullName: getVal('inp-name'),
-      phone: getVal('inp-phone'),
-      dob: getVal('inp-dob'),
-      gender: getVal('inp-gender'),
-      address: getVal('inp-address')
-    };
-
-    // update local trước
-    Object.assign(currentUser, payload);
-
-    try {
-      const res = await fetch(`${API}/profile`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('Bad response');
-      const data = await res.json().catch(() => null);
-      if (data && data.user) currentUser = normalizeUser(data.user);
-      alert('✅ Cập nhật hồ sơ thành công.');
-    } catch (err) {
-      console.warn('[Profile] PUT /profile lỗi, chỉ cập nhật FE.', err);
-      alert('Đã cập nhật trên giao diện. Khi BE xong hãy nối API PUT /profile.');
-    }
-
-    window.toggleEdit();
-    renderProfile();
+  const payload = {
+    fullName: getVal('inp-name'),
+    phone: getVal('inp-phone'),
+    dob: getVal('inp-dob'),
+    gender: getVal('inp-gender'),
+    address: getVal('inp-address')
   };
 
-  window.changePassword = async () => {
-    const oldP = document.getElementById('old-pass')?.value;
-    const newP = document.getElementById('new-pass')?.value;
-    const cfmP = document.getElementById('confirm-pass')?.value;
+  // update local trước để FE có dữ liệu
+  Object.assign(currentUser, payload);
 
-    if (!oldP || !newP || !cfmP) {
-      alert('Vui lòng điền đủ thông tin!');
-      return;
-    }
-    if (newP !== cfmP) {
-      alert('Mật khẩu xác nhận không khớp!');
-      return;
+  try {
+    const res = await fetch(`${API}/profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('Bad response');
+
+    const data = await res.json().catch(() => null);
+    if (data && data.user) {
+      currentUser = normalizeUser(data.user);
     }
 
+    alert('Cập nhật hồ sơ thành công.');
+  } catch (err) {
+    console.warn('[Profile] PUT /profile lỗi, chỉ cập nhật FE.', err);
+    alert('Đã cập nhật trên giao diện. Khi BE xong hãy nối API PUT /profile.');
+  }
+  if (window.updateHeaderUser && currentUser) {
+    window.updateHeaderUser(currentUser);
+  }
+
+  window.toggleEdit();
+  renderProfile();
+};
+
+window.changePassword = async () => {
+  const oldP = document.getElementById('old-pass')?.value;
+  const newP = document.getElementById('new-pass')?.value;
+  const cfmP = document.getElementById('confirm-pass')?.value;
+
+  if (!oldP || !newP || !cfmP) {
+    alert('Vui lòng điền đủ thông tin!');
+    return;
+  }
+  if (newP !== cfmP) {
+    alert('Mật khẩu xác nhận không khớp!');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/profile/password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        oldPassword: oldP,
+        newPassword: newP,
+      }),
+    });
+
+    let data = null;
     try {
-      const res = await fetch(`${API}/profile/password`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ oldPassword: oldP, newPassword: newP }),
-        credentials: 'include'
-      });
-      if (!res.ok) throw new Error('Bad response');
-      alert('✅ Đổi mật khẩu thành công.');
-    } catch (err) {
-      console.warn('[Profile] PUT /profile/password lỗi (mock thành công).', err);
-      alert('Đã gửi yêu cầu đổi mật khẩu (mock). Khi BE xong hãy nối API PUT /profile/password.');
+      data = await res.json();
+    } catch (_) {}
+
+    if (!res.ok) {
+      const msg =
+        (data && (data.message || data.error)) ||
+        'Mật khẩu hiện tại không đúng hoặc yêu cầu không hợp lệ.';
+      alert(msg);
+      return;
     }
+
+    const msg =
+      (data && (data.message || data.msg)) ||
+      'Đổi mật khẩu thành công.';
+    alert(msg);
 
     document.getElementById('old-pass').value = '';
     document.getElementById('new-pass').value = '';
     document.getElementById('confirm-pass').value = '';
-  };
+  } catch (err) {
+    console.warn('[Profile] PUT /profile/password lỗi mạng.', err);
+    alert('Không thể kết nối máy chủ, vui lòng thử lại sau.');
+  }
+};
+
+
 
 window.logout = () => {
   if (confirm('Đăng xuất khỏi tài khoản?')) {

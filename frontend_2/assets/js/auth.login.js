@@ -26,7 +26,6 @@
 	const formSuccess = $('#formSuccess');
 	const signInBtn = $('#signInBtn');
 	const guestBtn = $('#guestBtn');
-
 	const toggle = document.getElementById('togglePw');
 	const eyeOn = document.getElementById('eyeOn');
 	const eyeOff = document.getElementById('eyeOff');
@@ -180,8 +179,6 @@
 			(!validateIdent(true) ? ident : password)?.focus();
 			return;
 		}
-
-		// chuẩn hoá định danh (+84 -> 0 khi ở Phone)
 		const raw = (ident?.value || '').trim();
 		const emailOrPhone = (mode === 'phone') ? raw.replace(/\s|-/g, '').replace(/^\+84/, '0') : raw;
 
@@ -202,8 +199,6 @@
 			if (!res.ok || (json && json.ok === false)) {
 				const msg = (json && (json.message || json.error || json.detail)) || text || `HTTP ${res.status}`;
 				if (formError) { formError.textContent = msg; formError.style.display = 'block'; }
-
-				// highlight cơ bản theo từ khoá (không cần chi tiết)
 				const m = (msg || '').toLowerCase();
 				clearFieldError(passwordBox, errPassword);
 				clearFieldError(identBox, errIdent);
@@ -214,7 +209,6 @@
 					showFieldError(identBox, errIdent, 'Thông tin định danh không hợp lệ.');
 					ident?.focus();
 				}
-
 				formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');
 				return;
 			}
@@ -222,37 +216,24 @@
 const token = json?.data?.accessToken || json?.accessToken;
       
       if (token) {
-        // Lưu token để duy trì đăng nhập
         localStorage.setItem('accessToken', token);
-
-        // 2. Lấy thông tin User từ response (BE trả về)
-        // Cấu trúc kỳ vọng: { data: { user: { ... } } } hoặc { user: { ... } }
         const user = json?.data?.user || json?.user || {};
-
-        // 3. Lưu Tên hiển thị (Ưu tiên fullName -> name -> username -> 'Member')
         const displayName = user.fullName || user.name || user.username || 'Member';
         localStorage.setItem('fullName', displayName);
-
-        // 4. Lưu Avatar (nếu có)
         if (user.avatarUrl) {
           localStorage.setItem('avatarUrl', user.avatarUrl);
         } else {
-          // Nếu user mới không có avatar, xóa avatar cũ (của user trước) đi để hiện chữ cái đầu
           localStorage.removeItem('avatarUrl');
         }
       }
-      // === KẾT THÚC ĐOẠN SỬA ĐỔI ===
 
       if (formSuccess) { 
           formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…'; 
           formSuccess.style.display = 'block'; 
       }
       
-      // Logic chuyển hướng (giữ nguyên)
       const params = new URLSearchParams(location.search);
       const next = params.get('next');
-      
-      // Delay nhẹ 500ms để người dùng kịp đọc thông báo (tùy chọn)
       setTimeout(() => {
           window.location.href = next || HOME_URL;
       }, 500);
@@ -264,9 +245,27 @@ const token = json?.data?.accessToken || json?.accessToken;
 			if (signInBtn) signInBtn.disabled = false;
 		}
 	});
+	const params  = new URLSearchParams(location.search);
+	const nextUrl = params.get('next');
 
+	const backBtn = document.querySelector('.back');
+	if (backBtn) {
+		backBtn.addEventListener('click', (e) => {
+		e.preventDefault();
+		const token = localStorage.getItem('accessToken');
+		if (token) {
+			location.href = nextUrl || HOME_URL;
+			return;
+		}
+		const ref = document.referrer ? document.referrer.toLowerCase() : '';
+		const isAuthLoop = ref.includes('signup') || ref.includes('forgot') || ref.includes('login');
+		if (ref && !isAuthLoop) {
+			history.back();
+		} else {
+			location.href = HOME_URL; 
+		}
+		});
+	}
 	guestBtn?.addEventListener('click', () => { window.location.href = `${HOME_URL}?guest=1`; });
-
-	// Init mode
 	setMode('email');
 })();

@@ -45,8 +45,8 @@
     return base * factor;
   }
 
+  // Lưu lần preview giá gần nhất từ BE
   let lastPricingPreview = null;
-  let pricingReqSeq = 0;
 
   // ===== API BASE + helpers =====
   const API = window.API_BASE || '/api';
@@ -55,36 +55,32 @@
   let lastHoldCall = 0;
   const HOLD_THROTTLE_MS = 300;
 
-async function apiGet(path) {
-  try {
-    const res = await fetch(API + path, {
-      cache: 'no-store',
-      credentials: 'include'
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  } catch (err) {
-    console.error('[seatmap] GET', path, err);
-    return null;
+  async function apiGet(path) {
+    try {
+      const res = await fetch(API + path, { cache: 'no-store', credentials: 'include' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } catch (err) {
+      console.error('[seatmap] GET', path, err);
+      return null;
+    }
   }
-}
 
-async function apiPost(path, body) {
-  try {
-    const res = await fetch(API + path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body || {}),
-      credentials: 'include'
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json().catch(() => null);
-  } catch (err) {
-    console.error('[seatmap] POST', path, err);
-    return null;
+  async function apiPost(path, body) {
+    try {
+      const res = await fetch(API + path, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify(body || {}),
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json().catch(() => null);
+    } catch (err) {
+      console.error('[seatmap] POST', path, err);
+      return null;
+    }
   }
-}
-
 async function createBooking(showtimeId, seatsPayload) {
   // seatsPayload: [{ code, type }]
   return await apiPost('/bookings', {
@@ -130,44 +126,7 @@ async function createBooking(showtimeId, seatsPayload) {
     return 'standard';
   };
 
-    const codeOf = (r,c)=> `${r}${c}`;
-
-// === Chuẩn hoá code ghế, loại vé, zone từ BE ===
-  function normalizeCode(raw) {
-    if (!raw) return '';
-    const s   = String(raw);
-    const row = s[0];
-    const num = parseInt(s.slice(1), 10);
-    if (!num) return s;          // nếu parse lỗi thì trả raw
-    return row + num;            // "J010" -> "J10"
-  }
-
-  function normalizeType(raw) {
-    const t = (raw || 'adult').toString().toLowerCase();
-    return t === 'child' ? 'child' : 'adult';  // mọi thứ không phải 'child' đều xem là 'adult'
-  }
-
-  const KNOWN_ZONES = ['vip','standard','couple'];
-
-  function normalizeZone(rawZone, code) {
-    let z = (rawZone || '').toString().toLowerCase();
-
-    // Map một số tên zone lạ về chuẩn
-    if (!z || !KNOWN_ZONES.includes(z)) {
-      if (z === 'normal' || z === 'std') {
-        z = 'standard';
-      } else if (z === 'double' || z === 'love' || z === 'couple-seat') {
-        z = 'couple';
-      } else if (code) {
-        // fallback theo row nếu không tin tưởng zone BE
-        z = zoneOf(String(code)[0]);
-      } else {
-        z = 'standard';
-      }
-    }
-    return z;
-  }
-
+  const codeOf = (r,c)=> `${r}${c}`;
 
   const showtimeId = () =>
     state.show.id ||
@@ -534,6 +493,8 @@ async function loadSeatStatesFromApi() {
       <div class="cell"><span>x0</span><span>${cplC ? toVND(cplC) : '-'}</span></div>
     `;
   }
+
+  // ===== Gọi BE tính giá =====
   async function requestPricingPreview() {
     const id = state.show.id || showtimeId();
     if (!id || !state.selected.size) {
@@ -545,65 +506,46 @@ async function loadSeatStatesFromApi() {
       code,
       type: state.assigned.get(code) || 'adult'
     }));
-    const seq = ++pricingReqSeq;
+
     const res = await apiPost(`/showtimes/${encodeURIComponent(id)}/pricing-preview`, {
       seats: seatsPayload
     });
+
     if (!res) return;
-    if (seq !== pricingReqSeq) {
-      return;
-    }
 
     lastPricingPreview = res;
     applyPreviewToSummary(res);
   }
 
-
   function applyPreviewToSummary(preview) {
-    const itemsRaw = Array.isArray(preview.items) ? preview.items : [];
-
-    // Chuẩn hoá lại code / type / zone từ BE
-    const items = itemsRaw.map((it) => {
-      const code = normalizeCode(it.code);
-      const seatZone = state.seats[code]?.zone;
-      const zone = normalizeZone(it.zone || seatZone, code);
-      const who  = normalizeType(it.type);
-      const price = Number(it.price || 0);
-      return { ...it, code, type: who, zone, price };
-    });
-
+    const items = Array.isArray(preview.items) ? preview.items : [];
     const total = typeof preview.totalAmount === 'number'
       ? preview.totalAmount
       : items.reduce((sum, it) => sum + (it.price || 0), 0);
 
-    // Tổng ghế & tổng tiền
+    // Tổng ghế
     $('#selCount').textContent = `${items.length} ghế được chọn`;
     $('#grandTotal').textContent = toVND(total);
 
-    const count = {
-      adult:   { vip: 0, standard: 0, couple: 0 },
-      child:   { vip: 0, standard: 0, couple: 0 }
-    };
+  const count = {
+    adult:   { vip: 0, standard: 0, couple: 0 },
+    child:   { vip: 0, standard: 0, couple: 0 }
+  };
 
-    let adultTotal = 0;
-    let childTotal = 0;
+  let adultTotal = 0;
+  let childTotal = 0;
 
-    items.forEach((it) => {
-      const who   = it.type;   // đã normalize: 'adult' | 'child'
-      const zone  = it.zone;   // đã normalize: 'vip' | 'standard' | 'couple'
-      const price = it.price || 0;
+  items.forEach((it) => {
+    const who  = it.type === 'child' ? 'child' : 'adult';
+    const zone = it.zone || state.seats[it.code]?.zone || zoneOf(it.code[0]);
+    const price = it.price || 0;   // giá BE trả
 
-      if (!(zone in count[who])) {
-        // zone lạ → vẫn cộng vào tổng adult/child để không lệch grandTotal
-        if (who === 'child') childTotal += price;
-        else                 adultTotal += price;
-        return;
-      }
+    if (count[who][zone] === undefined) return;
+    count[who][zone]++;
 
-      count[who][zone]++;
-      if (who === 'child') childTotal += price;
-      else                 adultTotal += price;
-    });
+    if (who === 'child') childTotal += price;
+    else                 adultTotal += price;
+  });
 
     const adNum = count.adult.vip + count.adult.standard + count.adult.couple;
     const chNum = count.child.vip + count.child.standard + count.child.couple;
@@ -612,7 +554,7 @@ async function loadSeatStatesFromApi() {
     $('#adCount').textContent = `(x${adNum})`;
     $('#chCount').textContent = `(x${chNum})`;
 
-    // Update bảng matrix VIP / Standard / Couple
+    // Update bảng matrix
     const cells = $$('#priceMatrix .cell');
     if (cells.length >= 6) {
       // Adult: VIP - Standard - Couple
@@ -625,7 +567,7 @@ async function loadSeatStatesFromApi() {
       cells[5].firstElementChild.textContent = `x${count.child.couple}`;
     }
 
-    // ===== Render chip ghế (ghép ghế đôi J row) =====
+    // Render chip ghế (giữ logic gộp couple như cũ, nhưng dựa vào items)
     const arr = [...items].sort((a, b) => {
       const ca = a.code; const cb = b.code;
       if (ca[0] === cb[0]) return (+ca.slice(1)) - (+cb.slice(1));
@@ -637,18 +579,16 @@ async function loadSeatStatesFromApi() {
 
     for (const it of arr) {
       const code = it.code;
-      const zone = it.zone;
+      const zone = it.zone || state.seats[code]?.zone || zoneOf(code[0]);
       const who  = it.type;
 
       if (zone !== 'couple') {
-        // Ghế đơn: show đúng code + Child/Adult
         chips.push(
           `<span class="seat-chip ${zone}">${code} <small>${who === 'child' ? '(Child)' : ''}</small></span>`
         );
         continue;
       }
 
-      // Ghế đôi: gom J9 + J10 -> "J9-J10"
       const row = code[0];
       const col = Number(code.slice(1));
       const leftCol  = col % 2 === 0 ? col - 1 : col;
@@ -663,7 +603,6 @@ async function loadSeatStatesFromApi() {
 
     $('#selList').innerHTML = chips.join('');
   }
-
 
   function syncSummary(){
     if (!state.selected.size) {

@@ -36,7 +36,7 @@ public class ShowtimeDetailService {
         // ==== Parse time ====
         Timestamp ts = (Timestamp) st.get("start_at");
         LocalDateTime startAt = ts.toLocalDateTime();
-        String date = startAt.toLocalDate().toString(); // yyyy-MM-dd
+        String date = startAt.toLocalDate().toString(); 
         String time = startAt.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"));
 
         // ==== CREATE DTO ====
@@ -46,7 +46,7 @@ public class ShowtimeDetailService {
         res.setTheaterName((String) st.get("theater_name"));
         res.setShowDate(date);
         res.setStartTime(time);
-        res.setFormatName("2D");  // FE mặc định 2D
+        res.setFormatName((String) st.get("format_name")); 
         
         // ==== MOVIE INFO ====
         Movie m = movieRepo.findByMovieId(movieId);
