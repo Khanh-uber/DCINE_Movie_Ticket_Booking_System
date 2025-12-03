@@ -1,6 +1,8 @@
 package com.example.cinema.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;  
 @Entity
 @Table(name = "account")
@@ -35,6 +37,9 @@ public class Account {
     public enum Role {
         CUSTOMER, ADMIN
     }
+    
+    @Column(name = "total_spending")
+    private BigDecimal totalSpending;
 
     @Column(name="phone", unique = true)
     private String phone;
@@ -127,6 +132,24 @@ public class Account {
     }
     public void setPhone(String phone){
         this.phone = phone;
+    }
+    public Long getMemberShipId() {
+        return memberShipId;
+    }
+    public void setMemberShipId(Long memberShipId) {
+        this.memberShipId = memberShipId;
+    }
+    public int getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+    public void setLoyaltyPoints(int loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
+    }
+    public BigDecimal getTotalSpending() {
+        return totalSpending;
+    }
+    public void setTotalSpending(BigDecimal totalSpending) {
+        this.totalSpending = totalSpending;
     }
     public Customer getCustomer(){
         return customer;

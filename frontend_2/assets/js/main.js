@@ -1633,7 +1633,6 @@ async function enhanceMember() {
   const wrap = document.querySelector('#member .member-v2');
   if (!wrap) return;
 
-  // Các element hiển thị
   const els = {
     btns: wrap.querySelectorAll('.tier-tab'),
     price: document.getElementById('tierPrice'),
@@ -1644,7 +1643,6 @@ async function enhanceMember() {
     progFill: document.getElementById('loyaltyProgressFill'),
     progTxt: document.getElementById('loyaltyProgressText')
   };
-
 
   const TIERS = {
     STANDARD: {
@@ -1657,7 +1655,7 @@ async function enhanceMember() {
     },
     SILVER: {
       label: 'Silver',
-      min: 1000000, 
+      min: 1000000,
       perks: [
         'Đạt mốc chi tiêu 1.000.000đ',
         'GIẢM 5% trên tổng hóa đơn'
@@ -1672,6 +1670,7 @@ async function enhanceMember() {
       ]
     }
   };
+
   let beTiers = [];
   const API = window.API_BASE || '/api';
 
@@ -1700,19 +1699,20 @@ async function enhanceMember() {
         ].filter(Boolean)
       };
     });
+
     Object.keys(map).forEach(key => {
       if (!TIERS[key]) TIERS[key] = {};
-
       TIERS[key].label = map[key].label || TIERS[key].label || key;
       TIERS[key].min   = map[key].min   ?? TIERS[key].min ?? 0;
-
       if (map[key].perks.length) {
         TIERS[key].perks = map[key].perks;
       }
     });
   }
+
   const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-  const fmt = n => n.toLocaleString('vi-VN') + 'đ';
+  const fmt = n => (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
+
   function uiSwitchTab(key) {
     const t = TIERS[key];
     if (!t) return;
@@ -1720,51 +1720,94 @@ async function enhanceMember() {
     wrap.setAttribute('data-theme', key);
     if (els.cardName) els.cardName.textContent = t.label;
     if (els.price) {
-        els.price.textContent = t.min === 0 ? 'Mức khởi điểm' : `Cần tích lũy ${fmt(t.min)}`;
+      els.price.textContent = t.min === 0 ? 'Mức khởi điểm' : `Cần tích lũy ${fmt(t.min)}`;
     }
     if (els.perksList) {
-        els.perksList.innerHTML = t.perks.map(p => `<li>${checkIcon}${p}</li>`).join('');
+      els.perksList.innerHTML = t.perks.map(p => `<li>${checkIcon}${p}</li>`).join('');
     }
     els.btns.forEach(b => b.classList.toggle('active', b.dataset.tier === key));
   }
-  const userSpent = 1200000; 
-  
+
+  // ===== 3. Lấy thông tin user từ localStorage (nếu đã đăng nhập) =====
+  const hasToken = !!localStorage.getItem('accessToken');
+
+  let userSpent   = 0;
+  let userPoints  = 0;
+  let tierNameStr = null;
+
+  if (hasToken) {
+    const storedSpent  = Number(localStorage.getItem('totalSpending') || '0');
+    const storedPts    = Number(localStorage.getItem('loyaltyPoints') || '0');
+    const storedTier   = localStorage.getItem('membershipTierName');
+
+    userSpent   = isNaN(storedSpent) ? 0 : storedSpent;
+    userPoints  = isNaN(storedPts)   ? 0 : storedPts;
+    tierNameStr = storedTier || null;
+  }
+
+  // ===== 4. Xác định hạng hiện tại =====
   let currentTierKey = 'STANDARD';
-  if (userSpent >= TIERS.GOLD.min) currentTierKey = 'GOLD';
-  else if (userSpent >= TIERS.SILVER.min) currentTierKey = 'SILVER';
-  if (els.userTier) els.userTier.textContent = TIERS[currentTierKey].label;
-  if (els.userPts) els.userPts.textContent = fmt(userSpent);
 
-  let nextGoal = 0;
-  let nextLabel = '';
+  if (tierNameStr) {
+    const keyFromName = tierNameStr.trim().toUpperCase();
+    if (TIERS[keyFromName]) {
+      currentTierKey = keyFromName;
+    }
+  } else if (userSpent > 0) {
+    if (userSpent >= TIERS.GOLD.min) currentTierKey = 'GOLD';
+    else if (userSpent >= TIERS.SILVER.min) currentTierKey = 'SILVER';
+  }
 
-  if (currentTierKey === 'STANDARD') {
+  // Guest: giữ nguyên text HTML ban đầu
+  if (hasToken && els.userTier) {
+    els.userTier.textContent = TIERS[currentTierKey].label;
+  }
+
+  if (els.userPts) {
+    if (hasToken) {
+      const displayVal = userPoints > 0 ? userPoints : userSpent;
+      els.userPts.textContent = fmt(displayVal);
+    } // chưa đăng nhập thì để nguyên "0" trong HTML
+  }
+
+  // ===== 5. Thanh tiến độ =====
+  if (hasToken && userSpent > 0) {
+    let nextGoal = 0;
+    let nextLabel = '';
+
+    if (currentTierKey === 'STANDARD') {
       nextGoal = TIERS.SILVER.min;
       nextLabel = 'Silver';
-  } else if (currentTierKey === 'SILVER') {
+    } else if (currentTierKey === 'SILVER') {
       nextGoal = TIERS.GOLD.min;
       nextLabel = 'Gold';
-  }
+    }
 
-  if (nextGoal > 0) {
+    if (nextGoal > 0) {
       const percent = Math.min(100, (userSpent / nextGoal) * 100);
-      
       if (els.progFill) els.progFill.style.width = `${percent}%`;
-      
-      const remain = nextGoal - userSpent;
+
+      const remain = Math.max(0, nextGoal - userSpent);
       if (els.progTxt) {
-        els.progTxt.innerHTML = `Bạn cần chi thêm <b style="color:#fff">${fmt(remain)}</b> để lên hạng ${nextLabel} (Giảm ${nextLabel === 'Silver' ? '5%' : '10%'})`;
+        els.progTxt.innerHTML =
+          `Bạn cần chi thêm <b style="color:#FFD700">${fmt(remain)}</b> để lên hạng <b>${nextLabel}</b> (Giảm ${nextLabel === 'Silver' ? '5%' : '10%'})`;
       }
-  } else {
+    } else {
       if (els.progFill) els.progFill.style.width = '100%';
       if (els.progTxt) els.progTxt.textContent = 'Bạn đang hưởng mức giảm giá cao nhất (10%)!';
+    }
+  } else {
+    // Guest: để thanh = 0%, text mặc định "Đăng nhập để xem tiến trình..."
+    if (els.progFill) els.progFill.style.width = '0%';
   }
 
+  // ===== 6. Gán event cho các tab (luôn chạy cho cả guest) =====
   els.btns.forEach(btn => {
     btn.addEventListener('click', () => uiSwitchTab(btn.dataset.tier));
   });
   uiSwitchTab(currentTierKey);
 }
+
 
 function initSimpleCarousel(wrap, { itemSelector = '.deal' } = {}) {
   if (!wrap) return;

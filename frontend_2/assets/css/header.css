@@ -20,13 +20,12 @@
     /* YÊU CẦU CỦA BẠN: Trong suốt nhưng có độ mờ ngay từ đầu */
     background: var(--bg-transparent);
     backdrop-filter: blur(var(--blur-val)); 
-    -webkit-backdrop-filter: blur(var(--blur-val)); /* Cho Safari */
+    -webkit-backdrop-filter: blur(var(--blur-val)); 
     
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Khi cuộn xuống thì nền đậm hơn */
 .header.scrolled {
     background: var(--bg-scrolled);
     box-shadow: 0 4px 20px rgba(0,0,0,0.6);
@@ -68,7 +67,6 @@
     width: 150px; padding: 10px; border-radius: 8px;
     display: flex; flex-direction: column; gap: 5px;
     
-    /* Ẩn mặc định */
     opacity: 0; visibility: hidden; transform: translateY(10px);
     transition: all 0.2s ease;
 }
@@ -82,7 +80,6 @@
 }
 
 /* 1. Search Box Logic */
-/* --- 1. Search Box Logic (Đã làm đẹp & Icon to) --- */
 .search-wrapper {
     display: flex;
     align-items: center;
@@ -92,7 +89,7 @@
 
 /* Nút icon tìm kiếm */
 .icon-btn {
-    width: 44px; /* Tăng kích thước vùng bấm */
+    width: 44px;
     height: 44px;
     border-radius: 50%;
     border: none;
@@ -113,7 +110,7 @@
 
 /* Icon SVG to hơn */
 .ico {
-    width: 24px;  /* Tăng từ 18px lên 24px */
+    width: 24px;  
     height: 24px;
     stroke: currentColor;
     fill: none;
@@ -126,11 +123,11 @@
     right: 0;
     top: 0;
     height: 44px;
-    width: 44px; /* Mặc định bằng nút icon để ẩn đi */
+    width: 44px; 
     overflow: hidden;
     background: transparent;
-    border-radius: 22px; /* Bo tròn viên thuốc */
-    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Hiệu ứng trượt mượt */
+    border-radius: 22px;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
     display: flex;
     align-items: center;
     z-index: 1;
@@ -139,11 +136,11 @@
 
 /* Khi mở ra */
 .search-form.open {
-    width: 300px; /* Dài hơn để nhập thoải mái */
-    background: rgba(255, 255, 255, 0.15); /* Nền kính mờ sáng hơn chút */
+    width: 300px; 
+    background: rgba(255, 255, 255, 0.15); 
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    padding-right: 44px; /* Chừa chỗ cho nút icon search */
+    padding-right: 44px; 
     opacity: 1;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
@@ -156,7 +153,7 @@
     color: #fff;
     outline: none;
     padding: 0 16px;
-    font-size: 16px; /* Chữ to hơn cho dễ đọc */
+    font-size: 16px; 
     font-weight: 500;
 }
 

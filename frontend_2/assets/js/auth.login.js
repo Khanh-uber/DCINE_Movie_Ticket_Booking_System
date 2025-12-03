@@ -214,29 +214,45 @@
 			}
 
 const token = json?.data?.accessToken || json?.accessToken;
-      
-      if (token) {
+    
+    if (token) {
         localStorage.setItem('accessToken', token);
         const user = json?.data?.user || json?.user || {};
         const displayName = user.fullName || user.name || user.username || 'Member';
         localStorage.setItem('fullName', displayName);
         if (user.avatarUrl) {
-          localStorage.setItem('avatarUrl', user.avatarUrl);
+        	localStorage.setItem('avatarUrl', user.avatarUrl);
         } else {
-          localStorage.removeItem('avatarUrl');
+        	localStorage.removeItem('avatarUrl');
         }
-      }
+		if (user.loyaltyPoints != null) {
+		localStorage.setItem('loyaltyPoints', String(user.loyaltyPoints));
+		} else {
+		localStorage.removeItem('loyaltyPoints');
+		}
 
-      if (formSuccess) { 
-          formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…'; 
-          formSuccess.style.display = 'block'; 
-      }
-      
-      const params = new URLSearchParams(location.search);
-      const next = params.get('next');
-      setTimeout(() => {
-          window.location.href = next || HOME_URL;
-      }, 500);
+		if (user.totalSpending != null) {
+		localStorage.setItem('totalSpending', String(user.totalSpending));
+		} else {
+		localStorage.removeItem('totalSpending');
+		}
+
+		if (user.membershipTierName) {
+		localStorage.setItem('membershipTierName', user.membershipTierName);
+		} else {
+		localStorage.removeItem('membershipTierName');
+		}
+    	}
+    	if (formSuccess) { 
+    		formSuccess.textContent = 'Đăng nhập thành công. Đang chuyển hướng…'; 
+        	formSuccess.style.display = 'block'; 
+    	}
+		
+    	const params = new URLSearchParams(location.search);
+    	const next = params.get('next');
+    	setTimeout(() => {
+    		window.location.href = next || HOME_URL;
+    }, 500);
 		} catch (err) {
 			if (formError) { formError.textContent = err?.message || 'Không thể kết nối máy chủ. Vui lòng thử lại.'; formError.style.display = 'block'; }
 			formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');

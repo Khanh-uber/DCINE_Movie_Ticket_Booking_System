@@ -25,12 +25,9 @@ public class MembershipService {
             dto.setName(m.getName());
             dto.setDescription(m.getDescription());
             dto.setMinSpent(m.getMinSpending()); 
-            if (m.getPointMultiplier() != null) {
-                dto.setPointRate(m.getPointMultiplier());
-            } else {
-                dto.setPointRate(0.0);
-            }
-            
+            dto.setPointRate(
+                m.getPointMultiplier() != null ? m.getPointMultiplier() : 0.0
+            );
             return dto;
         }).collect(Collectors.toList());
     }
