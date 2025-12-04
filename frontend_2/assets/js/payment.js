@@ -46,29 +46,21 @@
               (cartData.meta && cartData.meta.time) || 
               bookingData.showTime || bookingData.time || bookingData.gioChieu ||
               (bookingData.meta && bookingData.meta.time);
-
-          // Lấy giá trị END TIME trực tiếp (Có thể là "" nếu không được truyền)
           const realEndTime = 
               cartData.endTime || (cartData.ticket && cartData.ticket.endTime) ||
               (cartData.meta && cartData.meta.endTime) || 
               bookingData.endTime || (bookingData.meta && bookingData.meta.endTime);
 
           if (realDate) payment.showDate = realDate;
-          if (realTime) payment.showTime = realTime; // Raw Start Time
-          if (realEndTime) payment.endTime = realEndTime; // Raw End Time (có thể là "")
-          
-          // [FIX] TẠO CHUỖI HIỂN THỊ CHỈ KHI END TIME CÓ GIÁ TRỊ KHÁC RỖNG
+          if (realTime) payment.showTime = realTime; 
+          if (realEndTime) payment.endTime = realEndTime; 
           if (realTime && realDate) {
-              let timeStr = realTime; // VD: 14:00:00
-              
-              // Chỉ nối chuỗi nếu realEndTime KHÔNG phải là chuỗi rỗng ("")
+              let timeStr = realTime; 
               if (realEndTime && realEndTime !== "") { 
-                  timeStr = `${realTime} ~ ${realEndTime}`; // VD: 14:00:00 ~ 16:00:00
+                  timeStr = `${realTime} ~ ${realEndTime}`; 
               }
 
               payment.showtimeText = `${timeStr} • ${realDate}`; 
-              
-              // Gán chuỗi formatted (Start hoặc Start~End) vào showTime
               payment.showTime = timeStr; 
           }
 
@@ -126,39 +118,30 @@
       const data = JSON.parse(raw);
       if (!data || typeof data !== 'object') return;
       
-      // --- TÍNH TOÁN TICKET AMOUNT & CỨU ITEMS ---
       let ticketAmount = 0;
       let itemsArr = [];
-      let seatsArr = []; // Khai báo thêm để cứu ghế
-
-      // Ưu tiên 1: Lấy từ data.ticket.items (danh sách ghế chi tiết)
+      let seatsArr = []; 
       if (data.ticket && Array.isArray(data.ticket.items) && data.ticket.items.length > 0) {
           itemsArr = data.ticket.items;
           seatsArr = itemsArr.map(i => i.code || i.seatCode);
           ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
       } 
-      // Ưu tiên 2: Cứu từ booking_cart nếu concessions_cart thiếu
       else {
           const rawBooking = localStorage.getItem('booking_cart');
           if (rawBooking) {
               const bookingData = JSON.parse(rawBooking);
-              // [SỬA]: Ưu tiên đọc trường 'items' (chứa chi tiết ghế + giá từ BE)
               if (Array.isArray(bookingData.items) && bookingData.items.length > 0) {
                   itemsArr = bookingData.items; 
                   seatsArr = itemsArr.map(s => s.code || s.seatCode);
                   ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
               }
-              // Fallback: đọc selectedSeats cũ
               else if (Array.isArray(bookingData.selectedSeats)) { 
-                  // Giả định selectedSeats có structure {code, price}
                   itemsArr = bookingData.selectedSeats;
                   seatsArr = itemsArr.map(s => s.code);
                   ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
               }
           }
       }
-      
-      // Fallback: Lấy totalAmount trực tiếp nếu itemsArr vẫn rỗng
       if (ticketAmount === 0) {
           if (data.ticket && typeof data.ticket.totalAmount === 'number') {
               ticketAmount = data.ticket.totalAmount;
@@ -167,9 +150,6 @@
               ticketAmount = Number(data.totalPrice);
           }
       }
-      // -------------------------------------
-
-      // Tính tổng Combo
       const combosTotal = (data.combos || []).reduce((sum, item) => {
           const unitPrice = Number(item.unitPrice || item.price || 0);
           const lineTotal = Number(item.lineTotal || 0);
@@ -201,8 +181,6 @@
       if (!finalTicket.showDate) finalTicket.showDate = data.showDate || data.date;
       if (!finalTicket.showTime) finalTicket.showTime = data.showTime || data.time;
       if (!finalTicket.endTime) finalTicket.endTime = data.endTime;
-      
-      // Cứu dữ liệu định dạng (format) nếu có
       if (!finalTicket.format) finalTicket.format = data.format || (data.meta && data.meta.format);
 
       state.order = {
@@ -343,27 +321,19 @@
       const theaterName = ticket.theaterName || ticket.cinemaName || (meta && meta.theaterName) || 'D-cine Quận 1';
 
       let seatsArr = [];
-
-      // 1) từ ticket.items
       if (Array.isArray(ticket.items)) {
           seatsArr = ticket.items
               .map(it => it && (it.code || it.seatCode || it.label))
               .filter(Boolean);
       }
-
-      // 2) từ ticket.seats (nếu items không có)
       if (!seatsArr.length && Array.isArray(ticket.seats)) {
           seatsArr = ticket.seats.filter(Boolean);
       }
-
-      // 3) từ ticket.ticket.items (BE trả nested)
       if (!seatsArr.length && ticket.ticket && Array.isArray(ticket.ticket.items)) {
           seatsArr = ticket.ticket.items
               .map(it => it && (it.code || it.seatCode || it.label))
               .filter(Boolean);
       }
-
-      // 4) Fallback cuối: cartData trong localStorage
       if (!seatsArr.length) {
           const raw = localStorage.getItem('booking_cart');
           if (raw) {
@@ -460,7 +430,6 @@
       // 5. Combo + giá combo
       const totalCombosAmount = totals.combosAmount;
       if (totalCombosAmount > 0) {
-        // Liệt kê tên các combo đã chọn
         const comboList = (combos || []).map(c => {
             const name = c.title || c.name || 'Combo';
             const qty = c.qty || c.quantity || 1;
@@ -474,12 +443,9 @@
           </div>
         `);
       }
-
-      //lines.push(`<div style="border-top: 1px dashed #333; margin: 12px 0 12px 0;"></div>`);
       itemsWrap.innerHTML = lines.join('');
     }
     
-    // --- RENDER CÁC TRƯỜNG TỔNG KẾT ---
     
     // Tạm tính và VAT
     if (subTotalEl) subTotalEl.textContent = toVND(totals.subTotal);
@@ -492,7 +458,6 @@
             if (discountAmountEl) discountAmountEl.textContent = `-${toVND(totals.discountAmount)}`;
             if (discountCodeEl) discountCodeEl.textContent = `(${totals.discountCode || 'Mã ưu đãi'})`;
         } else {
-            // Hiển thị -0đ khi không có giảm giá
             discountRow.style.display = 'flex'; 
             if (discountAmountEl) discountAmountEl.textContent = `-0₫`;
             if (discountCodeEl) discountCodeEl.textContent = '';
@@ -536,7 +501,6 @@
   }
 
   function initCardForm() {
-    // 1. SỐ THẺ
     const numEl = $('#cardNumber');
     if (numEl) {
       numEl.addEventListener('input', (e) => {
@@ -547,25 +511,20 @@
         updateCardMock();
       });
     }
-
-    // 2. NGÀY HẾT HẠN (Logic thông minh: tự thêm 0, chặn tháng > 12)
     const expEl = $('#cardExpiry');
     if (expEl) {
       expEl.addEventListener('input', (e) => {
         let v = e.target.value.replace(/\D/g, '');
         
-        // Logic thêm số 0 nếu nhập 2-9 đầu tiên
         if (v.length === 1 && /[2-9]/.test(v)) {
           v = '0' + v;
         }
 
-        // Validate tháng
         if (v.length >= 2) {
           const mm = parseInt(v.slice(0, 2), 10);
           if (mm === 0) v = '0'; 
           else if (mm > 12) v = v.slice(0, 1);
         }
-
         v = v.slice(0, 4);
         if (v.length >= 3) {
           v = v.slice(0, 2) + '/' + v.slice(2);
@@ -575,21 +534,14 @@
       });
     }
 
-    // 3. TÊN CHỦ THẺ (CHUYỂN CÓ DẤU -> KHÔNG DẤU + IN HOA)
     const nameEl = $('#cardName');
     if (nameEl) {
       let isComposing = false;
-      
-      // Khi bắt đầu gõ tiếng Việt -> Tạm dừng xử lý
       nameEl.addEventListener('compositionstart', () => { isComposing = true; });
-      
-      // Khi gõ xong tiếng Việt -> Xử lý ngay
       nameEl.addEventListener('compositionend', (e) => {
         isComposing = false;
         handleNameInput(e.target);
       });
-
-      // Khi nhập bình thường
       nameEl.addEventListener('input', (e) => {
         if (isComposing) return;
         handleNameInput(e.target);
@@ -597,21 +549,10 @@
 
       function handleNameInput(input) {
         let v = input.value;
-
-        // BƯỚC 1: Xóa dấu tiếng Việt (Normalize)
-        // Tách ký tự có dấu thành ký tự gốc + dấu (vd: á -> a + ´), sau đó xóa dấu
         v = v.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        
-        // Xử lý riêng chữ Đ/đ (vì NFD không tách đ thành d)
         v = v.replace(/đ/g, 'd').replace(/Đ/g, 'D');
-
-        // BƯỚC 2: Chỉ giữ lại chữ cái A-Z và khoảng trắng (Loại bỏ số, ký tự đặc biệt)
         v = v.replace(/[^a-zA-Z\s]/g, '');
-
-        // BƯỚC 3: Viết hoa toàn bộ
         v = v.toUpperCase();
-
-        // BƯỚC 4: Xóa khoảng trắng thừa
         v = v.replace(/\s{2,}/g, ' ');
 
         input.value = v;
@@ -619,7 +560,6 @@
       }
     }
 
-    // 4. MÃ CVV
     const cvvEl = $('#cardCvv');
     if (cvvEl) {
       cvvEl.addEventListener('input', (e) => {
@@ -629,7 +569,6 @@
       });
     }
 
-    // 5. NÚT XÓA
     const clearBtn = $('#btnClearCard');
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
@@ -669,7 +608,6 @@
     if (!promo || !promo.code) return false;
     if (promo.isActive === false) return false;
 
-    // Kiểm tra minOrder
     if (
       typeof promo.minOrder === 'number' &&
       totals.subTotal < promo.minOrder
@@ -677,7 +615,6 @@
       return false;
     }
 
-    // Kiểm tra ngày
     const now = new Date();
 
     if (promo.validFrom) {
@@ -698,7 +635,7 @@
     const value = Number(promo.discountValue || promo.value || 0);
     if (!value) return 0;
 
-    const base = totals.subTotal + totals.vat; // giảm trên tổng tạm tính + VAT
+    const base = totals.subTotal + totals.vat;
     if (type === 'percent') {
       return Math.min(base, Math.round((base * value) / 100));
     }
@@ -773,8 +710,6 @@
         state.backend.lastError = String(err);
       }
     }
-
-    // Fallback: tự check promotions.json
     const list = await ensurePromotionsLoaded();
     const totals =
       state.order._computedTotals || getTotals(state.order);
@@ -788,7 +723,6 @@
           '⚠️ Mã không hợp lệ hoặc đã hết hạn.';
         msgEl.classList.add('err');
       }
-      // clear discount
       state.order._voucher = { code: '', amount: 0 };
       renderOrderSummary();
       return;
@@ -844,7 +778,6 @@ function initVoucher() {
       const ticket = state.order.ticket || {};
       const totals = state.order.totals || {};
       const now = new Date();
-      // ID Tạm (sẽ được enrich lại)
       const displayOrderId = state.order.bookingId ? `ORD-${state.order.bookingId}` : ('DCINE' + now.getTime().toString().slice(-8));
 
       return {
@@ -913,10 +846,6 @@ function initVoucher() {
     state.qr.imageUrl = imageUrl;
   }
 
-  // ============================================================
-  // [QUAN TRỌNG] CALLBACK KHI THANH TOÁN QR THÀNH CÔNG
-  // Hàm này giờ đây sẽ gọi enrichPaymentData để đảm bảo đủ thông tin
-  // ============================================================
   window.DCINE_MARK_PAYMENT_PAID = function (payload) {
     let payment = buildOrderPayment(state.paymentMethod, 'paid');
     
@@ -962,7 +891,6 @@ function initVoucher() {
         return;
     }
 
-    // QR Flows (Wallet/Bank)
     let pendingPayment = buildOrderPayment(method, 'pending');
     state.pendingPayment = pendingPayment;
 
@@ -981,8 +909,6 @@ function initVoucher() {
     initVoucher();
     await loadOrder();
     renderOrderSummary();
-
-    // 1. Nút quay lại (Back)
     const backBtn = $('#btnBackConcessions');
     if (backBtn) {
         backBtn.addEventListener('click', (e) => {
@@ -990,8 +916,6 @@ function initVoucher() {
             window.location.href = 'concessions.html';
         });
     }
-
-    // 2. Nút xác nhận thanh toán (Confirm)
     const btnConfirm = $('#btnConfirmPayment');
     if (btnConfirm) {
         btnConfirm.addEventListener('click', handleConfirmPayment);
