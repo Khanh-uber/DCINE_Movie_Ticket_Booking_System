@@ -199,7 +199,6 @@
 					showFieldError(passwordBox, errPassword, 'Sai mật khẩu.');
 					password?.focus();
 				} else if (m.includes('email') || m.includes('phone') || m.includes('số') || m.includes('username') || m.includes('không tìm thấy') || m.includes('không khớp')) {
-					showFieldError(identBox, errIdent, 'Thông tin định danh không hợp lệ.');
 					ident?.focus();
 				}
 				formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');

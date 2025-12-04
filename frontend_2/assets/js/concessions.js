@@ -306,7 +306,6 @@ const CAT_CONFIG = {
    * Nếu lỗi -> tắt backend.enabled và quay về FE tự tính.
    */
   async function syncCartWithBackend() {
-    // Nếu BE đã tắt hoặc chưa bật -> dùng FE
     if (!state.backend.enabled) {
       state.totals = null;
       updateTotals();

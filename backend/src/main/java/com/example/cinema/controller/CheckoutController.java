@@ -33,19 +33,10 @@ public class CheckoutController {
         return ResponseEntity.ok(checkoutService.getOrderByTransactionId(trans));
     }
 
-    // 4. API Summary: Trả về rỗng để FE tự dùng LocalStorage
-    // @GetMapping("/summary")
-    // public ResponseEntity<?> summary() {
-    //     return ResponseEntity.ok(Collections.emptyMap());
-    // }
-
-    // 5. API Voucher (Mock): Trả về nguyên order để không báo lỗi FE
     @PostMapping("/apply-voucher")
     public ResponseEntity<?> applyVoucher(@RequestBody Map<String, Object> payload) {
-        // [ĐÃ SỬA]: API này sẽ gọi Service để tính toán totals
         Map<String, Object> order = (Map<String, Object>) payload.get("order");
         
-        // Gọi hàm Service để tính toán lại totals hoàn chỉnh
         Map<String, Object> calculatedOrder = checkoutService.calculateOrderSummary(order);
         
         return ResponseEntity.ok(calculatedOrder);

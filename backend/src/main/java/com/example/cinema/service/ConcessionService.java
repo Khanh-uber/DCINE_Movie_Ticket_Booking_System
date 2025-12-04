@@ -30,10 +30,10 @@ public class ConcessionService {
     private final ConcessionItemRepository concessionItemRepo; // Dùng để tìm item info
 
     public ConcessionService(ShowTimeRepository showtimeRepo,
-                             SeatLayoutRepository seatLayoutRepo, SeatTypeRepository seatTypeRepo,
-                             BookingRepository bookingRepo, BookingSeatRepository bookingSeatRepo,
-                             ConcessionItemRepository concessionRepo, ConcessionVariantRepository concessionVariantRepo,
-                             BookingConcessionRepository bookingConcessionRepo, ConcessionItemRepository concessionItemRepo){
+                            SeatLayoutRepository seatLayoutRepo, SeatTypeRepository seatTypeRepo,
+                            BookingRepository bookingRepo, BookingSeatRepository bookingSeatRepo,
+                            ConcessionItemRepository concessionRepo, ConcessionVariantRepository concessionVariantRepo,
+                            BookingConcessionRepository bookingConcessionRepo, ConcessionItemRepository concessionItemRepo){
         this.showtimeRepo = showtimeRepo;
         this.concessionRepo = concessionRepo;
         this.bookingRepo = bookingRepo;
@@ -46,7 +46,6 @@ public class ConcessionService {
     public ConcessionResponse loadSummary(Long accountId){
         ConcessionResponse res = new ConcessionResponse();
 
-        // Build TicketInfo
         Booking booking = bookingRepo.getPendingBooking(accountId);
         if (booking == null) {
             res.setTicket(null);
@@ -57,7 +56,7 @@ public class ConcessionService {
         System.out.println(">>> Pending Booking ID = " + booking.getBookingId());
         System.out.println(">>> OLD total_amount = " + booking.getTotalAmount());
         long ticketTotal = 0;
-        Double combosTotal = 0.0; // Khai báo biến tổng tiền combo
+        Double combosTotal = 0.0; 
         
         ConcessionResponse.TicketInfo ticketInfo = new ConcessionResponse.TicketInfo();
         Long showtimeId = booking.getShowtimeId();
@@ -66,25 +65,19 @@ public class ConcessionService {
         if (booking != null){
             ticketInfo.setShowtimeId(showtimeId);
             ticketInfo.setDate(((java.sql.Date) showtimeMeta.get("date")).toLocalDate().toString());
-            
-            // --- XỬ LÝ GIỜ CHIẾU & GIỜ KẾT THÚC (end_at) ---
             java.sql.Time sqlTime = (java.sql.Time) showtimeMeta.get("time");
             String time = (sqlTime != null)
                     ? sqlTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
                     : "";
             ticketInfo.setTime(time);
-
-            // Lấy giờ kết thúc từ biến end_at (giả sử DB trả về key "end_at")
             java.sql.Time sqlEndTime = (java.sql.Time) showtimeMeta.get("end_at");
             String endTime = (sqlEndTime != null)
                     ? sqlEndTime.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm"))
                     : "";
-            // *LƯU Ý: Bạn cần thêm field setEndTime vào DTO TicketInfo
             ticketInfo.setEndTime(endTime); 
 
             ticketInfo.setMovieTitle((String) showtimeMeta.get("movieTitle"));
             ticketInfo.setTheaterName((String) showtimeMeta.get("theaterName"));
-            // --- XỬ LÝ GHẾ ---
             List<Map<String, Object>> seatRows = bookingSeatRepo.findSeatByBooking(booking.getBookingId());
             List<ConcessionResponse.SeatItems> seatItems = new ArrayList<>();
             
@@ -106,7 +99,6 @@ public class ConcessionService {
             ticketInfo.setSeatItems(seatItems);
             ticketInfo.setTotalAmount(ticketTotal);
 
-            // --- XỬ LÝ LOAD COMBOS TỪ DB (Khắc phục lỗi mất dữ liệu) ---
             List<Map<String, Object>> comboRows = bookingConcessionRepo.findByBookingId(booking.getBookingId());
             List<ConcessionResponse.ComboItem> comboItems = new ArrayList<>();
             
@@ -116,13 +108,11 @@ public class ConcessionService {
                     Integer qty = ((Number) row.get("quantity")).intValue();
                     Double totalPrice = ((Number) row.get("total_price")).doubleValue();
 
-                    // Tìm thêm info item (title, image_url...)
                     Map<String, Object> itemInfo = concessionItemRepo.findItemInfo(itemId);
 
                     ConcessionResponse.ComboItem ci = new ConcessionResponse.ComboItem();
                     ci.setComboId(itemId);
                     ci.setTitle((String) itemInfo.get("title"));
-                    // Lấy code từ row hoặc itemInfo tùy DB của bạn, ở đây lấy tạm itemInfo nếu row ko có
                     ci.setCode((String) itemInfo.get("code")); 
 
                     ci.setQty(qty);
@@ -147,7 +137,6 @@ public class ConcessionService {
                     combosTotal += totalPrice;
                 }
             }
-            // Gán danh sách combo vừa load vào response
             res.setCombos(comboItems);
             
             ConcessionResponse.Totals totals = new ConcessionResponse.Totals();
