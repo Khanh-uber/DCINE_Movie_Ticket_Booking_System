@@ -1,10 +1,9 @@
 (() => {
-	// ===== Config =====
+
 	const API = 'http://localhost:8080';
 	const HOME_URL = 'index.html';
 	const $ = (sel) => document.querySelector(sel);
 
-	// ===== DOM =====
 	const segEmail = $('#segEmail');
 	const segPhone = $('#segPhone');
 	const segUser  = $('#segUser');
@@ -30,17 +29,14 @@
 	const eyeOn = document.getElementById('eyeOn');
 	const eyeOff = document.getElementById('eyeOff');
 
-	// ===== State =====
 	let mode = 'email';
 	let touchedIdent = false;
 	let touchedPassword = false;
 
-	// ===== Icons =====
 	const iconMail = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm0 0l8 6 8-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 	const iconPhone = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 16.92v2a2 2 0 01-2.18 2A19.8 19.8 0 013 5.18 2 2 0 015 3h2a2 2 0 012 1.72c.12.9.36 1.77.7 2.58a2 2 0 01-.45 2.11L8.1 10.9a16 16 0 006 6l1.5-1.15a2 2 0 012.11-.45c.81.34 1.68.58 2.58.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 	const iconUser = `<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/></svg>`;
 
-	// ===== Helpers =====
 	function showFieldError(box, errEl, msg) {
 		box?.classList.add('error');
 		if (errEl) errEl.textContent = msg || '';
@@ -123,7 +119,6 @@
 		ident?.focus();
 	}
 
-	// CapsLock hint
 	['keyup', 'keydown'].forEach(evt => {
 		password?.addEventListener(evt, (e) => {
 			const on = e.getModifierState && e.getModifierState('CapsLock');
@@ -131,7 +126,6 @@
 		});
 	});
 
-	// Toggle password visibility
 	function setPwVisible(v) {
 		if (!password) return;
 		password.type = v ? 'text' : 'password';
@@ -165,7 +159,6 @@
 		ripple.addEventListener('animationend', () => ripple.remove());
 	});
 
-	// ===== Submit =====
 	form?.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		if (formError)  { formError.textContent = '';  formError.style.display = 'none'; }

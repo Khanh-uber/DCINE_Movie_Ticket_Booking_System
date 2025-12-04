@@ -275,37 +275,39 @@
     }, 0);
   }
 
-  function getTotals(order) {
-    let ticketAmount = 0, combosAmount = 0, subTotal = 0, vat = 0, discountAmount = 0, discountCode = '', grand;
-    const t = order.totals;
+function getTotals(order) {
+  let ticketAmount = 0, combosAmount = 0, subTotal = 0, vat = 0, discountAmount = 0, discountCode = '', grand;
+  const t = order.totals;
 
-    if (t) {
-      ticketAmount = typeof t.ticketAmount === 'number' ? t.ticketAmount : computeTicketAmount(order);
-      combosAmount = typeof t.combosAmount === 'number' ? t.combosAmount : computeCombosAmount(order, ticketAmount);
-      subTotal = typeof t.subTotal === 'number' ? t.subTotal : ticketAmount + combosAmount;
-      vat = Math.floor(subTotal * 0.08);
-      discountAmount = typeof t.discountAmount === 'number' ? t.discountAmount : 0;
-      discountCode = t.discountCode || t.code || (order.discount && order.discount.code) || (order._voucher && order._voucher.code) || '';
-      
-      const beGrand = typeof t.grandTotal === 'number' ? t.grandTotal : typeof order.grandTotal === 'number' ? order.grandTotal : null;
-      const feCalcGrand = Math.max(0, subTotal + vat - discountAmount);
-      grand = (beGrand != null && Math.abs(beGrand - feCalcGrand) < 1000) ? beGrand : feCalcGrand;
-    } else {
-      ticketAmount = computeTicketAmount(order);
-      combosAmount = computeCombosAmount(order, ticketAmount);
-      subTotal = ticketAmount + combosAmount;
-      vat = Math.floor(subTotal * 0.08);
-      if (order.discount && typeof order.discount.amount === 'number') {
-        discountAmount = order.discount.amount;
-        discountCode = order.discount.code || '';
-      } else if (order._voucher && typeof order._voucher.amount === 'number') {
-        discountAmount = order._voucher.amount;
-        discountCode = order._voucher.code || '';
-      }
-      grand = Math.max(0, subTotal + vat - discountAmount);
+  if (t) {
+    ticketAmount = typeof t.ticketAmount === 'number' ? t.ticketAmount : computeTicketAmount(order);
+    combosAmount = typeof t.combosAmount === 'number' ? t.combosAmount : computeCombosAmount(order, ticketAmount);
+    subTotal = typeof t.subTotal === 'number' ? t.subTotal : ticketAmount + combosAmount;
+    vat = 0;
+    discountAmount = typeof t.discountAmount === 'number' ? t.discountAmount : 0;
+    discountCode = t.discountCode || t.code || (order.discount && order.discount.code) || (order._voucher && order._voucher.code) || '';
+    const beGrand = typeof t.grandTotal === 'number'
+      ? t.grandTotal
+      : (typeof order.grandTotal === 'number' ? order.grandTotal : null);
+    const feCalcGrand = Math.max(0, subTotal - discountAmount);
+    grand = (beGrand != null && Math.abs(beGrand - feCalcGrand) < 1000) ? beGrand : feCalcGrand;
+  } else {
+    ticketAmount = computeTicketAmount(order);
+    combosAmount = computeCombosAmount(order, ticketAmount);
+    subTotal = ticketAmount + combosAmount;
+    vat = 0;
+    if (order.discount && typeof order.discount.amount === 'number') {
+      discountAmount = order.discount.amount;
+      discountCode = order.discount.code || '';
+    } else if (order._voucher && typeof order._voucher.amount === 'number') {
+      discountAmount = order._voucher.amount;
+      discountCode = order._voucher.code || '';
     }
-    return { ticketAmount, combosAmount, subTotal, vat, discountAmount, discountCode, grand };
+    grand = Math.max(0, subTotal - discountAmount);
   }
+  return { ticketAmount, combosAmount, subTotal, vat, discountAmount, discountCode, grand };
+}
+
 
   function extractTicketMeta(ticket) {
       if (!ticket) return { movieTitle: '', showtimeText: '', seatsText: '', theaterName: '' };
@@ -446,12 +448,7 @@
       itemsWrap.innerHTML = lines.join('');
     }
     
-    
-    // Tạm tính và VAT
     if (subTotalEl) subTotalEl.textContent = toVND(totals.subTotal);
-    if (vatEl) vatEl.textContent = toVND(totals.vat);
-
-    // Giảm giá (Discount)
     if (discountRow) {
         if (totals.discountAmount > 0) {
             discountRow.style.display = 'flex'; 
@@ -464,7 +461,6 @@
         }
     }
 
-    // Tổng Thanh Toán
     if (grandEl) grandEl.textContent = toVND(totals.grand);
   }
 
@@ -635,7 +631,7 @@
     const value = Number(promo.discountValue || promo.value || 0);
     if (!value) return 0;
 
-    const base = totals.subTotal + totals.vat;
+    const base = totals.subTotal;
     if (type === 'percent') {
       return Math.min(base, Math.round((base * value) / 100));
     }

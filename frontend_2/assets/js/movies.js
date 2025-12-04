@@ -4,14 +4,12 @@
 
   const API_DATA = '../data/movies.json';
   
-  // Nơi lưu trữ data sau khi fetch
   let allMovies = {
     now: [],
     soon: []
   };
-  const PER_PAGE = 12; // Số lượng phim mỗi trang
+  const PER_PAGE = 12; 
 
-  // ===== Template loader (nạp 1 lần) =====
   let MOVIE_TPL = null;
   async function ensureMovieTpl() {
     if (MOVIE_TPL) return MOVIE_TPL;
@@ -27,7 +25,6 @@
   }
 
 function cardFrom(m, { showRating = false, showRelease = false } = {}) {
-  // fallback nếu chưa load được template
   if (!MOVIE_TPL?.content?.firstElementChild) {
     const el = document.createElement('article');
     el.className = 'movie-card poster';
@@ -43,7 +40,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
   const el = MOVIE_TPL.content.firstElementChild.cloneNode(true);
   el.dataset.id = m.id || '';
 
-  // ===== Poster =====
   const img = el.querySelector('[data-img]');
   if (img) {
     const poster =
@@ -55,7 +51,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     img.draggable = false;
   }
 
-  // ===== Title =====
   const t = el.querySelector('[data-title]');
   if (t) {
     t.textContent =
@@ -65,7 +60,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       '';
   }
 
-  // ===== Director (hỗ trợ List<CastDTO> giống movie-detail) =====
   const d = el.querySelector('[data-director]');
   if (d) {
     let directorText = '';
@@ -82,7 +76,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     d.textContent = directorText ? `Đạo diễn: ${directorText}` : '';
   }
 
-  // ===== Duration + (optional) release (đọc cả durationMin) =====
   const u = el.querySelector('[data-duration]');
   if (u) {
     const raw =
@@ -119,7 +112,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // ===== Rating =====
   const rate = el.querySelector('[data-rating]');
   if (rate) {
     if (showRating && (m.rating ?? null) !== null) {
@@ -131,7 +123,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // ===== Genres =====
   const gWrap = el.querySelector('[data-genres]');
   if (gWrap) {
     const genres = Array.isArray(m.genres)
@@ -151,13 +142,11 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       });
   }
 
-  // ===== Description =====
   const desc = el.querySelector('[data-desc]');
   if (desc) {
     desc.textContent = m.synopsis || m.description || m.desc || '';
   }
 
-  // ===== Nút Trailer =====
   const btnT = el.querySelector('[data-trailer]');
   if (btnT) {
     const trailerUrl = m.trailerUrl || m.trailer || '';
@@ -177,11 +166,9 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     }
   }
 
-  // ===== Nút Đặt vé (only cho phim đang chiếu) =====
   const book = el.querySelector('[data-book]');
   if (book) {
     if (!showRating) {
-      // Coming soon: không cho đặt vé
       book.remove();
     } else {
       const movieId = encodeURIComponent(m.id || '');
@@ -191,8 +178,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
         : `showtime.html`;
     }
   }
-
-  // Click cả card -> chi tiết phim
   el.addEventListener('click', () => {
     if (m.id) {
       location.href = `movie-detail.html?movie=${encodeURIComponent(m.id)}`;
@@ -202,46 +187,35 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
   return el;
 }
 
-
-
-  // ===== [HÀM MỚI] Render 1 section (có phân trang) =====
   async function renderPagedGrid({ list, gridId, pagerId, perPage, page = 1, options = {} }) {
     const grid = document.getElementById(gridId);
     if (!grid) return;
-
-    await ensureMovieTpl(); // Đảm bảo template đã tải
-    
+    await ensureMovieTpl(); 
     const total = list.length;
-    
-    // Hàm con để vẽ phim cho trang hiện tại
     const draw = (currentPage) => {
       const start = (currentPage - 1) * perPage;
       const slice = list.slice(start, start + perPage);
       
-      grid.innerHTML = ''; // Xóa grid cũ
+      grid.innerHTML = ''; 
       slice.forEach(m => grid.appendChild(cardFrom(m, options)));
     };
 
-    // Vẽ phân trang
     if (window.mountPagination) {
       window.mountPagination({
         mountId: pagerId,
         total, perPage, page,
         onChange: (to) => {
-          draw(to); // Vẽ lại grid khi đổi trang
-          grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); // Cuộn lên đầu lưới
+          draw(to);
+          grid.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
         },
         syncQuery: false
       });
     } else {
       document.getElementById(pagerId)?.remove();
     }
-
-    // Vẽ phim cho trang đầu tiên
     draw(page);
   }
 
-  // ===== Fetch data (Giữ nguyên) =====
   async function fetchMovies() {
     try {
     const [nowRes, soonRes] = await Promise.all([
@@ -257,7 +231,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
   } catch (err) {
     console.error("Lỗi khi gọi backend:", err);
   }
-    // Fallback (giữ nguyên)
     return fetch(API_DATA, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error('Network response was not ok');
@@ -265,8 +238,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       })
     ;
   }
-
-  // ===== Tự chia now/soon (Giữ nguyên) =====
   function splitMovies(arr) {
     const now = [], soon = [];
     const today = new Date().toISOString().slice(0,10);
@@ -280,7 +251,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
     return { now, soon };
   }
 
-// ===== [HÀM HỖ TRỢ] Chuẩn hóa tiếng Việt để tìm kiếm =====
   function removeAccents(str) {
     return str.normalize('NFD')
               .replace(/[\u0300-\u036f]/g, '')
@@ -288,10 +258,8 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
               .toLowerCase();
   }
 
-  // ===== [ĐÃ SỬA] Boot: Xử lý cả Tìm kiếm và Chuyển Tab từ Header =====
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-      // 1. Fetch và chia data
       const raw = await fetchMovies();
       if (Array.isArray(raw)) {
         allMovies = splitMovies(raw);
@@ -300,7 +268,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
         allMovies.soon = raw?.soon || [];
       }
       
-      // 2. Lấy các DOM element
       const tabNow = document.getElementById('tabNow');
       const tabSoon = document.getElementById('tabSoon');
       const tabsContainer = document.querySelector('.tabs-nav');
@@ -308,7 +275,6 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       
       if (window.mountBreadcrumb) mountBreadcrumb();
 
-      // Breadcrumb giống movie-detail: Trang chủ / Phim
       const bc = document.getElementById('bc');
       if (bc) {
         bc.classList.add('breadcrumb', 'movies-bc');
@@ -322,16 +288,12 @@ function cardFrom(m, { showRating = false, showRelease = false } = {}) {
       const gridId = 'movieGrid';
       const pagerId = 'moviePager';
 
-
-      // 3. LẤY THAM SỐ TỪ URL
       const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get('q');       // Lấy từ khóa tìm kiếm
-      const status = urlParams.get('status'); // Lấy trạng thái (now / soon)
+      const query = urlParams.get('q'); 
+      const status = urlParams.get('status'); 
 
 if (query && query.trim() !== '') {
   console.log(`[movies] Searching for: "${query}"`);
-
-  // Ẩn tab đi
   if (tabsContainer) tabsContainer.style.display = 'none';
   if (pageTitle) pageTitle.textContent = `KẾT QUẢ TÌM KIẾM: "${query}"`;
 
@@ -350,11 +312,8 @@ if (query && query.trim() !== '') {
       Array.isArray(m.director)
       ? m.director.map(d => d && (d.name || d.fullName || String(d))).join(' ')
       : (m.director || m.directorName),
-      // cast / diễn viên
       Array.isArray(m.cast) ? m.cast.join(' ') : m.cast,
       Array.isArray(m.actors) ? m.actors.join(' ') : m.actors,
-
-      // genres / tags
       Array.isArray(m.genres) ? m.genres.join(' ') : m.genre,
       Array.isArray(m.tags) ? m.tags.join(' ') : m.tags,
     ];
@@ -390,14 +349,10 @@ if (query && query.trim() !== '') {
     }
   }
 } else {
-        // --- TRƯỜNG HỢP 2: KHÔNG TÌM KIẾM (CHẾ ĐỘ MẶC ĐỊNH) ---
         if (!tabNow || !tabSoon) return;
-
-        // Định nghĩa hành động click cho các tab
         tabNow.addEventListener('click', () => {
           tabNow.classList.add('is-active');
           tabSoon.classList.remove('is-active');
-          // Sửa lại tiêu đề cho đúng ngữ cảnh
           if (pageTitle) pageTitle.textContent = 'PHIM ĐANG CHIẾU';
           
           renderPagedGrid({
@@ -410,7 +365,6 @@ if (query && query.trim() !== '') {
         tabSoon.addEventListener('click', () => {
           tabSoon.classList.add('is-active');
           tabNow.classList.remove('is-active');
-          // Sửa lại tiêu đề cho đúng ngữ cảnh
           if (pageTitle) pageTitle.textContent = 'PHIM SẮP CHIẾU';
 
           renderPagedGrid({
@@ -420,12 +374,9 @@ if (query && query.trim() !== '') {
           });
         });
 
-        // --- XỬ LÝ ĐIỀU HƯỚNG TỪ HEADER (?status=soon hoặc ?status=now) ---
         if (status === 'soon') {
-            // Nếu trên URL có ?status=soon -> Kích hoạt tab Sắp chiếu
             tabSoon.click();
         } else {
-            // Mặc định hoặc ?status=now -> Kích hoạt tab Đang chiếu
             tabNow.click();
         }
       }
