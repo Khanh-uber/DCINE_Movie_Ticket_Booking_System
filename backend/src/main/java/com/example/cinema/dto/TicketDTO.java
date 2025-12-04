@@ -12,9 +12,11 @@ public class TicketDTO {
     private String movieTitle;
     private String date;
     private String time;
+    private String endTime;     
+    private String theaterName;
 
-    private List<String> seats;        // FE dùng
-    private List<SeatItemDTO> items;   // fallback
+    private List<String> seats;       
+    private List<SeatItemDTO> items;   
 
     private Integer amount;
 }

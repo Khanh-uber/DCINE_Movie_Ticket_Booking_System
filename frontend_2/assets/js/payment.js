@@ -919,7 +919,13 @@ function initVoucher() {
   }
 
   if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
+      document.addEventListener('DOMContentLoaded', async () => {
+          if (window.guardAuth) {
+             const isSafe = await window.guardAuth();
+             if (!isSafe) return;
+          }
+          init();
+      });
   } else {
       init();
   }

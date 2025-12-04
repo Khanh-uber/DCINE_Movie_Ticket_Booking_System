@@ -74,6 +74,11 @@
         body: JSON.stringify(body || {}),
         credentials: 'include'
       });
+      if (res.status === 401) {
+          alert("Hết phiên làm việc. Vui lòng đăng nhập lại.");
+          location.href = `D_cine_login.html?next=${encodeURIComponent(location.href)}`;
+          return null;
+      }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return await res.json().catch(() => null);
     } catch (err) {
@@ -241,18 +246,15 @@ async function createBooking(showtimeId, seatsPayload) {
         btn.dataset.state = st;
         btn.setAttribute('aria-selected', st === 'selected' ? 'true' : 'false');
 
-// --- XỬ LÝ GIAO DIỆN GHẾ ĐÔI (COUPLE) + TOOLTIP ---
 if (zone === 'couple') {
-  const isLeft = c % 2 !== 0;        // cột lẻ = ghế trái
+  const isLeft = c % 2 !== 0;        
   const leftCol  = isLeft ? c : c - 1;
   const rightCol = leftCol + 1;
 
-  const pairText  = `${leftCol}-${rightCol}`;       // text hiển thị trên ghế: 1-2, 3-4,...
-  const pairLabel = `${r}${leftCol}-${r}${rightCol}`; // label đầy đủ: J1-J2,...
+  const pairText  = `${leftCol}-${rightCol}`;      
+  const pairLabel = `${r}${leftCol}-${r}${rightCol}`; 
 
   btn.classList.add(isLeft ? 'couple-left' : 'couple-right');
-
-  // Chỉ ghế trái hiển thị text, ghế phải để trống (chỉ là vùng click)
   btn.textContent = isLeft ? pairText : '';
 
   const couplePrice = getDisplayPrice('couple', 'adult');
@@ -284,8 +286,6 @@ if (zone === 'couple') {
     });
     wrap.appendChild(renderHeadOrFoot());
   }
-
-// ===== Load movie/showtime (ĐÃ FIX: Map trực tiếp theo DTO của Backend) =====
   async function loadShowAndMovie() {
     const q = new URLSearchParams(location.search);
     const stId = q.get('showtimeId') || q.get('st') || q.get('showtime') || null;
@@ -298,29 +298,21 @@ if (zone === 'couple') {
     }
 
     if (detail) {
-      // CODE 2: Map trực tiếp các trường từ Backend (Flat DTO)
-      const st = detail; 
 
-      // 1. Map thông tin suất chiếu
+      const st = detail; 
       state.show.id      = st.showtimeId;
       state.show.theater = st.theaterName;
       state.show.date    = st.showDate;
       state.show.time    = st.startTime;
       state.show.end     = st.endTime;
       state.show.format  = st.formatName;
-
-      // 2. Map thông tin phim (nằm trực tiếp trong object suất chiếu)
       state.movie.id         = st.movieId;
       state.movie.title      = st.movieTitle;
       state.movie.year       = st.releaseYear;
       state.movie.duration   = st.durationMin;
-      
-      // Xử lý biến camelCase hoặc snake_case cho an toàn
       state.movie.posterUrl  = st.posterUrl || st.poster_url || '';
       state.movie.trailerUrl = st.trailerUrl || st.trailer_url || '';
       state.movie.genres     = st.genres || [];
-
-      // 3. Map Pricing (Giá vé)
       if (detail.pricing && detail.pricing.byZone) {
         const p = detail.pricing.byZone;
         ['standard', 'vip', 'couple'].forEach((zone) => {
@@ -329,21 +321,15 @@ if (zone === 'couple') {
           const adult = typeof z.adult === 'number' ? z.adult : null;
           const child = typeof z.child === 'number' ? z.child : null;
           PRICING.byZone[zone] = { adult, child };
-
-          // Fallback giá mặc định nếu cần
           if (adult != null) SEAT_PRICE[zone] = adult;
         });
       }
     } else {
       console.warn('[seatmap] Không lấy được dữ liệu suất chiếu từ BE.');
     }
-
-    // Fallback Trailer nếu thiếu
     if (!state.movie.trailerUrl) {
       state.movie.trailerUrl = 'https://www.youtube.com/watch?v=U2Qp5pL3ovA';
     }
-
-    // Bind UI (Cập nhật giao diện poster/text)
     $('#mvPoster').src = state.movie.posterUrl || 'https://picsum.photos/seed/poster/400/600';
     $('#mvTitle').textContent = state.movie.title || '—';
     $('#mvMeta').textContent = [
@@ -359,8 +345,6 @@ if (zone === 'couple') {
     ? `${fmt(state.show.time)} - ${fmt(state.show.end)}`
     : (fmt(state.show.time) || '--:--');
     $('#mvFormat').textContent  = state.show.format || '2D';
-
-    // Logic nút Trailer
     const tBtn  = $('#btnTrailer');
     const pPlay = $('#posterPlayBtn');
     if (state.movie.trailerUrl) {
@@ -381,21 +365,18 @@ async function loadSeatStatesFromApi() {
 
   const data = await apiGet(`/showtimes/${encodeURIComponent(id)}/seats`);
   if (!data) return;
-
-  // ----- layout từ BE -----
   if (Array.isArray(data.rows) && data.rows.length) {
-    ROWS = data.rows;                   // ["A","B","C",...]
+    ROWS = data.rows;                  
   }
   if (Array.isArray(data.aislesAfter)) {
-    AISLES_AFTER = data.aislesAfter;    // [4, 9, ...]
+    AISLES_AFTER = data.aislesAfter;   
   }
   if (typeof data.cols === 'number' && data.cols > 0) {
     COLS = Array.from({ length: data.cols }, (_, i) => i + 1);
   }
 
-  // ----- seats từ BE -----
   const seats = Array.isArray(data.seats) ? data.seats : [];
-  state.seats = {}; // clear trước cho sạch
+  state.seats = {}; 
 
   seats.forEach((s) => {
     const code = s.code || (s.row && s.col ? `${s.row}${s.col}` : null);
@@ -413,14 +394,12 @@ async function loadSeatStatesFromApi() {
     if (status === 'holding') status = 'held';
 
     state.seats[code] = {
-      zone: s.zone || zoneOf(row),   // nếu BE không gửi zone thì fallback theo row
-      state: status                  // "booked" / "held" / "available"
+      zone: s.zone || zoneOf(row),   
+      state: status              
     };
   });
 }
 
-
-  // ===== Popover chọn loại vé =====
   const pop = { el:null, seatEl:null, code:'', zone:'' };
 
   function openSeatPopover(seatEl, code){
@@ -439,7 +418,7 @@ async function loadSeatStatesFromApi() {
     })`;
     $('#labelChild').textContent = `Trẻ em (${
       chPrice ? toVND(chPrice) : '-'
-    })`; // Sẽ rẻ hơn
+    })`;
 
     pop.el.hidden = false;
     setTimeout(()=> document.getElementById('pickAdult').focus(), 0);
@@ -463,10 +442,8 @@ async function loadSeatStatesFromApi() {
     syncSummary();
   }
 
-  // ===== Price matrix & summary =====
   function renderPriceMatrix(){
     const m = $('#priceMatrix');
-    // Tính giá tĩnh hiển thị trên bảng (ưu tiên giá từ PRICING)
     const vipA = getDisplayPrice('vip', 'adult');
     const stdA = getDisplayPrice('standard', 'adult');
     const cplA = getDisplayPrice('couple', 'adult');
@@ -475,7 +452,6 @@ async function loadSeatStatesFromApi() {
     const stdC = getDisplayPrice('standard', 'child');
     const cplC = getDisplayPrice('couple', 'child');
 
-    // Render HTML: Cột cuối sửa thành Couple (màu hồng)
     m.innerHTML = `
       <div class="head"></div>
       <div class="head z"><span class="dot vip"></span>VIP</div>
@@ -494,7 +470,6 @@ async function loadSeatStatesFromApi() {
     `;
   }
 
-  // ===== Gọi BE tính giá =====
   async function requestPricingPreview() {
     const id = state.show.id || showtimeId();
     if (!id || !state.selected.size) {
@@ -523,7 +498,6 @@ async function loadSeatStatesFromApi() {
       ? preview.totalAmount
       : items.reduce((sum, it) => sum + (it.price || 0), 0);
 
-    // Tổng ghế
     $('#selCount').textContent = `${items.length} ghế được chọn`;
     $('#grandTotal').textContent = toVND(total);
 
@@ -538,7 +512,7 @@ async function loadSeatStatesFromApi() {
   items.forEach((it) => {
     const who  = it.type === 'child' ? 'child' : 'adult';
     const zone = it.zone || state.seats[it.code]?.zone || zoneOf(it.code[0]);
-    const price = it.price || 0;   // giá BE trả
+    const price = it.price || 0; 
 
     if (count[who][zone] === undefined) return;
     count[who][zone]++;
@@ -557,17 +531,14 @@ async function loadSeatStatesFromApi() {
     // Update bảng matrix
     const cells = $$('#priceMatrix .cell');
     if (cells.length >= 6) {
-      // Adult: VIP - Standard - Couple
       cells[0].firstElementChild.textContent = `x${count.adult.vip}`;
       cells[1].firstElementChild.textContent = `x${count.adult.standard}`;
       cells[2].firstElementChild.textContent = `x${count.adult.couple}`;
-      // Child: VIP - Standard - Couple
       cells[3].firstElementChild.textContent = `x${count.child.vip}`;
       cells[4].firstElementChild.textContent = `x${count.child.standard}`;
       cells[5].firstElementChild.textContent = `x${count.child.couple}`;
     }
 
-    // Render chip ghế (giữ logic gộp couple như cũ, nhưng dựa vào items)
     const arr = [...items].sort((a, b) => {
       const ca = a.code; const cb = b.code;
       if (ca[0] === cb[0]) return (+ca.slice(1)) - (+cb.slice(1));
@@ -629,7 +600,6 @@ async function loadSeatStatesFromApi() {
     $('#hint').textContent = '';
     gateCTA();
 
-    // Gọi BE tính giá & cập nhật summary
     requestPricingPreview();
   }
 
@@ -642,7 +612,6 @@ async function onContinue(goTo = 'concessions.html') {
     type: state.assigned.get(code) || 'adult'
   }));
 
-  // 1. Gọi API tạo booking PENDING
   const booking = await createBooking(id, seatsPayload);
 
   if (!booking) {
@@ -650,14 +619,11 @@ async function onContinue(goTo = 'concessions.html') {
     return;
   }
 
-  // 2. Lấy items + total từ BE, fallback nếu BE chưa trả đủ
   let items = Array.isArray(booking.items) ? booking.items : [];
   if (items.length === 0) {
       items = seatsPayload.map(s => ({
           code: s.code,
           type: s.type,
-          // Bắt buộc phải tính lại giá bằng FE logic nếu BE không trả giá! 
-          // (Nhưng nếu BE hoạt động đúng, nó sẽ trả giá chính xác)
           price: getDisplayPrice(
               state.seats[s.code]?.zone || zoneOf(s.code[0]), 
               s.type
@@ -671,9 +637,8 @@ async function onContinue(goTo = 'concessions.html') {
 
   const bookingId = booking.bookingId || booking.id || booking.bookingCode;
 
-  // 3. Lưu vào localStorage cho trang sau dùng
   localStorage.setItem('booking_cart', JSON.stringify({
-    bookingId,          // << QUAN TRỌNG: khoá chính để làm việc với BE
+    bookingId,         
     showtimeId: id,
     items,
     totalAmount: total,
@@ -687,8 +652,6 @@ async function onContinue(goTo = 'concessions.html') {
       movieTitle: state.movie.title
     }
   }));
-
-  // 4. Điều hướng sang trang tiếp theo
   location.href = goTo;
 }
 
@@ -718,7 +681,6 @@ async function onContinue(goTo = 'concessions.html') {
       const changed = [code, pairCode];
 
       if (isSelected) {
-        // Bỏ chọn cả 2 + release hold
         changed.forEach(c => {
           state.selected.delete(c);
           state.assigned.delete(c);
@@ -730,7 +692,6 @@ async function onContinue(goTo = 'concessions.html') {
         });
         sendSeatHold(changed, 'release');
       } else {
-        // Chọn cả 2 (mặc định Adult) + hold
         changed.forEach(c => {
           state.selected.add(c);
           state.assigned.set(c, 'adult');
@@ -758,11 +719,10 @@ async function onContinue(goTo = 'concessions.html') {
       return;
     }
 
-    // ⛔ Chưa chọn → kiểm tra rule rồi mở popover
     if (violatesSingleGap(rowL, colN, true)) {
       const msg = 'Quy tắc rạp: không để lại 1 ghế trống kẹp giữa. Hãy chọn liền kề.';
-      $('#hint').textContent = msg;               // hiện ở panel Summary
-      showSeatWarning(seat, msg);                 // hiện ngay cạnh ghế
+      $('#hint').textContent = msg;             
+      showSeatWarning(seat, msg);           
       seat.classList.add('shake'); 
       setTimeout(()=> seat.classList.remove('shake'), 250);
       return;
@@ -778,13 +738,13 @@ async function onContinue(goTo = 'concessions.html') {
 
 // ===== Boot =====
   document.addEventListener('DOMContentLoaded', async () => {
+    if (window.guardAuth) {
+        const isSafe = await window.guardAuth();
+        if (!isSafe) return;
+    }
     try { if (window.mountHeader)      mountHeader('#hdr-include'); } catch {}
     try { if (window.mountFooter)      mountFooter('#footer-include'); } catch {}
-    
-    // 1. Lấy thông tin suất chiếu + phim từ BE (Chạy hàm mới sửa ở trên)
     await loadShowAndMovie();
-
-    // 2. Tạo URL chuẩn xác dựa trên dữ liệu vừa load
     const movieId    = state.movie.id;
     const showtimeId = state.show.id;
 
@@ -795,21 +755,14 @@ async function onContinue(goTo = 'concessions.html') {
     const movieUrl = movieId
       ? `movie-detail.html?movie=${encodeURIComponent(movieId)}`
       : 'index.html';
-
-    // 3. Update nút Back (nếu có)
     const btnBackShow = document.getElementById('btnBackShowtime');
     if (btnBackShow) btnBackShow.href = showtimeUrl;
 
     const btnBackMovie = document.getElementById('btnBackMovie');
     if (btnBackMovie) btnBackMovie.href = movieUrl;
-
-    // 4. BREADCRUMB: Giữ Style Code 1 nhưng data chuẩn Code 2
     const bc = document.querySelector('nav.breadcrumb');
     if (bc) {
       const title = state.movie.title || 'Chi tiết phim';
-      
-      // Sử dụng innerHTML như Code 1 để tạo cấu trúc đầy đủ
-      // Home > Phim > Tên Phim > Lịch Chiếu > Chọn Ghế
       bc.innerHTML = `
         <a href="index.html">Trang chủ</a>
         <span class="sep">/</span>
@@ -822,14 +775,10 @@ async function onContinue(goTo = 'concessions.html') {
         <span class="curr">Chọn ghế</span>
       `;
     }
-
-    // 5. Lấy trạng thái ghế từ BE & Render
     await loadSeatStatesFromApi();
     renderGrid();
     renderPriceMatrix();
     syncSummary();
-
-    // Gán sự kiện (Events)
     const grid = $('#seatGrid');
     grid.addEventListener('click', onSeatGridClick);
     grid.addEventListener('mouseenter', onSeatMouseEnter, true);
@@ -851,8 +800,6 @@ async function onContinue(goTo = 'concessions.html') {
     $('#btnContinue').addEventListener('click', () => onContinue('concessions.html'));
     $('#btnPay').addEventListener('click', () => onContinue('payment.html'));
   });
-
-// Dọn dẹp (trang success gọi) – xoá data giỏ vé mới
 window.clearSeatBookingState = () => {
   localStorage.removeItem('booking_cart');
   localStorage.removeItem('orderCombos');

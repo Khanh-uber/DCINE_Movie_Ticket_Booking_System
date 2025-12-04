@@ -39,6 +39,42 @@
     guest.style.display = 'none';
     userChip.style.display = 'flex';
   };
+async function restoreUserState() {
+  const localUser = {
+    fullName: localStorage.getItem('fullName'),
+    avatarUrl: localStorage.getItem('avatarUrl') || '',
+    username: localStorage.getItem('username') 
+  };
+  if (localStorage.getItem('accessToken')) {
+    window.updateHeaderUser(localUser);
+  }
+  try {
+    const res = await fetch(`${window.API_BASE}/auth/session`, { 
+      cache: 'no-store', 
+      credentials: 'include' 
+    });
+    
+    if (res.ok) {
+      const serverUser = await res.json();
+      window.updateHeaderUser({
+          fullName: serverUser.username, 
+          avatarUrl: serverUser.avatarUrl || localStorage.getItem('avatarUrl'),
+          ...serverUser
+      });
+    } else {
+      console.warn('Session expired, clearing local storage');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('fullName');
+      localStorage.removeItem('avatarUrl');
+      localStorage.removeItem('loyaltyPoints');
+      localStorage.removeItem('totalSpending');
+      localStorage.removeItem('membershipTierName');
+      window.updateHeaderUser(null);
+    }
+  } catch (e) {
+    console.warn('Check session failed', e);
+  }
+}
 // ===== Movie-card template loader =====
 let MOVIE_TPL = null;
 
@@ -1954,6 +1990,7 @@ rail.addEventListener('scroll', () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     await mountHeader();
+    await restoreUserState();
     document.body.classList.add('ready');
     if (document.querySelector('#hero')) loadHero();
     loadOnTheBigScreen();
@@ -1970,7 +2007,6 @@ Object.assign(window, {
   openConfirm,
   openQuickLogin
 });
-// Global handler: Trailer / Quick Login / Confirm
 document.addEventListener('click', async (e) => {
   const t = e.target.closest('[data-trailer-url],[data-open-login],[data-confirm]');
   if (!t) return;
@@ -2004,5 +2040,34 @@ document.addEventListener('click', async (e) => {
     }
   }
 });
+window.guardAuth = async () => {
+  if (!localStorage.getItem('accessToken')) {
+    window.location.href = `D_cine_login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+    return false;
+  }
 
+  try {
+    const res = await fetch(`${window.API_BASE}/auth/session`, { 
+      cache: 'no-store', 
+      credentials: 'include' 
+    });
+
+    if (res.ok) {
+      const user = await res.json();
+      if (window.updateHeaderUser) window.updateHeaderUser(user);
+      return true; 
+    } else {
+      throw new Error('Session expired');
+    }
+  } catch (e) {
+    console.warn('Guard Auth Failed:', e);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('fullName');
+    localStorage.removeItem('avatarUrl');
+    
+    alert('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại để tiếp tục đặt vé.');
+    window.location.href = `D_cine_login.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+    return false;
+  }
+};
 })();
