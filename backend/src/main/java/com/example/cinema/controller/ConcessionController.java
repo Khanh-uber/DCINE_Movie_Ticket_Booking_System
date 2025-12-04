@@ -12,16 +12,13 @@ import com.example.cinema.dto.ConcessionMeruRespose;
 import com.example.cinema.dto.ConcessionResponse;
 import com.example.cinema.service.ConcessionService;
 
-
+import jakarta.servlet.http.HttpSession;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class ConcessionController {
     private final ConcessionService concessionService;
-    private Long getAccountId(){
-        Long accountId = 1L;
-        return accountId;
-    }
     public ConcessionController(ConcessionService concessionService){
         this.concessionService = concessionService;
     }
@@ -31,20 +28,21 @@ public class ConcessionController {
     }
 
     @GetMapping("/checkout/summary")
-    public ResponseEntity<ConcessionResponse> getSummary() {
-        Long accountId = getAccountId();
+    public ResponseEntity<?> getSummary(HttpSession session) { 
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Hết phiên đăng nhập"));
+        }
         ConcessionResponse response = concessionService.loadSummary(accountId);
-
         return ResponseEntity.ok(response);
     }
     @PostMapping("/concessions/cart")
-    public ResponseEntity<ConcessionResponse> updateCart(
-            @RequestBody ConcessionCartRequest req
-    ) {
-        Long accountId = getAccountId();
+    public ResponseEntity<?> updateCart(@RequestBody ConcessionCartRequest req, HttpSession session) {
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
+        }
         ConcessionResponse res = concessionService.updateCart(req, accountId);
         return ResponseEntity.ok(res);
     }
-
-    
 }

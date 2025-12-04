@@ -1,6 +1,7 @@
 package com.example.cinema.controller;
 
 import com.example.cinema.service.CheckoutService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,12 +35,13 @@ public class CheckoutController {
     }
 
     @PostMapping("/apply-voucher")
-    public ResponseEntity<?> applyVoucher(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> applyVoucher(@RequestBody Map<String, Object> payload, HttpSession session) {
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId != null) {
+            payload.put("accountId", accountId);
+        }
         Map<String, Object> order = (Map<String, Object>) payload.get("order");
-        
         Map<String, Object> calculatedOrder = checkoutService.calculateOrderSummary(order);
-        
         return ResponseEntity.ok(calculatedOrder);
     }
-    
 }

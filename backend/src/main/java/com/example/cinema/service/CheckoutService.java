@@ -32,13 +32,11 @@ public class CheckoutService {
         return obj == null ? "" : String.valueOf(obj);
     }
 
-    // =========================================================================
-    // 1. CONFIRM CHECKOUT (Lưu chi tiết ghế & Sử dụng checkoutRepo)
-    // =========================================================================
     public Map<String, Object> confirmCheckout(Map<String, Object> payload) {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            Long accountId = safeLong(payload.get("accountId"));
             Map<String, Object> order = (Map<String, Object>) payload.getOrDefault("order", new HashMap<>());
             String paymentMethod = safeString(payload.getOrDefault("paymentMethod", "wallet"));
             Long orderId = System.currentTimeMillis();
@@ -112,6 +110,7 @@ public class CheckoutService {
             Payment pm = Payment.builder()
                 .orderId(orderId)
                 .transactionId(transactionId)
+                //.accountId(accountId)
                 .amount(grandTotal)
                 .method(paymentMethod)
                 .status("PENDING")
