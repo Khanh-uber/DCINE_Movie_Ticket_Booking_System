@@ -25,12 +25,12 @@
 
   async function getJSON(api, local){
     try{
-      const r = await fetch(api, { cache: 'no-store' });
+      const r = await fetch(api, { cache: 'no-store', credentials: 'include'});
       if (r.ok) return await r.json();
     }catch{}
     if (!local) return null;
     try{
-      const r2 = await fetch(local, { cache: 'no-store' });
+      const r2 = await fetch(local, { cache: 'no-store', credentials: 'include' });
       if (r2.ok) return await r2.json();
     }catch{}
     return null;
@@ -44,7 +44,7 @@
     try {
       const r = await fetch(
         `${API}/movies/${encodeURIComponent(id)}`,
-        { cache: 'no-store' }
+        { cache: 'no-store', credentials: 'include' }
       );
       if (r.ok) {
         const m = await r.json();
@@ -55,8 +55,8 @@
     // 2) BE /movies/now + /movies/soon
     try {
       const [nowRes, soonRes] = await Promise.all([
-        fetch(`${API}/movies/now`,  { cache: 'no-store' }),
-        fetch(`${API}/movies/soon`, { cache: 'no-store' })
+        fetch(`${API}/movies/now`,  { cache: 'no-store', credentials: 'include' }),
+        fetch(`${API}/movies/soon`, { cache: 'no-store', credentials: 'include' })
       ]);
 
       let pile = [];

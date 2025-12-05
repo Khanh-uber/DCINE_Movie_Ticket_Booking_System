@@ -3,19 +3,20 @@
 
   const $ = (s, r = document) => r.querySelector(s);
 
+  const API = window.API_BASE || '/api';
+
   const toVND = (n) =>
     (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
-
   const paymentMethodMap = {
-      'card': 'Thẻ tín dụng / Ghi nợ',          
-      'credit-card': 'Thẻ tín dụng / Ghi nợ',
-      'wallet': 'Ví điện tử (Momo, ZaloPay)',
-      'momo': 'Ví Momo',                        
-      'zalopay': 'Ví ZaloPay',                  
-      'bank-transfer': 'Chuyển khoản ngân hàng',
-      'bank': 'Chuyển khoản ngân hàng',
-      'cash': 'Tiền mặt'
-    };
+    'card': 'Thẻ tín dụng / Ghi nợ',
+    'credit-card': 'Thẻ tín dụng / Ghi nợ',
+    'wallet': 'Ví điện tử (Momo, ZaloPay)',
+    'momo': 'Ví Momo',
+    'zalopay': 'Ví ZaloPay',
+    'bank-transfer': 'Chuyển khoản ngân hàng',
+    'bank': 'Chuyển khoản ngân hàng',
+    'cash': 'Tiền mặt'
+  };
 
   function formatDate(iso) {
     if (!iso) return '--';
@@ -29,28 +30,37 @@
       year: 'numeric'
     });
   }
+  async function fetchOrderFromBackend() {
+    try {
+      const res = await fetch(API + '/checkout/last-confirmed', {
+        cache: 'no-store',
+        credentials: 'include'
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data || typeof data !== 'object') return null;
+      return data;
+    } catch (err) {
+      console.warn('[confirmation] cannot load from backend', err);
+      return null;
+    }
+  }
 
   function buildOrderView(raw) {
     if (!raw || typeof raw !== 'object') return null;
 
-    // Helper lấy dữ liệu lồng nhau
-    const t = raw.ticket || {}; 
+    const t = raw.ticket || {};
     const totals = raw.totals || {};
 
-    // 1. Lấy tên phim, rạp
     const movieTitle = raw.movieTitle || t.movieTitle || raw.movieName || 'Phim chưa xác định';
     const theaterName = raw.theaterName || t.theaterName || raw.cinemaName || 'Rạp chưa xác định';
-    
-    // 2. [FIX HOÀN CHỈNH] Đọc trực tiếp các trường đã format từ payment.js
-    // Payment.js đã đảm bảo raw.showDate và raw.showTime là các chuỗi đã được làm sạch.
+
     const showDate = raw.showDate || raw.date || t.date || t.showDate || '--';
-    const showtimeDisplay = raw.showTime || raw.time || t.time || t.showTime || '--'; // Chuỗi "Start ~ End"
-    
-    // 3. Xử lý ghế
-    const seatsList = raw.seats || t.seats || [];
+    const showtimeDisplay =
+      raw.showTime || raw.time || t.time || t.showTime || raw.showtimeText || '--'; 
+    const seatsList = raw.seats || raw.seatsText || t.seats || [];
     const seatsText = Array.isArray(seatsList) ? seatsList.join(', ') : (seatsList || '--');
 
-    // 4. Xử lý Combo (giữ nguyên logic cũ)
     let combosText = 'Không có';
     const comboSource = raw.combos || [];
     if (Array.isArray(comboSource) && comboSource.length > 0) {
@@ -59,26 +69,23 @@
         .join(', ');
     }
 
-    // 5. Xử lý Tổng tiền
     const total = raw.total || raw.grandTotal || totals.grandTotal || 0;
 
-    // 6. Xử lý Phương thức thanh toán (giữ nguyên logic cũ)
-    const paymentMethodMap = { /* ... (map logic) ... */ }; // Giả sử map đã tồn tại
-    const rawMethod = raw.paymentMethod || 'cash';
+    const rawMethod =
+      raw.paymentMethod || raw.paymentCode || raw.paymentType || 'cash';
     const methodText = paymentMethodMap[rawMethod] || rawMethod;
 
-
     return {
-        orderId: raw.orderId || '--',
-        movieText: movieTitle,
-        theaterText: theaterName,
-        showDate: showDate,         // Ngày chiếu
-        showtimeText: showtimeDisplay, // Giờ chiếu (Start ~ End)
-        seatsText: seatsText,
-        combosText: combosText,
-        methodText: methodText,
-        total: total,
-        createdAt: raw.createdAt || new Date().toISOString()
+      orderId: raw.orderId || '--',
+      movieText: movieTitle,
+      theaterText: theaterName,
+      showDate: showDate,             
+      showtimeText: showtimeDisplay,  
+      seatsText: seatsText,
+      combosText: combosText,
+      methodText: methodText,
+      total: total,
+      createdAt: raw.createdAt || new Date().toISOString()
     };
   }
 
@@ -87,7 +94,6 @@
 
     const o = orderView;
 
-    // Left: vé
     const idEl = $('#tk-orderId');
     if (idEl) idEl.textContent = o.orderId;
 
@@ -97,11 +103,9 @@
     const theaterEl = $('#tk-theater');
     if (theaterEl) theaterEl.textContent = o.theaterText;
 
-    // [MỚI] Render Ngày chiếu
     const dateEl = $('#tk-showdate');
     if (dateEl) dateEl.textContent = o.showDate;
 
-    // Render Suất chiếu (chỉ còn giờ)
     const showtimeEl = $('#tk-showtime');
     if (showtimeEl) showtimeEl.textContent = o.showtimeText;
 
@@ -111,7 +115,6 @@
     const combosEl = $('#tk-combos');
     if (combosEl) combosEl.textContent = o.combosText;
 
-    // QR code
     const qrWrap = $('#qr-code-container');
     if (qrWrap && window.QRCode && o.orderId && o.orderId !== '--') {
       qrWrap.innerHTML = '';
@@ -125,7 +128,6 @@
       });
     }
 
-    // Right: invoice
     const invId = $('#inv-id');
     if (invId) invId.textContent = o.orderId;
 
@@ -165,7 +167,6 @@
 
   function clearCurrentOrderSession() {
     try {
-      // Xóa hết các flag booking để dọn dẹp cho lần mua sau
       localStorage.removeItem('orderConfirmed');
       localStorage.removeItem('booking_cart');
       localStorage.removeItem('concessions_cart');
@@ -184,30 +185,30 @@
     window.location.href = 'profile.html';
   }
 
-  function init() {
+  async function init() {
     let raw = null;
-
-    try {
-      const stored = localStorage.getItem('orderConfirmed');
-      if (stored) {
-        raw = JSON.parse(stored);
+    raw = await fetchOrderFromBackend();
+    if (!raw) {
+      try {
+        const stored = localStorage.getItem('orderConfirmed');
+        if (stored) {
+          raw = JSON.parse(stored);
+        }
+      } catch (err) {
+        console.warn('[confirmation] cannot parse orderConfirmed', err);
       }
-    } catch (err) {
-      console.warn('[confirmation] cannot parse orderConfirmed', err);
     }
-
-    // Fallback demo nếu chạy trực tiếp file html này
     if (!raw) {
       console.warn('[confirmation] Dùng dữ liệu demo.');
       raw = {
         orderId: 'DCINE-' + Math.floor(Math.random() * 1000000),
         movieTitle: 'Đào, Phở và Piano',
         theaterName: 'D-cine Lê Văn Việt',
-        showDate: '29/11/2025',     // [MỚI] Ngày riêng
-        showTime: '19:30 ~ 21:30',  // [MỚI] Giờ riêng
+        showDate: '29/11/2025',
+        showTime: '19:30 ~ 21:30',
         seats: ['F5', 'F6'],
         combos: [{ name: 'Bắp phô mai', qty: 1 }],
-        paymentMethod: 'Ví điện tử',
+        paymentMethod: 'wallet',
         total: 245000,
         createdAt: new Date().toISOString()
       };
@@ -226,5 +227,7 @@
     if (historyBtn) historyBtn.addEventListener('click', goHistory);
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+  });
 })();

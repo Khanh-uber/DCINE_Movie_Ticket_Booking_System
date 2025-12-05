@@ -1,11 +1,10 @@
-// assets/js/profile.js
+
 (() => {
   const API = window.API_BASE || 'http://localhost:8080/api';
-window.API_BASE = API;
+  window.API_BASE = API;
   const toVND = (n) => (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
 
   async function getJSON(apiPath, localPath) {
-    // 1. Gọi BE
     if (apiPath) {
       try {
         const res = await fetch(apiPath, { cache: 'no-store' ,
@@ -15,7 +14,6 @@ window.API_BASE = API;
         console.warn('[Profile] API error', apiPath, err);
       }
     }
-    // 2. Fallback sang file JSON local
     if (localPath) {
       try {
         console.log('[Profile] Fallback ->', localPath);
@@ -175,7 +173,38 @@ window.API_BASE = API;
       { name: 'Gold',     min: 3000000 },
     ];
   }
+async function guardAuth() {
+    if (!localStorage.getItem('accessToken')) {
+      redirectToLogin();
+      return false;
+    }
+    try {
+      const res = await fetch(`${API}/auth/session`, { 
+        cache: 'no-store', 
+        credentials: 'include'
+      });
 
+      if (!res.ok) {
+        throw new Error('Session expired');
+      }
+      const user = await res.json();
+      if (window.updateHeaderUser) {
+        window.updateHeaderUser(user);
+      }
+      return true; 
+    } catch (err) {
+      console.warn('[Profile] Session invalid:', err);
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('fullName');
+      localStorage.removeItem('avatarUrl');
+      redirectToLogin();
+      return false;
+    }
+  }
+  function redirectToLogin() {
+    alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    window.location.href = `D_cine_login.html?next=${encodeURIComponent(window.location.pathname.split('/').pop())}`;
+  }
   // ---------- Load toàn bộ data hồ sơ ----------
   async function loadAllProfileData() {
     const [profileRes, bookingsRes, vouchersRes] = await Promise.all([
@@ -531,14 +560,25 @@ window.changePassword = async () => {
   }
 };
 
-
-
-window.logout = () => {
-  if (confirm('Đăng xuất khỏi tài khoản?')) {
+window.logout = async () => {
+  if (!confirm('Đăng xuất khỏi tài khoản?')) return;
+  try {
+    await fetch(`${API}/auth/logout`, { 
+        method: 'GET', 
+        cache: 'no-store',
+        credentials: 'include' 
+    });
+  } catch (e) {
+    console.warn('Lỗi gọi API logout', e);
+  } finally {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('fullName');
     localStorage.removeItem('username');
     localStorage.removeItem('avatarUrl');
+    localStorage.removeItem('loyaltyPoints');
+    localStorage.removeItem('totalSpending');
+    localStorage.removeItem('membershipTierName');
+    if (window.updateHeaderUser) window.updateHeaderUser(null);
     window.location.href = 'index.html';
   }
 };
@@ -588,11 +628,12 @@ window.logout = () => {
 
   // ---------- Boot ----------
   document.addEventListener('DOMContentLoaded', async () => {
+    const isAuth = await guardAuth(); 
+    if (!isAuth) return;
     await loadAllProfileData();
     renderProfile();
     renderTickets();
     renderPromos();
-
     const avatarInput = document.getElementById('avatar-input');
     if (avatarInput) {
       avatarInput.addEventListener('change', handleAvatarFileChange);

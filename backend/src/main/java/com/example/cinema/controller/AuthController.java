@@ -3,6 +3,11 @@ import com.example.cinema.entity.Account;
 import com.example.cinema.entity.OtpRecord;
 import com.example.cinema.service.AccountService;
 import com.example.cinema.service.OtpService;
+import com.example.cinema.dto.MembershipDTO;
+import com.example.cinema.service.MembershipService;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,11 +25,12 @@ import java.util.Map;
 
 public class AuthController {
     private final AccountService accountService;
-
+    private final MembershipService membershipService; 
     private final OtpService otpService;
-    public AuthController(AccountService accountService, OtpService otpService){
+    public AuthController(AccountService accountService, MembershipService membershipService, OtpService otpService){
         this.accountService = accountService;
         this.otpService = otpService;
+        this.membershipService = membershipService;
     }
     
      // === Đăng ký ===
@@ -58,11 +64,40 @@ public class AuthController {
         }
         String avatarUrl = acc.getAvatarUrl();
         String accessToken = java.util.UUID.randomUUID().toString();
+
+        BigDecimal totalSpending = acc.getTotalSpending();
+        if (totalSpending == null) {
+            totalSpending = BigDecimal.ZERO;
+        }
+        double spent = totalSpending.doubleValue();
+        int loyaltyPoints = 0;
+        try {
+            loyaltyPoints = acc.getLoyaltyPoints(); 
+        } catch (Exception ignore) {
+        }
+        String membershipTierName = "Standard"; 
+        try {
+            List<MembershipDTO> tiers = membershipService.getAllMemberships();
+            double bestMin = -1;
+            for (MembershipDTO t : tiers) {
+                Double min = t.getMinSpent();
+                if (min == null) min = 0.0;
+                if (spent >= min && min > bestMin) {
+                    bestMin = min;
+                    membershipTierName = t.getName();
+                }
+            }
+        } catch (Exception ignore) {
+        }
+
         Map<String, Object> user = new java.util.HashMap<>();
         user.put("id", acc.getAccountId());
         user.put("fullName", fullName);
         user.put("avatarUrl", avatarUrl);    
         user.put("email", acc.getEmail());
+        user.put("loyaltyPoints", loyaltyPoints);
+        user.put("totalSpending", totalSpending);     
+        user.put("membershipTierName", membershipTierName);
         Map<String, Object> data = new java.util.HashMap<>();
         data.put("accessToken", accessToken);
         data.put("user", user);

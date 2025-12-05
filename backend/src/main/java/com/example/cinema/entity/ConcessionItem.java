@@ -39,8 +39,8 @@ public class ConcessionItem {
     public ConcessionItem() {}
 
     public ConcessionItem(Long itemId, String code, String title, String description,
-                          Double price, Double oldPrice, String tag,
-                          String imageUrl, boolean active, String category) {
+                        Double price, Double oldPrice, String tag,
+                        String imageUrl, boolean active, String category) {
         this.itemId = itemId;
         this.code = code;
         this.title = title;

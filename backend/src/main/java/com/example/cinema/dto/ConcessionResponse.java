@@ -54,13 +54,10 @@ public class ConcessionResponse {
         public List<SeatItems> getSeatItems(){return items;}
         public void setSeatItems(List<SeatItems> items){this.items = items;}
 
-        // Đã sửa lại tên hàm cho đúng chuẩn getter (getTotalAmount)
         public Long getTotalAmount(){return totalAmount;}
-        // Đã sửa lỗi chính tả (Amount chữ thường)
         public void setTotalAmount(Long totalAmount){this.totalAmount = totalAmount;}
     }
 
-    // ================= SEAT ITEMS =================
     public static class SeatItems {
         private String code;
         private String zone;
@@ -69,7 +66,6 @@ public class ConcessionResponse {
         
         public SeatItems(){}
         
-        // Đã sửa lỗi chính tả geZone -> getZone để JSON map đúng key
         public String getZone(){return zone;} 
         public void setZone(String zone){this.zone = zone;}
 
@@ -83,7 +79,6 @@ public class ConcessionResponse {
         public void setPrice(Long price){this.price = price;}
     }
 
-    // ================= COMBO ITEM =================
     public static class ComboItem {
         private Long comboId;
         private String title;
@@ -125,7 +120,6 @@ public class ConcessionResponse {
         public void setImageUrl(String imageUrl){this.imageUrl = imageUrl;}
     }
     
-    // ================= TOTALS =================
     public static class Totals{
         private Long ticketAmount;
         private Long combosAmount;

@@ -2,7 +2,7 @@ package com.example.cinema.dto;
 
 public class CastDTO {
     private String name;
-    private String roleType;  // ACTOR / DIRECTOR
+    private String roleType;  
     private String castUrl;
 
     public CastDTO(){}

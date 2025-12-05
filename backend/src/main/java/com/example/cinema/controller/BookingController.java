@@ -10,25 +10,23 @@ import com.example.cinema.dto.BookingRequest;
 import com.example.cinema.dto.BookingResponse;
 import com.example.cinema.service.BookingService;
 
-
+import jakarta.servlet.http.HttpSession;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class BookingController {
     private final BookingService bookingService;
-    private Long getAccountId(){
-        Long accountId = 1L;
-        return accountId;
-    }
     public BookingController(BookingService bookingService){
         this.bookingService = bookingService;
     }
     @PostMapping("/bookings")
-    public ResponseEntity<BookingResponse> createBooking(@RequestBody BookingRequest request) {
-        Long accountId = getAccountId();
-        BookingResponse response =
-                bookingService.createBooking(request.getShowtimeId(), accountId, request);
-
+    public ResponseEntity<?> createBooking(@RequestBody BookingRequest request, HttpSession session) { 
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập để đặt vé"));
+        }
+        BookingResponse response = bookingService.createBooking(request.getShowtimeId(), accountId, request);
         return ResponseEntity.ok(response);
     }
 }

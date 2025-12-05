@@ -40,7 +40,6 @@ const CAT_CONFIG = {
     }
   };
 
-  // ===== Helpers =====
   async function getJSON(apiPath, localPath) {
     if (apiPath) {
       try {
@@ -68,10 +67,6 @@ const CAT_CONFIG = {
     return null;
   }
 
-  /**
-   * Chuẩn hoá dữ liệu combos từ BE / JSON local
-   * để grid bên trái dùng.
-   */
   function normalizeCombos(raw) {
     let items = [];
     if (!raw) return [];
@@ -102,7 +97,6 @@ const CAT_CONFIG = {
       }));
   }
 
-  // ===== Ticket & cart (BE-first + fallback) =====
   function readBookingCartFallback() {
     try {
       const raw = localStorage.getItem('booking_cart');
@@ -113,27 +107,20 @@ const CAT_CONFIG = {
 
       const meta = data.meta || {};
       const ticketObj = data.ticket || {};
-      
-      // 1. LẤY TÊN RẠP
+
       const finalTheaterName = 
           data.theaterName || meta.theaterName || meta.theater || 
           ticketObj.theaterName || 'Rạp chưa xác định';
-
-      // 2. LẤY GIỜ KẾT THÚC
       const finalEndTime = 
           data.end_at || data.endTime ||
           meta.end_at || meta.endTime || 
           ticketObj.end_at || ticketObj.endTime || ''; 
-
-      // 3. LẤY GIỜ BẮT ĐẦU (Ưu tiên lấy từ meta.time do seatmap.js lưu)
       const finalTime = 
           data.showTime || meta.time || data.time || 
           ticketObj.showTime || ticketObj.time || '';
 
       const finalMovieTitle = data.movieTitle || meta.movieTitle || ticketObj.movieTitle || '';
       const finalDate = data.showDate || meta.date || data.date || '';
-
-      // Xử lý ghế và giá tiền
       let rawItems = [];
       if (Array.isArray(data.items)) rawItems = data.items;
       else if (Array.isArray(data.selectedSeats)) {
@@ -143,13 +130,11 @@ const CAT_CONFIG = {
       let finalAmount = Number(data.totalAmount || 0);
       if (!finalAmount && rawItems.length) finalAmount = rawItems.reduce((s, i) => s + (Number(i.price)||0), 0);
 
-      // Cập nhật State
       state.ticket = {
         movieTitle: finalMovieTitle,
         theaterName: finalTheaterName,
         showDate: finalDate,
         
-        // [FIX QUAN TRỌNG] Lưu vào cả 2 biến để render không bị lỗi
         time: finalTime,      
         showTime: finalTime,
 
@@ -166,43 +151,30 @@ const CAT_CONFIG = {
   }
 
   function restoreCartFromPreviousSession() {
-    // Nếu Backend đang bật và đã load được cart thì không ghi đè
     if (state.backend.enabled && state.cart.length > 0) return;
-
-    // 1. Lấy ID suất chiếu hiện tại (từ booking_cart)
     const currentBookingRaw = localStorage.getItem('booking_cart');
     let currentShowtimeId = null;
     if (currentBookingRaw) {
         try {
             const currentBooking = JSON.parse(currentBookingRaw);
-            // Lấy ID từ showtimeId hoặc meta.showtimeId
             currentShowtimeId = String(currentBooking.showtimeId || (currentBooking.meta && currentBooking.meta.showtimeId) || '');
         } catch(e) {}
     }
-    // Nếu không có ID hiện tại, không restore để tránh lỗi.
     if (!currentShowtimeId || currentShowtimeId === '') return; 
 
     try {
       const raw = localStorage.getItem('concessions_cart');
       if (!raw) return;
       const data = JSON.parse(raw);
-      
-      // 2. Kiểm tra ID suất chiếu của giỏ hàng đã lưu
       const savedShowtimeId = String(data.showtimeId || '');
-
-      // Nếu ID suất chiếu KHÔNG TRÙNG -> GIỎ HÀNG CŨ -> XÓA VÀ THOÁT.
       if (savedShowtimeId !== currentShowtimeId) {
         console.warn(`[concessions] Stale cart detected. Clearing old combo cart.`);
         localStorage.removeItem('concessions_cart');
         return; 
       }
-      
-      // Nếu có dữ liệu combos đã lưu trước đó và ID trùng khớp (OK để restore)
       if (Array.isArray(data.combos) && data.combos.length > 0) {
         console.log('[concessions] Restoring cart from storage...');
         state.cart = data.combos;
-        
-        // Render lại giao diện
         renderCart();
         updateTotals();
       }
@@ -215,7 +187,6 @@ const CAT_CONFIG = {
     if (!data || typeof data !== 'object') return;
 
     if (data.ticket && typeof data.ticket === 'object') {
-      // Ticket của BE sẽ override ticket cũ
       state.ticket = data.ticket;
     }
 
@@ -853,7 +824,6 @@ const btnCheckout = $('#btnCheckout');
             finalEndTime = state.ticket.endTime || (state.ticket.meta && state.ticket.meta.endTime) || '';
         }
 
-        // Nguồn 2: Fallback từ booking_cart cũ
         try {
             const rawBooking = localStorage.getItem('booking_cart');
             if (rawBooking) {
@@ -864,7 +834,6 @@ const btnCheckout = $('#btnCheckout');
                 if (!finalDate) finalDate = b.showDate || b.date || (b.meta && b.meta.date);
                 if (!finalTime) finalTime = b.showTime || b.time || (b.meta && b.meta.time);
                 
-                // [MỚI 3] Fallback endTime (nếu trong booking_cart có lưu)
                 if (!finalEndTime) finalEndTime = b.endTime || (b.meta && b.meta.endTime);
             }
         } catch (e) { console.warn("Lỗi đọc booking_cart fallback", e); }
@@ -877,8 +846,6 @@ const btnCheckout = $('#btnCheckout');
                 finalShowtimeId = b.showtimeId || (b.meta && b.meta.showtimeId) || '';
             }
         } catch (e) { console.warn("Lỗi đọc showtimeId từ booking_cart", e); }
-
-        // 3. Đóng gói payload gửi sang Payment
         const payload = {
           ticket: state.ticket || {}, 
           theaterName: finalTheaterName, 
@@ -891,8 +858,6 @@ const btnCheckout = $('#btnCheckout');
           combos: state.cart,
           grandTotal: ticketBase + combosTotal
         };
-
-        // Cập nhật ngược lại vào ticket để chắc chắn (dự phòng)
         if (payload.ticket) {
             if (!payload.ticket.theaterName) payload.ticket.theaterName = finalTheaterName;
             if (!payload.ticket.showDate) payload.ticket.showDate = finalDate;
@@ -901,7 +866,6 @@ const btnCheckout = $('#btnCheckout');
         }
 
         try {
-          // Lệnh này lưu concessions_cart, giờ đã có showtimeId
           localStorage.setItem('concessions_cart', JSON.stringify(payload)); 
         } catch (e) {
           console.warn('[concessions] cannot save concessions_cart', e);
@@ -912,8 +876,16 @@ const btnCheckout = $('#btnCheckout');
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', async () => {
+        if (window.guardAuth) {
+             const isSafe = await window.guardAuth();
+             if (!isSafe) return;
+        }
+        init();
+    });
   } else {
-    init();
+    // Nếu file load trễ, cũng phải check
+    if (window.guardAuth) window.guardAuth().then(ok => { if(ok) init(); });
+    else init();
   }
 })();
