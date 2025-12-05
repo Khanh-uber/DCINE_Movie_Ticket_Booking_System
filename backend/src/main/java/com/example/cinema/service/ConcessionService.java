@@ -149,11 +149,6 @@ public class ConcessionService {
             res.setTicket(ticketInfo);
             res.setTotals(totals);
         }
-        booking.setTotalAmount(ticketTotal + combosTotal.longValue());
-        bookingRepo.save(booking);
-        System.out.println(">>> tiket_total = " + ticketTotal);
-        System.out.println(">>> combos_total = " + combosTotal.longValue());
-        System.out.println(">>> NEW total_amount = " + booking.getTotalAmount());
         return res;
     }
 
@@ -193,7 +188,8 @@ public class ConcessionService {
 
     public ConcessionResponse updateCart(ConcessionCartRequest req, Long accountId){
         Booking booking = bookingRepo.getPendingBooking(accountId);
-        if (booking == null) throw new RuntimeException("Không tìm thấy booking");
+        if (booking == null) 
+            throw new RuntimeException("Không tìm thấy booking");
         
         Long bookingId = booking.getBookingId();
         // Xóa giỏ hàng cũ trong DB để lưu mới
@@ -303,7 +299,11 @@ public class ConcessionService {
         totals.setTicketAmount(ticketTotal);
         totals.setGrandTotal(combosAmount + ticketTotal);
         res.setTotals(totals);
-        
+
+        booking.setTotalAmount(ticketTotal + combosAmount.longValue());
+        bookingRepo.save(booking);
+        System.out.println(">>> tiket_total = " + ticketTotal);
+        System.out.println(">>> NEW total_amount = " + booking.getTotalAmount());
         return res;
     }
 }

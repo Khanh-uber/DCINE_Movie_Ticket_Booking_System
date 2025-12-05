@@ -34,7 +34,7 @@ const CAT_CONFIG = {
     totals: null,
     backend: {
       enabled: true,
-      summaryPath: '/checkout/summary',
+      summaryPath: '/concessions/summary',
       cartPath: '/concessions/cart',
       lastError: null
     }
