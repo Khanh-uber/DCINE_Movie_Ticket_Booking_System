@@ -56,18 +56,18 @@ public class ProfileService {
         ProfileResponse.UserDTO u = new ProfileResponse.UserDTO();
         u.setId(((Number) acc.get("account_id")).longValue());
         u.setFullName(safeStr(acc.get("full_name")));
-        u.setUsername(safeStr(acc.get("username")));
-        u.setEmail(safeStr(acc.get("email")));
-        u.setPhone(safeStr(acc.get("phone")));
-        u.setDob(safeStr(acc.get("dob")));                 // ⭐ Sửa ở đây
-        u.setGender(safeStr(acc.get("gender")));
-        u.setAddress(safeStr(acc.get("address")));
-        u.setAvatarUrl(safeStr(acc.get("avatar_url")));
+    u.setUsername(safeStr(acc.get("username")));
+    u.setEmail(safeStr(acc.get("email")));
+    u.setPhone(safeStr(acc.get("phone")));
+    u.setDob(safeStr(acc.get("dob")));                 // ⭐ Sửa ở đây
+    u.setGender(safeStr(acc.get("gender")));
+    u.setAddress(safeStr(acc.get("address")));
+    u.setAvatarUrl(safeStr(acc.get("avatar_url")));
         
         // Booking booking = bookingRepo.findPendingBookingByAccountId(accountId);
         u.setTotalSpent(bookingRepo.getTotalSpent(accountId));
         u.setMembership((String) acc.get("name"));
-        u.setJoinedAt(safeStr(acc.get("created_at")));
+        u.setJoinedAt(acc.get("created_at").toString());
 
         ProfileResponse res = new ProfileResponse();
         res.setUser(u);

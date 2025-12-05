@@ -67,7 +67,7 @@ public class ProfileService {
         // Booking booking = bookingRepo.findPendingBookingByAccountId(accountId);
         u.setTotalSpent(bookingRepo.getTotalSpent(accountId));
         u.setMembership((String) acc.get("name"));
-        u.setJoinedAt(safeStr(acc.get("created_at")));
+        u.setJoinedAt(acc.get("created_at").toString());
 
         ProfileResponse res = new ProfileResponse();
         res.setUser(u);
