@@ -44,9 +44,6 @@ public class ProfileService {
         this.bookingConcessionRepo = bookingConcessionRepo;
         this.bookingSeatRepo = bookingSeatRepo;
     }
-    private String safeStr(Object v) {
-        return v == null ? null : v.toString();
-    }
     public ProfileResponse getProfile(Long accountId) {
         Map<String, Object>  acc = accountRepo.getUserInfo(accountId);
         if (acc == null){
@@ -55,19 +52,19 @@ public class ProfileService {
 
         ProfileResponse.UserDTO u = new ProfileResponse.UserDTO();
         u.setId(((Number) acc.get("account_id")).longValue());
-        u.setFullName(safeStr(acc.get("full_name")));
-        u.setUsername(safeStr(acc.get("username")));
-        u.setEmail(safeStr(acc.get("email")));
-        u.setPhone(safeStr(acc.get("phone")));
-        u.setDob(safeStr(acc.get("dob")));                 // ⭐ Sửa ở đây
-        u.setGender(safeStr(acc.get("gender")));
-        u.setAddress(safeStr(acc.get("address")));
-        u.setAvatarUrl(safeStr(acc.get("avatar_url")));
+        u.setFullName((String) acc.get("full_name"));
+        u.setUsername((String) acc.get("username"));
+        u.setEmail((String) acc.get("email"));
+        u.setPhone((String) acc.get("phone"));
+        u.setDob(acc.get("dob").toString());
+        u.setGender((String) acc.get("gender"));
+        u.setAddress((String) acc.get("address"));
+        u.setAvatarUrl((String) acc.get("avatar_url"));
         
         // Booking booking = bookingRepo.findPendingBookingByAccountId(accountId);
         u.setTotalSpent(bookingRepo.getTotalSpent(accountId));
         u.setMembership((String) acc.get("name"));
-        u.setJoinedAt(safeStr(acc.get("created_at")));
+        u.setJoinedAt(acc.get("created_at").toString());
 
         ProfileResponse res = new ProfileResponse();
         res.setUser(u);
@@ -176,27 +173,26 @@ public class ProfileService {
         return v == null ? "" : v;
     }
 
-    private Map<String, Object> buildEmpty(Map<String, Object> row) {
+private Map<String, Object> buildEmpty(Map<String, Object> row) {
 
-        Map<String, Object> movie = new LinkedHashMap<>();
-        movie.put("title", safe(row.get("movie_title")));
-        movie.put("posterUrl", safe(row.get("poster_url")));
+    Map<String, Object> movie = new LinkedHashMap<>();
+    movie.put("title", safe(row.get("movie_title")));
+    movie.put("posterUrl", safe(row.get("poster_url")));
 
-        Map<String, Object> showtime = new LinkedHashMap<>();
-        showtime.put("theaterName", safe(row.get("theater_name")));
-        showtime.put("startTime", safe(row.get("start_time")));
-        showtime.put("date", safe(row.get("show_date")));          // alias: show_date
-        showtime.put("time", safe(row.get("show_start_time"))); // alias: show_start_time
+    Map<String, Object> showtime = new LinkedHashMap<>();
+    showtime.put("theaterName", safe(row.get("theater_name")));
+    showtime.put("showDate", safe(row.get("show_date")));          // alias: show_date
+    showtime.put("showStartTime", safe(row.get("show_start_time"))); // alias: show_start_time
 
-        Map<String, Object> obj = new LinkedHashMap<>();
-        obj.put("totalAmount", row.get("total_amount"));
-        obj.put("status", safe(row.get("status")));
-        obj.put("movie", movie);
-        obj.put("showtime", showtime);
-        obj.put("seats", new ArrayList<String>());
-        obj.put("concessions", new ArrayList<Map<String, Object>>());
+    Map<String, Object> obj = new LinkedHashMap<>();
+    obj.put("totalAmount", row.get("total_amount"));
+    obj.put("status", safe(row.get("status")));
+    obj.put("movie", movie);
+    obj.put("showtime", showtime);
+    obj.put("seats", new ArrayList<String>());
+    obj.put("concessions", new ArrayList<Map<String, Object>>());
 
-        return obj;
-    }
+    return obj;
+}
 }
 

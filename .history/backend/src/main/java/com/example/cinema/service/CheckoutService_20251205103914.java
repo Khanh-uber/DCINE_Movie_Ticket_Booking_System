@@ -6,7 +6,6 @@ import com.example.cinema.entity.BookingVoucherId;
 import com.example.cinema.entity.Payment;
 import com.example.cinema.entity.Voucher;
 import com.example.cinema.repository.BookingRepository;
-import com.example.cinema.repository.BookingVoucherRepository;
 import com.example.cinema.repository.PaymentRepository;
 import com.example.cinema.repository.VoucherRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +31,6 @@ public class CheckoutService {
     private final SocketService socketService;
     private final BookingRepository bookingRepo;
     private final VoucherRepository voucherRepo;
-    private final BookingVoucherRepository bookingVoucherRepo;
 
     // Helper an toàn
     private Long safeLong(Object obj) {
@@ -119,7 +117,7 @@ public class CheckoutService {
             checkoutRepo.save(pm); 
     
             // 5. Nếu có voucher thì lưu vào booking
-            String voucherCode = safeString(totals.get("discountCode"));
+            String voucherCode = safeString(order.get("code"));
             long discountAmount = safeLong(totals.get("discountAmount"));
 
             if (voucherCode != null && !voucherCode.isEmpty()) {

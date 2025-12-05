@@ -76,9 +76,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
                         """, nativeQuery = true)
         Booking findByBooking(@Param("bookingId") Long bookingId);
 
-        @Query(value = """
-                SELECT 
+        public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    @Query(value = """
+        SELECT 
             b.booking_id,
+            b.booking_code,
             b.total_amount,
             b.status,
             b.created_at,
@@ -86,20 +89,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
             m.title AS movie_title,
             m.poster_url,
             
-            
-			DATE(st.start_at) AS show_date,
-			TIME(st.start_at) AS show_start_time,
+            st.start_time,
             th.name AS theater_name,
             
             CONCAT(s.row_label, s.seat_number) AS seat_code,
             
-            c.title AS concession_name,
+            c.name AS concession_name,
             bc.quantity AS concession_qty
 
         FROM booking b
         JOIN showtime st ON st.showtime_id = b.showtime_id
-        JOIN hall h on h.hall_id = st.hall_id
-        JOIN theater th ON h.theater_id = th.theater_id
+        JOIN theater th ON th.theater_id = st.theater_id
         JOIN movie m ON m.movie_id = st.movie_id
 
         LEFT JOIN booking_seat bs ON bs.booking_id = b.booking_id
@@ -108,12 +108,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
         LEFT JOIN booking_concession bc ON bc.booking_id = b.booking_id
         LEFT JOIN concession_item c ON c.item_id = bc.item_id
 
-        WHERE b.account_id = :accountId 
+        WHERE b.account_id = :accId
         ORDER BY b.created_at DESC
-
-        """, nativeQuery = true)
-        List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
-
+    """, nativeQuery = true)
+    List<Map<String, Object>> findBookingHistoryInfo(@Param("accId") Long accountId);
+}
 
 
 
