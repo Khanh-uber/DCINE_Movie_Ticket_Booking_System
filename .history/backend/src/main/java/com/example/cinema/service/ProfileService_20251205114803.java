@@ -181,7 +181,6 @@ public class ProfileService {
 
         Map<String, Object> showtime = new LinkedHashMap<>();
         showtime.put("theaterName", safe(row.get("theater_name")));
-        showtime.put("startTime", safe(row.get("start_time")));
         showtime.put("date", safe(row.get("show_date")));          // alias: show_date
         showtime.put("time", safe(row.get("show_start_time"))); // alias: show_start_time
 

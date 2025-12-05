@@ -169,31 +169,26 @@ public class ProfileService {
 
         return new ArrayList<>(grouped.values());
     }
-    private Object safe(Object v) {
-        return v == null ? "" : v;
-    }
-
     private Map<String, Object> buildEmpty(Map<String, Object> row) {
+        return new LinkedHashMap<>() {{
+            put("totalAmount", row.get("total_amount"));
+            put("status", row.get("status"));
 
-        Map<String, Object> movie = new LinkedHashMap<>();
-        movie.put("title", safe(row.get("movie_title")));
-        movie.put("posterUrl", safe(row.get("poster_url")));
+            put("movie", Map.of(
+                "title", row.get("movie_title"),
+                "posterUrl", row.get("poster_url")
+            ));
 
-        Map<String, Object> showtime = new LinkedHashMap<>();
-        showtime.put("theaterName", safe(row.get("theater_name")));
-        showtime.put("startTime", safe(row.get("start_time")));
-        showtime.put("date", safe(row.get("show_date")));          // alias: show_date
-        showtime.put("time", safe(row.get("show_start_time"))); // alias: show_start_time
+            put("showtime", Map.of(
+                "theaterName", row.get("theater_name"),
+                
+                "date", row.get("show_date"),
+                "showStartTime", row.get("showStartTime")
+            ));
 
-        Map<String, Object> obj = new LinkedHashMap<>();
-        obj.put("totalAmount", row.get("total_amount"));
-        obj.put("status", safe(row.get("status")));
-        obj.put("movie", movie);
-        obj.put("showtime", showtime);
-        obj.put("seats", new ArrayList<String>());
-        obj.put("concessions", new ArrayList<Map<String, Object>>());
-
-        return obj;
+            put("seats", new ArrayList<String>());
+            put("concessions", new ArrayList<Map<String, Object>>());
+        }};
     }
 }
 
