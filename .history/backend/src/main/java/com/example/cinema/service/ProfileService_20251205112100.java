@@ -181,6 +181,7 @@ public class ProfileService {
 
             put("showtime", Map.of(
                 "theaterName", row.get("theater_name"),
+                "startTime"
                 "showDate", row.get("show_date"),
                 "showStartTime", row.get("showStartTime")
             ));

@@ -140,54 +140,9 @@ public class ProfileService {
         List<Map<String, Object>> raw = bookingRepo.findBookingHistoryInfo(accountId);
         Map<Long, Map<String, Object>> grouped = new LinkedHashMap<>();
 
-        for (Map<String, Object> row : raw) {
-            Long bkId = ((Number) row.get("booking_id")).longValue();
+        
 
-            // Tạo booking nếu chưa có
-            grouped.putIfAbsent(bkId, buildEmpty(row));
-
-            Map<String, Object> bk = grouped.get(bkId);
-
-            // ====== Seats ======
-            Object seatCode = row.get("seat_code");
-            if (seatCode != null) {
-                List<String> seats = (List<String>) bk.get("seats");
-                seats.add(seatCode.toString());
-            }
-
-            // ====== Concessions ======
-            Object cname = row.get("concession_name");
-            Object cqty = row.get("concession_qty");
-            if (cname != null) {
-                List<Map<String, Object>> list = (List<Map<String, Object>>) bk.get("concessions");
-                list.add(Map.of(
-                    "name", cname.toString(),
-                    "quantity", cqty == null ? 1 : ((Number)cqty).intValue()
-                ));
-            }
-        }
-
-        return new ArrayList<>(grouped.values());
-    }
-    private Map<String, Object> buildEmpty(Map<String, Object> row) {
-        return new LinkedHashMap<>() {{
-            put("totalAmount", row.get("total_amount"));
-            put("status", row.get("status"));
-
-            put("movie", Map.of(
-                "title", row.get("movie_title"),
-                "posterUrl", row.get("poster_url")
-            ));
-
-            put("showtime", Map.of(
-                "theaterName", row.get("theater_name"),
-                "showDate", row.get("show_date"),
-                "showStartTime", row.get("showStartTime")
-            ));
-
-            put("seats", new ArrayList<String>());
-            put("concessions", new ArrayList<Map<String, Object>>());
-        }};
+        
     }
 }
 

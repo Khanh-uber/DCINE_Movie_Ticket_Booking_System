@@ -182,7 +182,7 @@ public class ProfileService {
             put("showtime", Map.of(
                 "theaterName", row.get("theater_name"),
                 "showDate", row.get("show_date"),
-                "showStartTime", row.get("showStartTime")
+                ""
             ));
 
             put("seats", new ArrayList<String>());

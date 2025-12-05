@@ -171,6 +171,7 @@ public class ProfileService {
     }
     private Map<String, Object> buildEmpty(Map<String, Object> row) {
         return new LinkedHashMap<>() {{
+            put("bookingCode", row.get("booking_code"));
             put("totalAmount", row.get("total_amount"));
             put("status", row.get("status"));
 
@@ -181,8 +182,7 @@ public class ProfileService {
 
             put("showtime", Map.of(
                 "theaterName", row.get("theater_name"),
-                "showDate", row.get("show_date"),
-                "showStartTime", row.get("showStartTime")
+                "startTime", row.get("start_time")
             ));
 
             put("seats", new ArrayList<String>());

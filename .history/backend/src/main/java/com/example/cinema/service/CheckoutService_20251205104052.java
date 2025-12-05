@@ -119,7 +119,7 @@ public class CheckoutService {
             checkoutRepo.save(pm); 
     
             // 5. Nếu có voucher thì lưu vào booking
-            String voucherCode = safeString(totals.get("discountCode"));
+            String voucherCode = safeString(order.get("code"));
             long discountAmount = safeLong(totals.get("discountAmount"));
 
             if (voucherCode != null && !voucherCode.isEmpty()) {

@@ -61,7 +61,7 @@ public class ProfileController {
     }
     @GetMapping("/bookings")
     public Map<String, Object> getBookings(HttpSession session) {
-        Long accId = (Long) session.getAttribute("accountId");
+        Long accId = (Long) req.getAttribute("accountId");
         if (accId == null) throw new RuntimeException("Unauthorized");
 
         List<Map<String, Object>> bookings = profileService.getBookingHistory(accId);

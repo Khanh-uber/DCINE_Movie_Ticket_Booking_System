@@ -168,26 +168,8 @@ public class ProfileService {
         }
 
         return new ArrayList<>(grouped.values());
-    }
-    private Map<String, Object> buildEmpty(Map<String, Object> row) {
-        return new LinkedHashMap<>() {{
-            put("totalAmount", row.get("total_amount"));
-            put("status", row.get("status"));
 
-            put("movie", Map.of(
-                "title", row.get("movie_title"),
-                "posterUrl", row.get("poster_url")
-            ));
-
-            put("showtime", Map.of(
-                "theaterName", row.get("theater_name"),
-                "showDate", row.get("show_date"),
-                "showStartTime", row.get("showStartTime")
-            ));
-
-            put("seats", new ArrayList<String>());
-            put("concessions", new ArrayList<Map<String, Object>>());
-        }};
+        
     }
 }
 
