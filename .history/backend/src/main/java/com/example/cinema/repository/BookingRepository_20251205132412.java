@@ -112,7 +112,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
         ORDER BY b.created_at DESC
 
         """, nativeQuery = true)
-        List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
+        List<Map<String, Object>> findBookingHistoryInfo(@Param("accId") Long accountId);
 
 
 

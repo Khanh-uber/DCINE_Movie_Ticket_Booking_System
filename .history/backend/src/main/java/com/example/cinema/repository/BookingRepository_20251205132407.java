@@ -108,11 +108,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
         LEFT JOIN booking_concession bc ON bc.booking_id = b.booking_id
         LEFT JOIN concession_item c ON c.item_id = bc.item_id
 
-        WHERE b.account_id = :accountId 
+        WHERE b.account_id = 
         ORDER BY b.created_at DESC
 
         """, nativeQuery = true)
-        List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
+        List<Map<String, Object>> findBookingHistoryInfo(@Param("accId") Long accountId);
 
 
 
