@@ -1,20 +1,14 @@
 package com.example.cinema.controller;
 
 import com.example.cinema.dto.ChangePasswordRequest;
-import com.example.cinema.dto.ProfileResponse;
 import com.example.cinema.dto.ProfileUpdateRequest;
-import com.example.cinema.dto.BookingHistoryResponse;
 import com.example.cinema.service.ProfileService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

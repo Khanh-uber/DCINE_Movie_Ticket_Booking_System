@@ -1,6 +1,5 @@
 package com.example.cinema.controller;
 
-import com.example.cinema.dto.ShowtimeDetailDTO;
 import com.example.cinema.dto.ShowtimeSeatMapResponse;
 import com.example.cinema.service.ShowtimeDetailService;
 import com.example.cinema.service.ShowtimeService;

@@ -3,7 +3,6 @@ package com.example.cinema.dto;
 import java.util.List;
 import java.util.Map;
 
-import com.example.cinema.entity.Showtime;
 
 public class ShowtimeDetailResponse {
 
