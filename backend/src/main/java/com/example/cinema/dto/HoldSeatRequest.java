@@ -1,12 +1,11 @@
 package com.example.cinema.dto;
 import java.util.*;
 
-import lombok.Data;
 
 
 public class HoldSeatRequest {
     private List<String> seats;
-    private String action; // "hold" hoặc "release"
+    private String action; 
 
     public HoldSeatRequest(){}
     public HoldSeatRequest(List<String> seats, String action){

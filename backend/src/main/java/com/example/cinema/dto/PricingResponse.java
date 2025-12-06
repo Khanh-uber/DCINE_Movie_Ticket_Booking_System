@@ -1,7 +1,6 @@
 package com.example.cinema.dto;
 import java.util.*;
 
-import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
 public class PricingResponse {
 
     private List<PricingItem> items;
