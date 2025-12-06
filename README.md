@@ -229,9 +229,9 @@ npm start
 | 3   | **Nguyễn Phạm Minh Thức**   | Backend, API tích hợp              | N23DCCN129   |
 | 4   | **Phan Trung Kiên**     | Kiểm thử        | N23DCCN170   |
 
-## ERD
+## ERD DỰ ÁN
 ![Ảnh ERD dự án](./backend/database/dcine_erd.drawio.png)
-Truy cập Link ảnh: [Google Drive] (https://drive.google.com/file/d/1_A83fREljQO3vxq1-_xIEX6spxJnOJm7/view?usp=sharing).
+Truy cập Link ảnh: [Google Drive](https://drive.google.com/file/d/1_A83fREljQO3vxq1-_xIEX6spxJnOJm7/view?usp=sharing).
 
 ## Giấy phép
 
@@ -275,7 +275,7 @@ Hệ thống hiện tại tập trung vào **luồng đặt vé cho khách hàng
 
 ---
 
-📅 *Cập nhật lần cuối: 08/11/2025*  
+📅 *Cập nhật lần cuối: 06/12/2025*  
 ✍️ *Nhóm 3KT PTIT – Movie Ticket Booking System*
 
 > *“Delivering great cinema experience — one click at a time.”* 🎥
