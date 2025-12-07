@@ -3,8 +3,7 @@
 -- Host: localhost    Database: dcine_schema
 -- ------------------------------------------------------
 -- Server version	8.0.43
-DROP DATABASE IF EXISTS dcine_schema;
-CREATE DATABASE dcine_schema;
+
 USE dcine_schema;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -57,7 +56,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,1,3,'minhthuc','$2a$10$WeoU/b8.T62hlAzBfelyNOKXFsWSKdwHghlJ9A2lXeur0e1eiLLkm','thucthcsll2@gmail.com','0901234567','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/minhthuc.jpg','2025-12-04 16:52:59'),(2,2,NULL,'minhkhanh','$2b$12$vYuubI6fSvgE1FnKlShc3OCF/lBOvMNetghL1Nc/1SoQl1k07kSOu','khanh@gmail.com','0382887783','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/minhkhanh.jpg','2025-12-04 16:52:59'),(3,3,NULL,'thuykhuong','$2b$12$.GmHEF1x1oF8SQsgJXw0qOmPI6qIePSC54esSSQk4w0svTjhnC/YW','khuong@gmail.com','0934122738','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/thuykhuong.jpg','2025-12-04 16:52:59'),(4,4,NULL,'trungkien','$2b$12$FLNsQfQvATWxfraxIA1bouRCOq8bHBtRqpEYKsic69VzRSDkWPNPu','kien@gmail.com','0909000004','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/trungkien.jpg','2025-12-04 16:52:59'),(5,5,NULL,'anyaforger','$2b$12$nxKGkstd3GhRuDm/fz9mceHDIuRqoFGKlCLgWBSf0Yehm1uCqO3fm','anya@gmail.com','0937000009','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/anyaforger.jpg','2025-12-04 16:52:59');
+INSERT INTO `account` VALUES (1,1,NULL,'minhthuc','$2a$10$WeoU/b8.T62hlAzBfelyNOKXFsWSKdwHghlJ9A2lXeur0e1eiLLkm','thucthcsll2@gmail.com','0901234567','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/minhthuc.jpg','2025-12-05 07:01:08'),(2,2,NULL,'minhkhanh','$2b$12$vYuubI6fSvgE1FnKlShc3OCF/lBOvMNetghL1Nc/1SoQl1k07kSOu','khanh@gmail.com','0382887783','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/minhkhanh.jpg','2025-12-05 07:01:08'),(3,3,NULL,'thuykhuong','$2b$12$.GmHEF1x1oF8SQsgJXw0qOmPI6qIePSC54esSSQk4w0svTjhnC/YW','khuong@gmail.com','0934122738','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/thuykhuong.jpg','2025-12-05 07:01:08'),(4,4,NULL,'trungkien','$2b$12$FLNsQfQvATWxfraxIA1bouRCOq8bHBtRqpEYKsic69VzRSDkWPNPu','kien@gmail.com','0909000004','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/trungkien.jpg','2025-12-05 07:01:08'),(5,5,NULL,'anyaforger','$2b$12$nxKGkstd3GhRuDm/fz9mceHDIuRqoFGKlCLgWBSf0Yehm1uCqO3fm','anya@gmail.com','0937000009','ACTIVE','CUSTOMER',0,0.00,'/assets/images/users/anyaforger.jpg','2025-12-05 07:01:08');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -90,7 +89,6 @@ CREATE TABLE `booking` (
 
 LOCK TABLES `booking` WRITE;
 /*!40000 ALTER TABLE `booking` DISABLE KEYS */;
-INSERT INTO `booking` VALUES (1,1,4009,6745000.00,'PAID',NULL,'2025-12-04 16:55:59'),(2,5,1009,1278936.00,'PAID',NULL,'2025-12-04 16:55:59'),(3,5,4092,857800.00,'PAID',NULL,'2025-12-04 16:55:59');
 /*!40000 ALTER TABLE `booking` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -119,7 +117,6 @@ CREATE TABLE `booking_concession` (
 
 LOCK TABLES `booking_concession` WRITE;
 /*!40000 ALTER TABLE `booking_concession` DISABLE KEYS */;
-INSERT INTO `booking_concession` VALUES (1,8,35,4165000.00),(2,2,1,99000.00),(2,6,1,109000.00),(2,7,1,119000.00),(2,8,1,125000.00),(2,34,1,25000.00),(2,38,1,25000.00),(3,6,1,99000.00),(3,8,2,238000.00);
 /*!40000 ALTER TABLE `booking_concession` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -147,7 +144,6 @@ CREATE TABLE `booking_seat` (
 
 LOCK TABLES `booking_seat` WRITE;
 /*!40000 ALTER TABLE `booking_seat` DISABLE KEYS */;
-INSERT INTO `booking_seat` VALUES (1,851,66000.00),(1,852,66000.00),(1,853,66000.00),(1,854,66000.00),(1,855,66000.00),(1,856,66000.00),(1,857,66000.00),(1,858,66000.00),(1,859,66000.00),(1,860,66000.00),(1,861,66000.00),(1,862,66000.00),(1,867,66000.00),(1,868,66000.00),(1,869,66000.00),(1,870,66000.00),(1,871,66000.00),(1,872,66000.00),(1,873,66000.00),(1,874,66000.00),(1,875,66000.00),(1,876,66000.00),(1,877,66000.00),(1,878,66000.00),(1,885,66000.00),(1,886,66000.00),(1,887,66000.00),(1,888,66000.00),(1,889,66000.00),(1,890,66000.00),(1,891,66000.00),(1,892,66000.00),(1,901,66000.00),(1,902,66000.00),(1,903,66000.00),(2,1031,99000.00),(2,1032,79200.00),(2,1033,99000.00),(2,1045,99000.00),(2,1046,99000.00),(2,1099,103500.00),(2,1100,103500.00),(3,1815,66000.00),(3,1816,52800.00),(3,1817,66000.00),(3,1820,66000.00),(3,1829,66000.00),(3,1830,66000.00),(3,1895,69000.00),(3,1896,69000.00);
 /*!40000 ALTER TABLE `booking_seat` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -561,7 +557,6 @@ CREATE TABLE `payment` (
 
 LOCK TABLES `payment` WRITE;
 /*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-INSERT INTO `payment` VALUES (18,1,'1764702347121','JCB','Credit',6745000.00,'PAID','2025-12-04 16:55:59.000000','2025-12-04 16:55:59.000000'),(19,2,'1764702347122','JCB','Credit',1278936.00,'PAID','2025-12-04 16:55:59.000000','2025-12-04 16:55:59.000000'),(20,3,'1764702347123','JCB','Credit',857800.00,'PAID','2025-12-04 16:55:59.000000','2025-12-04 16:55:59.000000');
 /*!40000 ALTER TABLE `payment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -807,4 +802,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-05  0:21:31
+-- Dump completed on 2025-12-05 14:01:46

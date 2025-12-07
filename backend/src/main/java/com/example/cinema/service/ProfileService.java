@@ -20,6 +20,7 @@ import com.example.cinema.repository.PromotionRepository;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.math.BigDecimal;
 
 @Service
 public class ProfileService {
@@ -48,37 +49,78 @@ public class ProfileService {
         return v == null ? null : v.toString();
     }
     public ProfileResponse getProfile(Long accountId) {
-        Map<String, Object>  acc = accountRepo.getUserInfo(accountId);
+        Account acc = accountRepo.findByAccountId(accountId);
         if (acc == null){
             throw new RuntimeException("Khong tim thay tai khoan");
         }
 
-        ProfileResponse.UserDTO u = new ProfileResponse.UserDTO();
-        u.setId(((Number) acc.get("account_id")).longValue());
-        u.setFullName(safeStr(acc.get("full_name")));
-        u.setUsername(safeStr(acc.get("username")));
-        u.setEmail(safeStr(acc.get("email")));
-        u.setPhone(safeStr(acc.get("phone")));
-        u.setDob(safeStr(acc.get("dob")));                 // ⭐ Sửa ở đây
-        u.setGender(safeStr(acc.get("gender")));
-        u.setAddress(safeStr(acc.get("address")));
-        u.setAvatarUrl(safeStr(acc.get("avatar_url")));
-        
-        // Booking booking = bookingRepo.findPendingBookingByAccountId(accountId);
-        u.setTotalSpent(bookingRepo.getTotalSpent(accountId));
-        u.setMembership((String) acc.get("name"));
-        u.setJoinedAt(safeStr(acc.get("created_at")));
+        Customer cus = acc.getCustomer();
+        if (cus == null) {
+            cus = customerRepo.findCustomerByAccountId(accountId);
+        }
 
+        ProfileResponse.UserDTO u = new ProfileResponse.UserDTO();
+        u.setId(acc.getAccountId());
+        u.setUsername(acc.getUsername());
+        u.setEmail(acc.getEmail());
+        u.setAvatarUrl(acc.getAvatarUrl());
+        u.setJoinedAt(acc.getCreatedAt() != null ? acc.getCreatedAt().toString() : "");
+
+        if (cus != null) {
+            u.setFullName(cus.getFullName());
+            u.setPhone(cus.getPhone());
+            u.setDob(cus.getDob() != null ? cus.getDob().toString() : "");
+            u.setGender(cus.getGender());
+            u.setAddress(cus.getAddress());
+        } else {
+            u.setPhone(acc.getPhone());
+        }
+
+        BigDecimal totalSpentBD = acc.getTotalSpending();
+        if (totalSpentBD == null) totalSpentBD = BigDecimal.ZERO;
+        long totalSpent = totalSpentBD.longValue();
+        u.setTotalSpent(totalSpent);
+        List<Membership> allTiers = membershipRepo.findAll();
+        Membership currentTier = null;
+        Membership newTier = null;
+        if (acc.getMemberShipId() != null) {
+            currentTier = allTiers.stream()
+                .filter(m -> m.getTierId().equals(acc.getMemberShipId()))
+                .findFirst().orElse(null);
+        }
+        double spendingDouble = totalSpentBD.doubleValue();
+        for (Membership m : allTiers) {
+            Double min = m.getMinSpending();
+            if (min == null) min = 0.0;
+            if (spendingDouble >= min) {
+                if (newTier == null || min > newTier.getMinSpending()) {
+                    newTier = m;
+                }
+            }
+        }
+        if (newTier != null) {
+            boolean needUpdate = false;
+            if (currentTier == null) {
+                needUpdate = true;
+            } else if (!currentTier.getTierId().equals(newTier.getTierId())) {
+                needUpdate = true;
+            }
+
+            if (needUpdate) {
+                acc.setMemberShipId(newTier.getTierId());
+                accountRepo.save(acc); 
+            }
+            u.setMembership(newTier.getName()); 
+        } else {
+            u.setMembership(currentTier != null ? currentTier.getName() : "Standard");
+        }
         ProfileResponse res = new ProfileResponse();
         res.setUser(u);
-
         List<ProfileResponse.MembershipTierDTO> tierList = new ArrayList<>();
-        List<Membership> mList = membershipRepo.findAll();
-        
-        for (Membership m : mList){
+        for (Membership m : allTiers){
             ProfileResponse.MembershipTierDTO dto = new ProfileResponse.MembershipTierDTO();
             dto.setName(m.getName());
-            dto.setMin(m.getMinSpending().longValue());
+            dto.setMin(m.getMinSpending() != null ? m.getMinSpending().longValue() : 0L);
             tierList.add(dto);
         }
         res.setTiers(tierList);
@@ -117,14 +159,26 @@ public class ProfileService {
         u.setDob(customer.getDob() != null ? customer.getDob().toString() : null);
         u.setAddress(customer.getAddress());
         u.setAvatarUrl(acc.getAvatarUrl());
+        String currentTier = "Standard";
+        if(acc.getMemberShipId() != null) {
+             Membership m = membershipRepo.findById(acc.getMemberShipId()).orElse(null);
+             if(m != null) currentTier = m.getName();
+        }
+        u.setMembership(currentTier);
         // u.setMembership(acc.getMembershipTier());
-        u.setTotalSpent(0L);
+        u.setTotalSpent(acc.getTotalSpending() != null ? acc.getTotalSpending().longValue() : 0L);
         u.setJoinedAt(acc.getCreatedAt().toString());
         res.setUser(u);
         return res;
-    
-        
-        
+    }
+    private Long safeLong(Object o) {
+        if (o == null) return 0L;
+        if (o instanceof Number) return ((Number) o).longValue();
+        try {
+            return Long.parseLong(o.toString());
+        } catch (Exception e) {
+            return 0L;
+        }
     }
     public void changePassword(ChangePasswordRequest req, Long accountId){
         Account acc = accountRepo.findByAccountId(accountId);
@@ -152,21 +206,35 @@ public class ProfileService {
             Map<String, Object> bk = grouped.get(bkId);
 
             // ====== Seats ======
-            Object seatCode = row.get("seat_code");
-            if (seatCode != null) {
+            Object seatCodeObj = row.get("seat_code");
+            if (seatCodeObj != null) {
+                String seatCode = seatCodeObj.toString();
                 List<String> seats = (List<String>) bk.get("seats");
-                seats.add(seatCode.toString());
+                if (!seats.contains(seatCode)) {
+                    seats.add(seatCode);
+                }
             }
 
             // ====== Concessions ======
-            Object cname = row.get("concession_name");
-            Object cqty = row.get("concession_qty");
-            if (cname != null) {
+            Object cnameObj = row.get("concession_name");
+            Object cqtyObj = row.get("concession_qty");
+            
+            if (cnameObj != null) {
+                String cname = cnameObj.toString();
                 List<Map<String, Object>> list = (List<Map<String, Object>>) bk.get("concessions");
-                list.add(Map.of(
-                    "name", cname.toString(),
-                    "quantity", cqty == null ? 1 : ((Number)cqty).intValue()
-                ));
+                boolean exists = false;
+                for (Map<String, Object> item : list) {
+                    if (item.get("name").equals(cname)) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    list.add(Map.of(
+                        "name", cname,
+                        "quantity", cqtyObj == null ? 1 : ((Number)cqtyObj).intValue()
+                    ));
+                }
             }
         }
 
@@ -189,6 +257,7 @@ public class ProfileService {
         showtime.put("time", safe(row.get("show_start_time"))); // alias: show_start_time
 
         Map<String, Object> obj = new LinkedHashMap<>();
+        obj.put("bookingId", row.get("booking_id"));
         obj.put("totalAmount", row.get("total_amount"));
         obj.put("status", safe(row.get("status")));
         obj.put("movie", movie);

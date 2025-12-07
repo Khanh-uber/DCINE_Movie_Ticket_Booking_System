@@ -56,6 +56,21 @@ async function restoreUserState() {
     
     if (res.ok) {
       const serverUser = await res.json();
+      if (serverUser.membershipTierName) {
+          localStorage.setItem('membershipTierName', serverUser.membershipTierName);
+      }
+      if (serverUser.totalSpending !== undefined && serverUser.totalSpending !== null) {
+          localStorage.setItem('totalSpending', serverUser.totalSpending);
+      }
+      if (serverUser.loyaltyPoints !== undefined && serverUser.loyaltyPoints !== null) {
+          localStorage.setItem('loyaltyPoints', serverUser.loyaltyPoints);
+      }
+      if (serverUser.fullName) {
+          localStorage.setItem('fullName', serverUser.fullName);
+      }
+      if (serverUser.avatarUrl) {
+          localStorage.setItem('avatarUrl', serverUser.avatarUrl);
+      }
       window.updateHeaderUser({
           fullName: serverUser.username, 
           avatarUrl: serverUser.avatarUrl || localStorage.getItem('avatarUrl'),

@@ -65,7 +65,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
             join movie m on m.movie_id = st.movie_id 
             join hall h on h.hall_id = st.hall_id
             join theater t on t.theater_id = h.theater_id 
-            where b.account_id = 1 and b.status = 'PAID'
+            where b.account_id = :accountId and b.status = 'PAID'
             ORDER BY st.start_time DESC
             """, nativeQuery = true)
     List<Map<String, Object>> findPaidBookingSummary(@Param("accountId") Long accountId);
@@ -113,8 +113,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
 
         """, nativeQuery = true)
         List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
-
-
-
-
 }
+
+
+

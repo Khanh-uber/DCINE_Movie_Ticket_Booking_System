@@ -1,10 +1,13 @@
 package com.example.cinema.controller;
 import com.example.cinema.entity.Account;
+import com.example.cinema.entity.Membership;
 import com.example.cinema.entity.OtpRecord;
 import com.example.cinema.service.AccountService;
 import com.example.cinema.service.OtpService;
 import com.example.cinema.dto.MembershipDTO;
 import com.example.cinema.service.MembershipService;
+import com.example.cinema.repository.AccountRepository; 
+import com.example.cinema.repository.MembershipRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,10 +30,15 @@ public class AuthController {
     private final AccountService accountService;
     private final MembershipService membershipService; 
     private final OtpService otpService;
-    public AuthController(AccountService accountService, MembershipService membershipService, OtpService otpService){
+    private final AccountRepository accountRepo; 
+    private final MembershipRepository membershipRepo;
+    public AuthController(AccountService accountService, MembershipService membershipService, 
+                        OtpService otpService, AccountRepository accountRepo, MembershipRepository membershipRepo){
         this.accountService = accountService;
         this.otpService = otpService;
         this.membershipService = membershipService;
+        this.accountRepo = accountRepo;
+        this.membershipRepo = membershipRepo;
     }
     
      // === Đăng ký ===
@@ -113,20 +121,61 @@ public class AuthController {
         }
     }
 
-     // === KIỂM TRA PHIÊN (SESSION) ===
     @GetMapping("/session")
     public ResponseEntity<?> checkSession(HttpSession session) {
-        Account u = (Account) session.getAttribute("user");
-        if (u == null)
-            return ResponseEntity
-                .status(401)
-                .body(Map.of("message", "Chưa đăng nhập"));
-        return ResponseEntity.ok(Map.of(
-            "message", "Đang đăng nhập",
-            "username", u.getUsername(),
-            "role", u.getRole().name(),
-            "accountId", u.getAccountId()
-    ));
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null)
+            return ResponseEntity.status(401).body(Map.of("message", "Chưa đăng nhập"));
+        Account u = accountRepo.findByAccountId(accountId);
+        if (u == null) {
+            session.invalidate();
+            return ResponseEntity.status(401).body(Map.of("message", "Tài khoản không tồn tại"));
+        }
+        BigDecimal totalSpending = u.getTotalSpending();
+        if (totalSpending == null) totalSpending = BigDecimal.ZERO;
+        String membershipTierName = "Standard"; 
+        try {
+            List<Membership> allTiers = membershipRepo.findAll(); 
+            Membership newTier = null;
+            double spent = totalSpending.doubleValue();
+            for (Membership m : allTiers) {
+                Double min = m.getMinSpending();
+                if (min == null) min = 0.0;
+                
+                if (spent >= min) {
+                    if (newTier == null || min > newTier.getMinSpending()) {
+                        newTier = m;
+                    }
+                }
+            }
+            if (newTier != null) {
+                membershipTierName = newTier.getName();
+                Long currentTierId = u.getMemberShipId();
+                if (currentTierId == null || !currentTierId.equals(newTier.getTierId())) {
+                    u.setMemberShipId(newTier.getTierId());
+                    accountRepo.save(u); 
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi tính hạng tại checkSession: " + e.getMessage());
+        }
+        String fullName = u.getUsername();
+        if (u.getCustomer() != null && u.getCustomer().getFullName() != null) {
+            fullName = u.getCustomer().getFullName();
+        }
+
+        Map<String, Object> responseData = new java.util.HashMap<>();
+        responseData.put("message", "Đang đăng nhập");
+        responseData.put("ok", true);
+        responseData.put("accountId", u.getAccountId());
+        responseData.put("username", u.getUsername());
+        responseData.put("role", u.getRole().name());
+        responseData.put("fullName", fullName);
+        responseData.put("avatarUrl", u.getAvatarUrl());
+        responseData.put("totalSpending", totalSpending);
+        responseData.put("loyaltyPoints", u.getLoyaltyPoints());
+        responseData.put("membershipTierName", membershipTierName);
+        return ResponseEntity.ok(responseData);
     }
 
     // === Đăng xuat ===

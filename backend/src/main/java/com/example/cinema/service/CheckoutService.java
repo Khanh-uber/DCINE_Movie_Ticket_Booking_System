@@ -33,7 +33,7 @@ public class CheckoutService {
     private final BookingRepository bookingRepo;
     private final VoucherRepository voucherRepo;
     private final BookingVoucherRepository bookingVoucherRepo;
-
+    private final AccountService accountService;  
     // Helper an toàn
     private Long safeLong(Object obj) {
         if (obj == null) return 0L;
@@ -253,7 +253,7 @@ public class CheckoutService {
 
             pm.setStatus("PAID");
             pm.setPaidAt(LocalDateTime.now());
-            checkoutRepo.save(pm); // <--- Sử dụng checkoutRepo
+            checkoutRepo.save(pm); 
 
 
             Booking booking = bookingRepo.findById(pm.getBookingId()).orElse(null);
@@ -261,6 +261,12 @@ public class CheckoutService {
                 booking.setStatus("PAID");
                 booking.setTotalAmount(((Number) pm.getAmount()).longValue());
                 bookingRepo.save(booking);
+                Long accountId = booking.getAccountId();
+                if (accountId != null) {
+                    Long trueTotal = bookingRepo.getTotalSpent(accountId);
+                    if (trueTotal == null) trueTotal = 0L;
+                    accountService.updateExactTotalSpending(accountId, trueTotal);
+                }
                 // Xoá ghế hold trong Redis
                 // redisSeatService.clearHoldForShowtime(booking.getShowtimeId(), booking.getAccountId());
             }

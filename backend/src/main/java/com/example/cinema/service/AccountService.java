@@ -4,7 +4,7 @@ import com.example.cinema.repository.*;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
-
+import java.math.BigDecimal; 
 // import com.example.cinema.security.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -112,6 +112,7 @@ public class AccountService {
         acc.setPassword(hashedPassword);
         acc.setRole(Account.Role.CUSTOMER);
         acc.setActive(Account.Status.ACTIVE);
+        acc.setTotalSpending(BigDecimal.ZERO); 
 
         acc.setCustomer(c);
         repo.save(acc);
@@ -203,20 +204,29 @@ public class AccountService {
         if (newPw.length() < 6)
             throw new RuntimeException("Mật khẩu mới phải có ít nhất 6 ký tự");
         
-
         
         if (cfn == null || !cfn.equals(newPw))
             throw new RuntimeException("Mật khẩu xác thực không đúng với mật khẩu mới");
         acc.setPassword(pE.encode(newPw));
-
-        // Xoá OTP sau khi reset thành công (quan trọng)
         otpRepo.deleteByRequestId(requestId);
         return repo.save(acc);
+    }
+    public void updateExactTotalSpending(Long accountId, Long exactTotal) {
+        if (accountId == null) return;
+        
+        Account acc = repo.findById(accountId).orElse(null);
+        if (acc != null) {
+            acc.setTotalSpending(BigDecimal.valueOf(exactTotal));
+            repo.save(acc);
+        }
     }
     public Account findByChannelType(String input){
         Account acc = repo.findByPhone(input);
         if (acc == null)
             acc = repo.findByEmail(input);
         return acc;
+    }
+    public Account getAccountById(Long id) {
+        return repo.findById(id).orElse(null);
     }
 }

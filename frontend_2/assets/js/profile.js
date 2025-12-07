@@ -216,6 +216,19 @@ async function guardAuth() {
     if (profileRes) {
       const userRaw = profileRes.user || profileRes;
       currentUser = normalizeUser(userRaw);
+      if (currentUser) {
+        if (currentUser.fullName) localStorage.setItem('fullName', currentUser.fullName);
+        if (currentUser.avatar)   localStorage.setItem('avatarUrl', currentUser.avatar);
+        if (currentUser.totalSpent !== undefined) {
+            localStorage.setItem('totalSpending', currentUser.totalSpent);
+        }
+        if (currentUser.membership) {
+            localStorage.setItem('membershipTierName', currentUser.membership);
+        }
+        if (window.updateHeaderUser) {
+            window.updateHeaderUser(currentUser);
+        }
+      }
       if (Array.isArray(profileRes.tiers)) {
         membershipTiers = profileRes.tiers;
       }
@@ -238,47 +251,40 @@ async function guardAuth() {
     }
   }
 
-
-  // ---------- Render PROFILE (header + form) ----------
+// ---------- Render PROFILE (Logic 3 Hạng: Standard, Silver, Gold) ----------
   function renderProfile() {
     if (!currentUser) return;
 
-    const membership = currentUser.membership || 'Standard';
-
-    // màu header theo hạng
+    let rawTier = (currentUser.membership || 'Standard').toUpperCase();
+    let tierTheme = 'STANDARD'; 
+    if (rawTier.includes('GOLD')) {
+        tierTheme = 'GOLD';
+    } else if (rawTier.includes('SILVER')) {
+        tierTheme = 'SILVER';
+    } else {
+        tierTheme = 'STANDARD';
+    }
     const headerCard = document.querySelector('.profile-header-card');
     if (headerCard) {
-      headerCard.classList.remove(
-        'tier-Standard',
-        'tier-Silver',
-        'tier-Gold',
-        'tier-Platinum'
-      );
-      headerCard.classList.add(`tier-${membership}`);
+      headerCard.setAttribute('data-theme', tierTheme);
     }
-
     const nameEl   = document.getElementById('display-name');
     const userEl   = document.getElementById('display-username');
     const badgeEl  = document.getElementById('display-badge');
     const avatarEl = document.getElementById('user-avatar');
 
-    if (nameEl) nameEl.textContent = currentUser.fullName || '';
+    if (nameEl) nameEl.textContent = currentUser.fullName || 'Chưa đặt tên';
     if (userEl) userEl.textContent = '@' + (currentUser.username || 'user');
-
+    if (avatarEl && currentUser.avatar) avatarEl.src = currentUser.avatar;
     if (badgeEl) {
-      badgeEl.className = `badge-tier tier-${membership}`;
-      badgeEl.innerHTML = `<i class="fa-solid fa-gem"></i> ${membership.toUpperCase()} MEMBER`;
+      let icon = 'fa-user'; 
+      if (tierTheme === 'SILVER') icon = 'fa-medal';
+      if (tierTheme === 'GOLD')   icon = 'fa-crown';
+      
+      badgeEl.innerHTML = `<i class="fa-solid ${icon}"></i> ${tierTheme} MEMBER`;
+      badgeEl.className = 'badge-tier';
     }
-
-    if (avatarEl && currentUser.avatar) {
-      avatarEl.src = currentUser.avatar;
-    }
-
-    const setVal = (id, v) => {
-      const el = document.getElementById(id);
-      if (el) el.value = v ?? '';
-    };
-
+    const setVal = (id, v) => { const el=document.getElementById(id); if(el) el.value=v??''; };
     setVal('inp-name', currentUser.fullName);
     setVal('inp-username', currentUser.username);
     setVal('inp-email', currentUser.email);
@@ -286,38 +292,53 @@ async function guardAuth() {
     setVal('inp-dob', currentUser.dob);
     setVal('inp-address', currentUser.address);
     setVal('inp-joined', currentUser.joinedAt);
-
     const genderEl = document.getElementById('inp-gender');
-    if (genderEl) genderEl.value = currentUser.gender || 'OTHER';
+    if(genderEl) genderEl.value = currentUser.gender || 'OTHER';
 
-    // progress membership
-    const tiers = getEffectiveTiers();
-    const curIdx = tiers.findIndex((t) => t.name === membership);
-    const nextTier = tiers[curIdx + 1];
+    const TIERS_CONFIG = {
+        'STANDARD': { min: 0,       next: 'SILVER', target: 1000000 },
+        'SILVER':   { min: 1000000, next: 'GOLD',   target: 3000000 },
+        'GOLD':     { min: 3000000, next: null,     target: null }
+    };
+
+    const currentConfig = TIERS_CONFIG[tierTheme];
     const spend = currentUser.totalSpent || 0;
 
     const currSpendEl   = document.getElementById('curr-spend');
     const targetSpendEl = document.getElementById('next-tier-spend');
     const barEl         = document.getElementById('tier-progress');
     const msgEl         = document.getElementById('tier-msg');
+    if (currSpendEl) {
+        currSpendEl.textContent = toVND(spend);
+        currSpendEl.style.color = 'var(--tier)'; 
+    }
 
-    if (currSpendEl) currSpendEl.textContent = toVND(spend);
+    if (currentConfig.next) {
+        const target = currentConfig.target;
+        const remain = Math.max(0, target - spend);
+        let percent = 0;
+        if (spend >= currentConfig.min) {
+            const range = target - currentConfig.min;
+            const progress = spend - currentConfig.min;
+            percent = Math.min(100, (progress / range) * 100);
+        }
 
-    if (nextTier) {
-      const target = nextTier.min;
-      const remain = Math.max(0, target - spend);
-      const percent = target > 0 ? Math.min(100, (spend / target) * 100) : 0;
-
-      if (targetSpendEl) targetSpendEl.textContent = toVND(target);
-      if (barEl) barEl.style.width = `${percent}%`;
-      if (msgEl) msgEl.textContent = `Chi thêm ${toVND(remain)} để lên hạng ${nextTier.name}`;
+        if (targetSpendEl) {
+            targetSpendEl.textContent = toVND(target);
+            targetSpendEl.style.color = '#fff';
+        }
+        if (barEl) barEl.style.width = `${percent}%`;
+        
+        if (msgEl) {
+            msgEl.innerHTML = `Chi thêm <b style="color:var(--tier)">${toVND(remain)}</b> để lên hạng <b>${currentConfig.next}</b>`;
+        }
     } else {
-      if (targetSpendEl) targetSpendEl.textContent = 'MAX';
-      if (barEl) barEl.style.width = '100%';
-      if (msgEl) msgEl.textContent = 'Bạn đã đạt hạng cao nhất!';
+        // Đã là GOLD (Max)
+        if (targetSpendEl) targetSpendEl.textContent = 'MAX';
+        if (barEl) barEl.style.width = '100%';
+        if (msgEl) msgEl.innerHTML = '<i class="fa-solid fa-check-circle"></i> Bạn đã đạt hạng cao nhất!';
     }
   }
-
   // ---------- Render TICKETS ----------
   function renderTickets() {
     const activeEl = document.getElementById('active-tickets');
