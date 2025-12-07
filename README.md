@@ -29,7 +29,6 @@
 | 💳 **Thanh toán trực tuyến** | Tích hợp API thanh toán (VNPay/MoMo/ZaloPay). |
 | 📱 **Vé điện tử (QR Code)** | Sau khi thanh toán, khách hàng nhận vé có mã QR để soát vé tại rạp. |
 | 👤 **Tài khoản người dùng** | Đăng ký, đăng nhập, xem lịch sử vé, quản lý thông tin cá nhân. |
-| 🧾 **Hỗ trợ & phản hồi** | Form liên hệ, đánh giá trải nghiệm người dùng. |
 
 ---
 
@@ -182,28 +181,6 @@ DCINE_Movie_Ticket_Booking_System/
 │   ├── pom.xml
 │   └── README.md
 │
-├── testing/                               # Thư mục kiểm thử (Python Selenium)
-│
-├── selenium/                              # Kiểm thử giao diện (UI)
-│   ├── test_login.py         
-│   ├── test_signup.py         
-│   ├── test_booking.py        
-│   ├── test_payment.py        
-│   └── test_ticket_success.py
-│
-├── postman/                               # (Tuỳ chọn) Kiểm thử API backend
-│   ├── dcine_api_collection.json
-│   └── README.md
-│
-├── docs/                                  # Tài liệu báo cáo & sơ đồ
-│   ├── diagrams/
-│   │   ├── ERD.png
-│   │   ├── UseCase.png
-│   │   ├── Sequence.png
-│   │   └── Architecture.png
-│   ├── NHOM_17_DCINE_Report.pdf
-│   └── README.md
-│
 └── README.md                              # Giới thiệu tổng quan dự án
 
 ```
@@ -252,6 +229,10 @@ npm start
 | 3   | **Nguyễn Phạm Minh Thức**   | Backend, API tích hợp              | N23DCCN129   |
 | 4   | **Phan Trung Kiên**     | Kiểm thử        | N23DCCN170   |
 
+## ERD DỰ ÁN
+![Ảnh ERD dự án](./backend/database/dcine_erd.drawio.png)
+Truy cập Link ảnh: [Google Drive](https://drive.google.com/file/d/1_A83fREljQO3vxq1-_xIEX6spxJnOJm7/view?usp=sharing).
+
 ## Giấy phép
 
 Dự án được phát triển phục vụ **mục đích học tập tại PTIT HCM**,
@@ -294,7 +275,7 @@ Hệ thống hiện tại tập trung vào **luồng đặt vé cho khách hàng
 
 ---
 
-📅 *Cập nhật lần cuối: 08/11/2025*  
+📅 *Cập nhật lần cuối: 06/12/2025*  
 ✍️ *Nhóm 3KT PTIT – Movie Ticket Booking System*
 
 > *“Delivering great cinema experience — one click at a time.”* 🎥
