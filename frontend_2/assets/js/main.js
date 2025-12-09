@@ -555,7 +555,7 @@ async function openModal({ title = '', html = '', footHTML = '', size = '' } = {
 
 function closeModal() {
   if (!MODAL_ROOT || !MODAL_EL) return;
-
+  if (document.activeElement) document.activeElement.blur();
   const body = MODAL_EL.querySelector('[data-body]');
 
   // stop video

@@ -563,52 +563,51 @@ main{padding-top:calc(32px)}
   box-shadow:none;
 }
 
-/* Info block dưới đáy */
-.carousel.coverflow .movie-card .mc-info{
-  position:absolute;
-  left:0;right:0;bottom:0;
-  padding:12px 14px 12px;
-  display:grid;
-  gap:4px;
-  background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.96));
-  transform:translateY(0);
-  transition:transform .25s ease,background .25s ease;
-  z-index:2;
-}
-.carousel.coverflow .movie-card [data-title]{
-  font-size:15px;
-  font-weight:700;
-  text-shadow:0 4px 14px rgba(0,0,0,1);
-}
-.carousel.coverflow .movie-card .mc-meta{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:11px;
-  opacity:.9;
-}
-.carousel.coverflow .movie-card [data-genres] .tag{
-  font-size:10px;
-  padding:6px 10px;
+/* --- SỬA LỖI HIỂN THỊ COVERFLOW --- */
+
+/* 1. Khung chứa thông tin: Luôn nằm ở đáy, không dùng transform để dịch chuyển vị trí */
+.carousel.coverflow .movie-card .mc-info {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 20px 14px 14px; /* Tăng padding trên để gradient đẹp hơn */
+  display: grid;
+  gap: 4px;
+  
+  /* Gradient đen mờ dần lên trên để text dễ đọc */
+  background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.9) 50%, rgba(0,0,0,0) 100%);
+  
+  z-index: 2;
+  transition: background 0.3s ease;
 }
 
-/* Mô tả + CTA ẩn ban đầu */
+/* 2. Tiêu đề và Meta: Luôn hiển thị, không bị ẩn */
+.carousel.coverflow .movie-card [data-title],
+.carousel.coverflow .movie-card .mc-meta {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* 3. Mô tả và Nút bấm (CTA): Thu gọn lại khi chưa hover */
 .carousel.coverflow .movie-card [data-desc],
-.carousel.coverflow .movie-card .mc-cta{
-  opacity:0;
-  transform:translateY(8px);
-  transition:opacity .25s ease,transform .25s ease;
-  font-size:11px;
+.carousel.coverflow .movie-card .mc-cta {
+  max-height: 0;         
+  opacity: 0;            
+  overflow: hidden;    
+  margin: 0;    
+  
+  transform: translateY(10px); 
+  transition: all 0.3s ease; 
 }
 
-/* Hover: kéo info lên, show desc + CTA */
-.carousel.coverflow .movie-card:hover .mc-info{
-  transform:translateY(-30px);
-}
 .carousel.coverflow .movie-card:hover [data-desc],
-.carousel.coverflow .movie-card:hover .mc-cta{
-  opacity:1;
-  transform:translateY(0);
+.carousel.coverflow .movie-card:hover .mc-cta {
+  max-height: 150px;  
+  opacity: 1;
+  margin-top: 8px;  
+  transform: translateY(0);
+}
+
+.carousel.coverflow .movie-card:hover .mc-info {
+  background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 70%, rgba(0,0,0,0) 100%);
 }
 
 /* CTA full width Big Screen + Coming */
@@ -645,12 +644,6 @@ main{padding-top:calc(32px)}
   border-radius:10px;
 }
 
-/* Khi đang kéo coverflow: tắt hover/CTA + shadow để không nhá và không lỡ click */
-.carousel.coverflow .rail.dragging .movie-card .mc-cta .btn,
-.carousel.coverflow .rail.dragging .movie-card [data-trailer],
-.carousel.coverflow .rail.dragging .movie-card [data-book]{
-  pointer-events:none;
-}
 .carousel.coverflow .rail.dragging .movie-card:hover .mc-info{
   transform:translateY(0);
 }
@@ -989,3 +982,133 @@ main{padding-top:calc(32px)}
 
 /* GOLD: Vàng kim (Cao cấp) */
 .member-v2[data-theme="GOLD"] { --tier-color: #FFD700; }
+body.modal-open .carousel.coverflow {
+  pointer-events: none; 
+}
+
+
+.carousel.coverflow .movie-card .mc-info,
+.carousel.coverflow .movie-card:hover .mc-info {
+  background: none !important; 
+}
+
+.carousel.coverflow .movie-card::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 50%; 
+  background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.85) 40%, transparent 100%);
+  
+  z-index: 1; 
+  pointer-events: none;
+  border-radius: 0 0 16px 16px;
+  transition: opacity 0.3s ease;
+}
+
+.carousel.coverflow .movie-card .mc-info {
+  z-index: 2;
+}
+
+.carousel.coverflow .movie-card:hover [data-desc],
+.carousel.coverflow .movie-card:hover .mc-cta {
+  max-height: 110px !important;
+}
+
+body.modal-open .carousel.coverflow {
+  pointer-events: none;
+}
+
+body.modal-open .carousel.coverflow .movie-card [data-desc],
+body.modal-open .carousel.coverflow .movie-card .mc-cta {
+  opacity: 0 !important;      
+  max-height: 0 !important;    
+  margin: 0 !important;
+  transform: translateY(10px) !important; 
+}
+
+body.modal-open .carousel.coverflow .movie-card::after {
+  opacity: 0.6;
+}
+
+.carousel.coverflow .movie-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden; 
+}
+
+.carousel.coverflow .movie-card:hover {
+  border-color: rgba(229, 9, 20, 0.8); 
+  box-shadow: 0 10px 40px -10px rgba(229, 9, 20, 0.6); 
+  transform: translateY(-5px); 
+  z-index: 100; 
+}
+
+.carousel.coverflow .movie-card .movie-poster img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center center;
+}
+.carousel.coverflow .movie-card:hover .movie-poster img {
+  transform: scale(1.1);
+}
+
+.carousel.coverflow .movie-card .movie-info,
+.carousel.coverflow .movie-card:hover .movie-info {
+  background: none !important; 
+}
+
+.carousel.coverflow .movie-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top, 
+    rgba(0,0,0,1) 0%, 
+    rgba(0,0,0,0.8) 30%, 
+    rgba(0,0,0,0.4) 50%, 
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.8; 
+  transition: opacity 0.3s;
+}
+
+.carousel.coverflow .movie-card:hover::after {
+  opacity: 1;
+}
+
+.carousel.coverflow .movie-card .movie-info {
+  z-index: 2;
+  justify-content: flex-end;
+  padding-bottom: 20px;
+}
+
+.carousel.coverflow .movie-card [data-desc],
+.carousel.coverflow .movie-card .cta-row,
+.carousel.coverflow .movie-card .btn {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  margin: 0;
+}
+.carousel.coverflow .movie-card:hover [data-desc],
+.carousel.coverflow .movie-card:hover .cta-row,
+.carousel.coverflow .movie-card:hover .btn {
+  max-height: 200px; 
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 10px; 
+}
+
+body.modal-open .carousel.coverflow {
+  pointer-events: none !important;
+}
+body.modal-open .carousel.coverflow .movie-card {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+body.modal-open .carousel.coverflow .movie-card .movie-info {
+  opacity: 0 !important;
+}
