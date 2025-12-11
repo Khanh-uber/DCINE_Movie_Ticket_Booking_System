@@ -1,6 +1,9 @@
 (() => {
   'use strict';
-
+const link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = '../assets/css/chatbot.css'; 
+document.head.appendChild(link);
   // ====== Helpers ======
   const $  = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -2013,6 +2016,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadDealsCarousel();
     enhanceMember();
     parallax();
+    const script = document.createElement('script');
+    script.src = '../assets/js/chatbot.js';
+    script.defer = true;
+    document.body.appendChild(script);
   });
 Object.assign(window, {
   ensureModalTemplate,
