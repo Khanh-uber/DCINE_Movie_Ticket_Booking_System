@@ -93,8 +93,6 @@
       if (btn.hasAttribute('href')) {
         return; // Để trình duyệt tự xử lý chuyển trang
       }
-
-      // Nếu là nút gửi lại tin nhắn (VD: Chọn giờ chiếu)
       const actionPayload = btn.dataset.payload; // Lấy dữ liệu ẩn
       const actionText = btn.textContent;
 

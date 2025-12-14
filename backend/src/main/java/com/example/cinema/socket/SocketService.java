@@ -1,36 +1,29 @@
 package com.example.cinema.socket;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value; 
-import org.springframework.http.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class SocketService {
 
-    private final RestTemplate restTemplate;
-
-    @Value("${socket.emit.url}")
-    private String socketEmitUrl;
-
-    public SocketService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    private final SimpMessagingTemplate messagingTemplate;
 
     public void emitPaymentSuccess(Map<String, Object> payload) {
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> req = new HttpEntity<>(payload, headers);
-
         try {
-            restTemplate.postForEntity(socketEmitUrl, req, String.class);
+            Map<String, Object> paymentData = (Map<String, Object>) payload.get("payment");
+            String transId = (String) paymentData.get("transactionId");
+            String topic = "/topic/payment/" + transId;
+            
+            messagingTemplate.convertAndSend(topic, paymentData);
+            
+            System.out.println("✅ Socket đã gửi tin đến: " + topic);
         } catch (Exception e) {
-            System.out.println("Emit socket lỗi: " + e.getMessage());
+            System.err.println("❌ Lỗi gửi Socket: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

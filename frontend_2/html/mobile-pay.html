@@ -1,45 +1,187 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D-CINE | Xác nhận thanh toán</title>
-
-  <link rel="stylesheet" href="../assets/css/mobile-pay.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán D-Cine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS GIAO DIỆN */
+        :root { --primary: #e50914; --bg: #111; --card: #1f1f1f; --text: #fff; --text-sub: #aaa; }
+        body { margin: 0; padding: 20px; font-family: 'Be Vietnam Pro', sans-serif; background-color: var(--bg); color: var(--text); padding-top: 60px; }
+        .container { max-width: 480px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h2 { color: var(--primary); font-size: 24px; text-transform: uppercase; margin: 0; }
+        .card { background-color: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        .info-row:last-child { border-bottom: none; margin-bottom: 0; }
+        .label { color: var(--text-sub); }
+        .value { font-weight: 500; text-align: right; max-width: 60%; }
+        .total-row { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333; font-size: 18px; font-weight: 700; color: var(--primary); }
+        .btn-pay { width: 100%; background-color: var(--primary); color: white; border: none; padding: 16px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; text-transform: uppercase; transition: transform 0.2s; }
+        .btn-pay:active { transform: scale(0.98); }
+        .btn-pay:disabled { background-color: #555; cursor: not-allowed; }
+        
+        /* CSS CHO HỘP DEBUG (BÁO LỖI) */
+        #debug-box {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+            background: rgba(255, 255, 255, 0.95); color: #000;
+            font-size: 13px; max-height: 250px; overflow-y: auto;
+            border-bottom: 3px solid red; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+        .log-item { padding: 4px 10px; border-bottom: 1px solid #ddd; font-family: monospace; }
+        .log-err { color: red; font-weight: bold; background: #ffeeee; }
+        .log-info { color: blue; }
+        .log-ok { color: green; font-weight: bold; }
+    </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <h2>XÁC NHẬN THANH TOÁN</h2>
 
-    <!-- Box thông tin vé -->
-    <div id="orderBox" class="info-box">
-      <div class="row"><span>Mã đơn hàng:</span><span id="orderId">...</span></div>
-      <div class="row"><span>Phim:</span><span id="movieTitle">...</span></div>
-      <div class="row"><span>Rạp:</span><span id="theaterName">...</span></div>
-      <div class="row"><span>Ngày chiếu:</span><span id="showDate">...</span></div>
-      <div class="row"><span>Suất chiếu:</span><span id="showTime">...</span></div>
-      <div class="row"><span>Ghế:</span><span id="seatList">...</span></div>
+    <div id="debug-box">
+        <div class="log-item log-info">🚀 Đang khởi động trang web...</div>
     </div>
 
-    <!-- Box tiền -->
-    <div id="moneyBox" class="info-box">
-      <div class="row"><span>Tiền vé:</span><span id="ticketAmount">0đ</span></div>
-      <div class="row"><span>Combo:</span><span id="comboAmount">0đ</span></div>
-      <div class="row"><span>VAT (10%):</span><span id="vat">0đ</span></div>
-      <div class="row"><span>Giảm giá:</span><span id="discount">0đ</span></div>
+    <div class="container">
+        <div class="header">
+            <h2>Xác nhận thanh toán</h2>
+        </div>
 
-      <hr class="divider" />
+        <div class="card">
+            <div class="info-row"><span class="label">Mã đơn hàng:</span><span class="value" id="orderId">...</span></div>
+            <div class="info-row"><span class="label">Phim:</span><span class="value" id="movieName">...</span></div>
+            <div class="info-row"><span class="label">Rạp:</span><span class="value" id="theaterName">...</span></div>
+            <div class="info-row"><span class="label">Ngày chiếu:</span><span class="value" id="showDate">...</span></div>
+            <div class="info-row"><span class="label">Suất chiếu:</span><span class="value" id="showTime">...</span></div>
+            <div class="info-row"><span class="label">Ghế:</span><span class="value" id="seats">...</span></div>
+        </div>
 
-      <div class="row total">
-        <span>TỔNG TIỀN:</span><span id="grandTotal">0đ</span>
-      </div>
+        <div class="card">
+            <div class="info-row"><span class="label">Tiền vé:</span><span class="value" id="ticketPrice">0đ</span></div>
+            <div class="info-row"><span class="label">Combo:</span><span class="value" id="comboPrice">0đ</span></div>
+            <div class="total-row"><span>TỔNG TIỀN:</span><span id="totalPrice">0đ</span></div>
+        </div>
+
+        <button class="btn-pay" id="btnPay">XÁC NHẬN THANH TOÁN</button>
     </div>
 
-    <button class="btn" id="btnPay">XÁC NHẬN THANH TOÁN</button>
-    <div class="success" id="successMsg">Thanh toán thành công ✔</div>
-  </div>
+    <script>
+        // ===========================================
+        // CẤU HÌNH IP (BẠN SỬA IP Ở ĐÂY NẾU CẦN)
+        // ===========================================
+        const SERVER_IP = "192.168.1.11"; 
+        const SERVER_PORT = "8080";
+        // ===========================================
 
-  <script src="../assets/js/mobile-pay.js"></script>
+        const BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+
+        // HÀM GHI LOG RA MÀN HÌNH
+        function log(msg, type = 'info') {
+            const box = document.getElementById('debug-box');
+            const div = document.createElement('div');
+            div.className = 'log-item log-' + type;
+            div.textContent = (type === 'err' ? '❌ ' : (type === 'ok' ? '✅ ' : 'ℹ️ ')) + msg;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight; // Tự cuộn xuống dưới
+        }
+
+        window.onerror = function(msg, url, line) {
+            log(`Lỗi JS (Dòng ${line}): ${msg}`, 'err');
+        };
+
+        const $ = document.querySelector.bind(document);
+        const toVND = (n) => (Number(n) || 0).toLocaleString('vi-VN') + 'đ';
+
+        // Lấy Transaction ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const transId = urlParams.get('trans');
+
+        async function init() {
+            log(`IP Server đang dùng: ${SERVER_IP}`);
+            
+            if (!transId) {
+                log("Lỗi: URL thiếu mã trans!", 'err');
+                return;
+            }
+
+            log(`Đang tải đơn: ${transId}...`);
+            const apiUrl = `${BASE_URL}/api/checkout/order?trans=${transId}`;
+
+            try {
+                // Gọi API
+                const res = await fetch(apiUrl).catch(e => {
+                    throw new Error("Không kết nối được tới " + SERVER_IP);
+                });
+
+                log(`Server phản hồi: ${res.status}`);
+
+                if (!res.ok) throw new Error(`Lỗi API (${res.status})`);
+
+                const data = await res.json();
+                log("Đã nhận dữ liệu JSON!", 'ok');
+                renderData(data);
+
+            } catch (e) {
+                log(e.message, 'err');
+                $('#movieName').textContent = "Mất kết nối";
+            }
+        }
+
+        function renderData(data) {
+            try {
+                $('#orderId').textContent = data.orderId || '...';
+                
+                // Vé
+                const t = data.ticket || {};
+                $('#movieName').textContent = t.movieTitle || '...';
+                $('#theaterName').textContent = t.theaterName || '...';
+                $('#showDate').textContent = t.date || '--';
+                $('#showTime').textContent = t.time || '--';
+                const s = t.seats || [];
+                $('#seats').textContent = s.length ? s.join(', ') : 'Chưa chọn';
+
+                // Tiền
+                const m = data.totals || {};
+                $('#ticketPrice').textContent = toVND(m.ticketAmount);
+                $('#comboPrice').textContent = toVND(m.combosAmount);
+                $('#totalPrice').textContent = toVND(m.grandTotal);
+
+                // Gán sự kiện nút bấm sau khi đã load xong
+                $('#btnPay').onclick = handlePayment;
+                
+            } catch (e) {
+                log("Lỗi hiển thị: " + e.message, 'err');
+            }
+        }
+
+        async function handlePayment() {
+            const btn = $('#btnPay');
+            btn.disabled = true;
+            btn.textContent = "ĐANG GỬI...";
+            log("Đang xác nhận thanh toán...");
+
+            try {
+                const url = `${BASE_URL}/api/checkout/mark-paid?trans=${transId}`;
+                const res = await fetch(url, { method: 'POST' });
+
+                if (res.ok) {
+                    log("Thanh toán THÀNH CÔNG!", 'ok');
+                    alert("✅ THANH TOÁN THÀNH CÔNG!");
+                    document.body.innerHTML = `
+                        <div style="text-align:center;padding:50px;color:white;">
+                            <h1>✅ XONG!</h1><p>Kiểm tra máy tính.</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error("Lỗi xác nhận: " + res.status);
+                }
+            } catch (e) {
+                log(e.message, 'err');
+                alert("Lỗi: " + e.message);
+                btn.disabled = false;
+                btn.textContent = "THỬ LẠI";
+            }
+        }
+        init();
+    </script>
 </body>
 </html>

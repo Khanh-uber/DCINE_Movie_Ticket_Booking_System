@@ -39,11 +39,11 @@ public class CheckoutController {
         return ResponseEntity.ok(checkoutService.markPaymentPaid(trans));
     }
 
-    // // 3. Mobile lấy thông tin đơn hàng
-    // @GetMapping("/order")
-    // public ResponseEntity<?> getOrder(@RequestParam String trans) {
-    //     return ResponseEntity.ok(checkoutService.getOrderByTransactionId(trans));
-    // }
+    // 3. Mobile lấy thông tin đơn hàng
+    @GetMapping("/order")
+    public ResponseEntity<?> getOrder(@RequestParam String trans) {
+        return ResponseEntity.ok(checkoutService.getOrderByTransactionId(trans));
+    }
 
 
     @GetMapping("/summary")

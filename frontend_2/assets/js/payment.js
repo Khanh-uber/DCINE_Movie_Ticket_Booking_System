@@ -960,9 +960,9 @@ function initVoucher() {
     if (window.DCINE_JOIN_PAYMENT_ROOM && backendData && backendData.transactionId) {
         window.DCINE_JOIN_PAYMENT_ROOM(backendData.transactionId);
     }
-      if (backendData && backendData.transactionId) {
-      callMarkPaid(backendData.transactionId);
-  }
+  //     if (backendData && backendData.transactionId) {
+  //     callMarkPaid(backendData.transactionId);
+  // }
   }
 
   async function init() {
