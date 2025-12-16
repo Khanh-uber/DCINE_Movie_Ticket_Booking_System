@@ -3,6 +3,7 @@ package com.example.cinema.controller;
 import com.example.cinema.service.CheckoutService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,12 @@ public class CheckoutController {
         System.out.println("===== PAYLOAD RECEIVED CONFIRMCHECK =====");
         System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
         System.out.println("=================================");
-        return ResponseEntity.ok(checkoutService.confirmCheckout(payload));
+
+        Map<String, Object> response = checkoutService.confirmCheckout(payload);
+        // ⭐ LOG RESPONSE ĐỂ DEBUG
+        System.out.println("===== RESPONSE CONFIRM =====");
+        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response));
+        return ResponseEntity.ok(response);
     }
 
     @Transactional
@@ -56,9 +62,9 @@ public class CheckoutController {
     public ResponseEntity<?> applyVoucher(@RequestBody Map<String, Object> payload) throws Exception {
 
 
-        System.out.println("===== PAYLOAD RECEIVED =====");
-        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
-        System.out.println("=================================");
+        // System.out.println("===== PAYLOAD RECEIVED =====");
+        // System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(payload));
+        // System.out.println("=================================");
 
         String code = (String) payload.get("code");
         if (code == null || code.trim().isEmpty()) {
@@ -68,5 +74,14 @@ public class CheckoutController {
         Map<String, Object> calculatedOrder = checkoutService.calculateOrderSummary(order, code);
 
         return ResponseEntity.ok(calculatedOrder);
+    }
+    @GetMapping("/last-confirmed")
+    public ResponseEntity<?> lastConfirmed(HttpSession session){
+        Long accountId = (Long) session.getAttribute("accountId");
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
+        }
+        Map<String, Object> response = checkoutService.getLastConfirmed(accountId);
+        return ResponseEntity.ok(response);
     }
 }

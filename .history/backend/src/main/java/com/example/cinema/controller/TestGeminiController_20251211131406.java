@@ -1,0 +1,11 @@
+package com.example.cinema.controller;
+
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class TestGeminiController {
+    private final G gemini;
+    public TestGeminiController(GeminiClient gemini) {
+        this.gemini = gemini;
+    }
+}

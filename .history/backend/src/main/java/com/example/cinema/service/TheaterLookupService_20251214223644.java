@@ -1,0 +1,146 @@
+package com.example.cinema.service;
+
+import java.text.Normalizer;
+import java.util.List;
+
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.springframework.stereotype.Service;
+
+import com.example.cinema.dto.TheaterDTO;
+import com.example.cinema.repository.TheaterRepository;
+
+@Service
+public class TheaterLookupService {
+
+    private final TheaterRepository theaterRepo;
+
+    public TheaterLookupService(TheaterRepository theaterRepo) {
+        this.theaterRepo = theaterRepo;
+    }
+
+    public TheaterDTO findTheater(String input) {
+        if (input == null || input.isBlank()) return null;
+
+        String normInput = normalize(input);
+
+        // 1) lấy danh sách name từ DB
+        List<com.example.cinema.entity.Theater> all = theaterRepo.findAll(); 
+        List<TheaterDTO> dtos = all.stream().map(t -> {
+            TheaterDTO dto = new TheaterDTO();
+            dto.setId(t.getTheaterId());
+            dto.setName(t.getName());
+            return dto;
+        }).toList();
+        // 2) exact by normalized
+        TheaterDTO exact = null;
+        for (TheaterDTO t : dtos) {
+            if (normalize(t.getName()).equals(normInput)) {
+                exact = t;
+                break;
+            }
+        }
+        if (exact != null) return exact;
+
+        // 3) fuzzy levenshtein
+        TheaterDTO best = null;
+        int bestScore = 999;
+
+        for (TheaterDTO t : dtos) {
+            int d = LevenshteinDistance.getDefaultInstance()
+                    .apply(normInput, normalize(t.getName()));
+            if (d < bestScore && d <= 3) {
+                bestScore = d;
+                best = t;
+            }
+        }
+        return best;
+    }
+
+    private String normalize(String s) {
+        if (s == null) return "";
+        String r = Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace("đ", "d").replace("Đ", "D")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9 ]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+        return r;
+    }
+    public TheaterDTO findTheater(String theaterText, String locationText) {
+
+        if (theaterText == null || theaterText.isBlank()) return null;
+
+        String normTheater = normalize(theaterText);
+        String normLocation = normalize(locationText);
+
+        // 1️⃣ Load toàn bộ rạp
+        List<com.example.cinema.entity.Theater> all = theaterRepo.findAll();
+
+        List<TheaterDTO> dtos = all.stream().map(t -> {
+            TheaterDTO dto = new TheaterDTO();
+            dto.setId(t.getTheaterId());
+            dto.setName(t.getName());
+            return dto;
+        }).toList();
+
+        // ===============================
+        // 2️⃣ ƯU TIÊN MATCH THEATER + LOCATION
+        // ===============================
+        if (!normLocation.isBlank()) {
+            for (TheaterDTO t : dtos) {
+                String normName = normalize(t.getName());
+                if (normName.contains(normTheater)
+                        && normName.contains(normLocation)) {
+                    return t;
+                }
+            }
+        }
+
+        // ===============================
+        // 3️⃣ EXACT MATCH THEATER (brand / full name)
+        // ===============================
+        for (TheaterDTO t : dtos) {
+            if (normalize(t.getName()).equals(normTheater)) {
+                return t;
+            }
+        }
+
+        // ===============================
+        // 4️⃣ FUZZY MATCH (LEVENSHTEIN)
+        // ===============================
+        TheaterDTO best = null;
+        int bestScore = 999;
+
+        for (TheaterDTO t : dtos) {
+            int d = LevenshteinDistance.getDefaultInstance()
+                    .apply(normTheater, normalize(t.getName()));
+            if (d < bestScore && d <= 3) {
+                bestScore = d;
+                best = t;
+            }
+        }
+
+        return best;
+    }
+
+    /**
+     * Giữ lại hàm cũ cho backward compatibility
+     */
+    public TheaterDTO findTheater(String input) {
+        return findTheater(input, null);
+    }
+
+    private String normalize(String s) {
+        if (s == null) return "";
+        return Normalizer.normalize(s, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replace("đ", "d").replace("Đ", "D")
+                .toLowerCase()
+                .replaceAll("[^a-z0-9 ]", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+}
+}
+

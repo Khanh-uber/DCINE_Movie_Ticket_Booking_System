@@ -1,0 +1,18 @@
+package com.example.cinema.dto;
+
+import java.util.Map;
+
+public class ChatRequest {
+    public String message;
+    public Map<String, Object> context;
+
+    public ChatRequest(String message, Map<String, Object> ctx){
+        this.message = message;
+        this.context = ctx;
+    }
+    public String getMessage(){return message;}
+    public void setMessage(String message){this.message = message;}
+
+    public Map<String, Object> getContext(){return context;}
+    public void setContext(Map<String, Object> ctx){this.context = ctx;}
+}

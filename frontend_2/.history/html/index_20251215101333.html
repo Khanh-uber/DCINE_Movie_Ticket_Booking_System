@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <title>D-cine — Trang chủ (Coverflow)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/variable.css?v=8">
+  <link rel="stylesheet" href="../assets/css/base.css?v=8">
+  <link rel="stylesheet" href="../assets/css/layout.css?v=8">
+  <link rel="stylesheet" href="../assets/css/header.css?v=8">
+  <link rel="stylesheet" href="../assets/css/main.css?v=8">
+  <link rel="stylesheet" href="../assets/css/components.css?v=8">
+  <link rel="stylesheet" href="../assets/css/footer.css?v=9">
+</head>
+<body>
+  <!-- Header include -->
+  <div id="hdr-include"></div>
+<section class="index-hero reveal">
+  <div class="hero-bg" style="background-image: url('../assets/images/banners/aespa-dirty-work-5120x2880-32584.jpg');"></div>
+  
+  <div class="hero-overlay">
+    <div class="container hero-content">
+      <span class="hero-subtitle">Chào mừng đến với D-cine</span>
+      
+      <h1 class="hero-title">Trải nghiệm điện ảnh<br>đỉnh cao &amp; khác biệt</h1>
+      
+      <p class="hero-desc">
+        D-cine không chỉ là rạp chiếu phim, đó là nơi cảm xúc thăng hoa cùng công nghệ hình ảnh sắc nét và âm thanh sống động. 
+        Hòa mình vào thế giới điện ảnh chân thực nhất ngay hôm nay.
+      </p>
+    </div>
+  </div>
+</section>
+  <main class="container">
+
+<!-- ========== ON THE BIG SCREEN ========== -->
+<section id="bigscreen" class="section">
+  <div class="section-head">
+    <h2>ĐANG CÔNG CHIẾU</h2>
+    <a href="movies.html?status=now" class="view-all">Xem tất cả phim</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railBigScreen" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsBigScreen" class="dots"></div>
+</section>
+
+<!-- ========== COMING SOON ========== -->
+<section id="coming" class="section">
+  <div class="section-head">
+    <h2>SẮP RA MẮT</h2>
+    <a href="movies.html?status=soon" class="view-all">Xem tất cả phim</a>
+  </div>
+
+  <div class="carousel coverflow">
+    <button class="arrow left" aria-label="Prev">‹</button>
+    <div id="railComingSoon" class="rail"></div>
+    <button class="arrow right" aria-label="Next">›</button>
+  </div>
+  <div id="dotsComingSoon" class="dots"></div>
+</section>
+
+<section id="deals" class="section">
+  <div class="section-head">
+    <h2>ƯU ĐÃI HẤP DẪN</h2>
+  </div>
+
+  <div id="wrapDeals" class="carousel simple">
+    <button class="arrow left nav prev" aria-label="Prev">‹</button>
+
+    <div id="railDeals" class="rail">
+      </div>
+
+    <button class="arrow right nav next" aria-label="Next">›</button>
+
+    <div class="dots"></div>
+  </div>
+</section>
+    <!-- MEMBERSHIP -->
+<section class="section member reveal" id="member">
+  <div class="member-v2" data-theme="STANDARD">
+    
+    <div class="member-grid">
+      
+      <div class="col-left">
+        <div class="kicker">D-cine Loyalty</div>
+        <h2>Tích điểm – Lên hạng – Nhận quà</h2>
+        <p class="member-intro">
+          Tích lũy chi tiêu để lên hạng và được giảm trực tiếp trên tổng hóa đơn.
+          Hạng càng cao, ưu đãi càng lớn.
+        </p>
+
+        <!-- Tóm tắt hạng của người dùng (nếu đã đăng nhập) -->
+        <div class="loyalty-summary">
+          <div class="loyalty-header">
+            <div>
+              <div class="tier-label">Hạng hiện tại</div>
+              <div class="tier-value" id="loyaltyTierName">Standard</div>
+            </div>
+            <div class="points-value">
+              <span id="loyaltyPoints">0</span> điểm
+            </div>
+          </div>
+
+          <div class="loyalty-progress">
+            <div class="bar">
+              <div class="fill" id="loyaltyProgressFill" style="width: 0%"></div>
+            </div>
+            <div class="text" id="loyaltyProgressText">
+              Đăng nhập để xem tiến trình tích lũy của bạn.
+            </div>
+          </div>
+        </div>
+
+        <!-- Thang chi tiêu cần để lên hạng -->
+        <div class="price-wrap">
+          <div class="label" style="color:#888; font-size:12px; margin-bottom:4px;">
+            YÊU CẦU CHI TIÊU
+          </div>
+          <div class="amt" id="tierPrice" style="font-size:24px; font-weight:800; color:#fff">
+            0đ
+          </div>
+          <div class="price-note">
+            Đây là mức chi tiêu tích lũy cần đạt để lên hạng đang chọn.
+          </div>
+        </div>
+      </div>
+
+<div class="col-right">
+  
+  <div class="tier-tabs">
+    <button class="tier-tab" data-tier="STANDARD">Standard</button>
+    <button class="tier-tab" data-tier="SILVER">Silver</button>
+    <button class="tier-tab" data-tier="GOLD">Gold</button>
+  </div>
+
+  <div class="visual-card-wrap">
+    <div class="glass-card">
+      <div class="card-logo">D-cine</div>
+      <div class="chip"></div>
+      <div class="card-tier-name" id="cardTierName">Standard</div>
+    </div>
+  </div>
+
+  <ul class="perks-list" id="loyaltyPerks"></ul>
+
+</div>
+
+    </div>
+  </div>
+</section>
+</main>
+  <!-- Footer include -->
+  <div id="ftr-include"></div>
+  <!-- JS -->
+  <script>
+    window.API_BASE = window.API_BASE || '/api';
+  </script>
+  <script src="../assets/js/header.js"></script>
+  <script src="../assets/js/main.js" defer></script>
+  <script src="../assets/js/footer.js" defer></script>
+</body>
+</html>
