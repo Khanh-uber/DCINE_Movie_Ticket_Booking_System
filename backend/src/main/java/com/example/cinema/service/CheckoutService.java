@@ -1,5 +1,10 @@
 package com.example.cinema.service;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import java.io.ByteArrayOutputStream;
 
 import com.example.cinema.entity.*;
 import com.example.cinema.repository.*;
@@ -215,7 +220,11 @@ public class CheckoutService {
             res.put("ticket", ticket);
             res.put("totals", totals);
             res.put("combos", combos);
-
+            Booking b = bookingRepo.findById(bookingId).orElse(null);
+            if (b != null) {
+                String qrCodeData = b.getQrCode();
+                res.put("ticketQr", qrCodeData != null ? qrCodeData : ""); 
+            }
             return res;
         } catch (Exception e) {
             e.printStackTrace();
@@ -244,6 +253,17 @@ public class CheckoutService {
             if (booking != null) {
                 booking.setStatus("PAID");
                 booking.setTotalAmount(((Number) pm.getAmount()).longValue());
+                try {
+                    String uniqueTicketCode = "VE-" + booking.getBookingId() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                    String qrBase64 = generateQRCodeImage(uniqueTicketCode, 300, 300);
+                    System.out.println("========================================");
+                    System.out.println(">>> ĐỘ DÀI ẢNH VỪA TẠO: " + qrBase64.length());
+                    System.out.println("========================================");
+                    booking.setQrCode(qrBase64);
+                    System.out.println(">>> Đã tạo QR cho Booking ID: " + booking.getBookingId());
+                } catch (Exception e) {
+                    System.err.println("⚠ Lỗi tạo QR: " + e.getMessage());
+                }
                 bookingRepo.save(booking);
                 Long accountId = booking.getAccountId();
                 if (accountId != null) {
@@ -271,7 +291,14 @@ public class CheckoutService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
+    public String generateQRCodeImage(String text, int width, int height) throws Exception {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        byte[] pngData = pngOutputStream.toByteArray();
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(pngData);
+    }
     // 4. Calculate Voucher
     public Map<String, Object> calculateOrderSummary(Map<String, Object> order, String voucherCode) {
         Map<String, Object> totals = (Map<String, Object>) order.getOrDefault("totals", new HashMap<>());
@@ -346,5 +373,14 @@ public class CheckoutService {
         result.put("seats", seatCodes);
         result.put("combos", combos);
         return result;
+    }
+    public Map<String, Object> getLastConfirmedBooking(Long accountId) {
+        Booking booking = bookingRepo.findLatestPaidBooking(accountId)
+                .orElseThrow(() -> new RuntimeException("Bạn chưa có đơn hàng nào thành công!"));
+        Payment pm = checkoutRepo.findAll().stream()
+                .filter(p -> p.getBookingId().equals(booking.getBookingId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin thanh toán"));
+        return getOrderByTransactionId(pm.getTransactionId());
     }
 }

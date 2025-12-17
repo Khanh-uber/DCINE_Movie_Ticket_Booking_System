@@ -200,8 +200,11 @@
                 <div class="modal-content">
                     <span class="close-modal" onclick="closeModal()">&times;</span>
                     <h3 class="modal-title">MÃ VÉ VÀO RẠP</h3>
-                    <div id="qrcode" class="qrcode-box"></div>
-                    <p class="modal-ticket-code" id="modal-ticket-code">...</p>
+                    <img id="qrcode-img" src="" class="qrcode-box" style="width:250px; height:250px; object-fit:contain; background:white; padding:10px; border-radius:8px; margin:0 auto; display:block;">
+                    <p class="modal-ticket-code" id="modal-ticket-code" style="margin-top:15px;">...</p>
+                    <button id="btn-download-qr" class="btn-download-qr">
+                        <i class="fa-solid fa-download"></i> Tải vé về máy
+                    </button>
                 </div>
             </div>
         </div>

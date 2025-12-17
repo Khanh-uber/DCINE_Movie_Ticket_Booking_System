@@ -264,6 +264,7 @@ public class ProfileService {
         obj.put("id", row.get("booking_id"));
         obj.put("totalAmount", row.get("total_amount"));
         obj.put("status", safe(row.get("status")));
+        obj.put("qrCode", safe(row.get("qr_code")));
         obj.put("movie", movie);
         obj.put("showtime", showtime);
         obj.put("seats", new ArrayList<String>());
