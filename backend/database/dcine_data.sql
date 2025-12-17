@@ -74,7 +74,7 @@ CREATE TABLE `booking` (
   `showtime_id` bigint NOT NULL,
   `total_amount` decimal(10,2) NOT NULL,
   `status` enum('PENDING','PAID','CANCELLED') DEFAULT 'PENDING',
-  `qr_code` varchar(255) DEFAULT NULL,
+  `qr_code` text DEFAULT NULL,
   `created_at` datetime DEFAULT (now()),
   PRIMARY KEY (`booking_id`),
   KEY `account_id` (`account_id`),
