@@ -26,7 +26,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long>{
             from movie 
             where active = true 
                 and status = 'soon'
-            order by release_date desc
+            order by release_date 
             """, nativeQuery = true)
     List <Movie> findComingSoonMovies();
 
