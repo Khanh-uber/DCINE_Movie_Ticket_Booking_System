@@ -225,7 +225,220 @@
     if (buy) buy.href = href;
   }
 
-  // ---------- boot ----------
+// ---------- COMMENT LOGIC (REAL API) ----------
+
+  let currentMovieId = null;
+
+  async function initCommentSection(movieId) {
+    currentMovieId = movieId;
+
+    const txt = $('#txtComment');
+    const btn = $('#btnPostComment');
+    const prompt = $('#cmtLoginPrompt');
+    const btnLoginLink = $('#btnLoginLink');
+    const charDisplay = $('#charCount');
+
+    const token = localStorage.getItem('accessToken');
+    
+    const doLogin = (e) => {
+        if(e) e.preventDefault();
+        const currentPath = window.location.pathname.split('/').pop() + window.location.search;
+        window.location.href = `D_cine_login.html?next=${encodeURIComponent(currentPath)}`;
+    };
+
+    if (token) {
+      if (prompt) prompt.style.display = 'none';
+      if (btn) btn.onclick = () => handlePostComment(token);
+    } else {
+      if (prompt) prompt.style.display = 'block';
+      if (btnLoginLink) btnLoginLink.addEventListener('click', doLogin);
+
+      const requireLogin = () => {
+         if(confirm('Bạn cần đăng nhập để tham gia bình luận. Đăng nhập ngay?')) {
+             doLogin();
+         }
+         if (txt) txt.blur();
+      };
+
+      if (txt) txt.addEventListener('focus', requireLogin);
+      if (btn) btn.addEventListener('click', requireLogin);
+    }
+
+    if (txt && charDisplay) {
+        txt.addEventListener('input', () => {
+            charDisplay.textContent = `${txt.value.length} / 1000`;
+        });
+    }
+
+    await loadCommentsReal(movieId);
+  }
+
+
+async function loadCommentsReal(movieId) {
+    const container = $('#commentList');
+    const countDisplay = $('#cmtCount');
+    const token = localStorage.getItem('accessToken'); 
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+        const res = await fetch(`${API}/comments?movieId=${movieId}`, {
+            method: 'GET',
+            headers: headers,     
+            credentials: 'include' 
+        });
+        
+        if (res.ok) {
+            const data = await res.json();      
+            if (countDisplay) countDisplay.textContent = data.length || 0;
+            renderCommentList(data);
+        } else {
+            container.innerHTML = '<p style="color:#666">Không tải được bình luận.</p>';
+        }
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p style="color:#666">Lỗi kết nối.</p>';
+    }
+}
+
+  async function handlePostComment(token) {
+    const txt = $('#txtComment');
+    const text = txt ? txt.value.trim() : '';
+    
+    if (!text) return; 
+
+    const btn = $('#btnPostComment');
+    btn.disabled = true;
+    btn.innerHTML = 'Đang gửi...';
+
+    try {
+        const res = await fetch(`${API}/comments`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({
+                movieId: currentMovieId,
+                content: text
+            })
+        });
+
+        if (res.ok) {
+            txt.value = '';
+            $('#charCount').textContent = '0 / 1000';
+            await loadCommentsReal(currentMovieId); 
+        } else {
+            alert('Gửi thất bại. Vui lòng thử lại.');
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi kết nối Server.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Gửi <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
+    }
+  }
+
+// assets/js/movie-detail.js
+
+  function renderCommentList(arr) {
+    const container = $('#commentList');
+    if (!container) return;
+    
+    // 1. Kiểm tra nếu không có bình luận
+    if (!arr || arr.length === 0) {
+        container.innerHTML = '<p style="color:#666; font-style:italic; text-align:center; padding:20px;">Chưa có bình luận nào. Hãy là người đầu tiên!</p>';
+        return;
+    }
+
+    const html = arr.map(c => {
+        // 2. Logic tạo nút Sửa/Xóa (Chỉ hiện khi myComment = true)
+        let actions = '';
+        if (c.myComment) { // Biến này do Backend trả về (true/false)
+            // Xử lý dấu nháy đơn để không lỗi JS
+            const safeContent = c.content ? c.content.replace(/'/g, "\\'") : "";
+            
+            actions = `
+              <div class="cmt-actions">
+                <button class="btn-icon edit" title="Sửa" onclick="editComment(${c.id}, '${safeContent}')">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn-icon delete" title="Xóa" onclick="deleteComment(${c.id})">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            `;
+        }
+
+        // 3. Render HTML
+        return `
+        <div class="cmt-item" id="cmt-${c.id}">
+            <div class="cmt-avatar">
+                <img src="${c.avatarUrl}" 
+                     alt="${c.fullName}" 
+                     onerror="this.src='../assets/images/avatar-default.png'">
+            </div>
+            <div class="cmt-content">
+                <div class="cmt-header">
+                    <div class="cmt-info">
+                        <span class="cmt-author">${c.fullName || 'Người dùng'}</span>
+                        <span class="cmt-date">${c.createdAt}</span>
+                    </div>
+                    ${actions} </div>
+                <div class="cmt-text" id="cmt-text-${c.id}">${c.content}</div>
+            </div>
+        </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+  }
+
+  window.deleteComment = async function(id) {
+      if(!confirm('Bạn chắc chắn muốn xóa bình luận này?')) return;
+      
+      try {
+          const res = await fetch(`${API}/comments/${id}`, {
+              method: 'DELETE',
+              credentials: 'include'
+          });
+          if(res.ok) {
+              initCommentSection(new URL(location.href).searchParams.get('id'));
+          } else {
+              alert('Không thể xóa comment này.');
+          }
+      } catch(e) { console.error(e); }
+  };
+
+  window.editComment = function(id, oldContent) {
+      const newContent = prompt("Sửa bình luận của bạn:", oldContent);
+      if (newContent !== null && newContent.trim() !== "" && newContent !== oldContent) {
+          submitEditComment(id, newContent);
+      }
+  };
+
+  async function submitEditComment(id, content) {
+      try {
+          const res = await fetch(`${API}/comments/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ content: content })
+          });
+          if(res.ok) {
+              initCommentSection(new URL(location.href).searchParams.get('id'));
+          } else {
+              alert('Lỗi khi sửa comment.');
+          }
+      } catch(e) { console.error(e); }
+  }
   document.addEventListener('DOMContentLoaded', async () => {
     try {
       if (window.mountBreadcrumb) window.mountBreadcrumb();
@@ -246,7 +459,7 @@
       renderCopy(movie);
       renderFacts(movie);
       bindBookingLinks(movie.id);
-
+      initCommentSection(movie.id);
     } catch (e) {
       console.error('[movie-detail] boot error:', e);
     }

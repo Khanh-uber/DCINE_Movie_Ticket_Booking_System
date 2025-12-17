@@ -99,6 +99,39 @@
         <div id="mdCast" class="md-cast"></div>
       </article>
     </section>
+<article class="md-section" id="reviewSection">
+      <div class="md-review-header">
+        <h3 class="md-h3">
+          <i class="fa-solid fa-comment-dots"></i> Bình luận (<span id="cmtCount">0</span>)
+        </h3>
+      </div>
+
+      <div id="cmtLoginPrompt" class="cmt-login-prompt" style="display:none;">
+        Vui lòng <a href="#" id="btnLoginLink">đăng nhập</a> để tham gia bình luận.
+      </div>
+
+      <div class="md-comment-box-wrapper">
+        
+        <div class="md-comment-box">
+          
+          <textarea id="txtComment" rows="4" maxlength="1000" placeholder="Viết bình luận..."></textarea>
+          
+          <span id="charCount">0 / 1000</span>
+
+          <button id="btnPostComment" class="btn-send-icon">
+            Gửi 
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+
+      <div id="commentList" class="md-comment-list">
+        <div class="loading-comments">Đang tải bình luận...</div>
+      </div>
+    </article>
   </main>
 
   <!-- Footer include -->

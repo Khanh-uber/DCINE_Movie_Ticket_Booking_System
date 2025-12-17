@@ -157,6 +157,7 @@ public class Account {
     public void setCustomer(Customer customer){
         this.customer = customer;
     }
+    
     public LocalDateTime getCreatedAt(){return createdAt;}
     public void setCreatedAt(LocalDateTime createdAt){this.createdAt = createdAt;}
 }
