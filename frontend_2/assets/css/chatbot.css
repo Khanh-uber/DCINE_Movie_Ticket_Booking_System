@@ -406,8 +406,15 @@
   -webkit-user-select: none; 
 }
 
+
 .quick-replies.dragging, 
 .chat-carousel.dragging {
   cursor: grabbing !important;
-  scroll-behavior: auto !important; 
+  scroll-behavior: auto !important;   
+  scroll-snap-type: none !important;  
+}
+
+.quick-replies.dragging > *,
+.chat-carousel.dragging > * {
+  scroll-snap-align: none !important;
 }

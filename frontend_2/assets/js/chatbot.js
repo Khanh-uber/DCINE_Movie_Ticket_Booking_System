@@ -1,3 +1,4 @@
+
 (() => {
   const API_CHAT = window.API_BASE + '/chatbot/ask';
 
@@ -10,12 +11,14 @@
     const form = $('#chat-form');
     const input = $('#chat-input');
     const body = $('#chat-messages');
+
     toggleBtn.addEventListener('click', () => {
       windowEl.classList.remove('hidden');
       setTimeout(() => input.focus(), 100); 
     });
     
     closeBtn.addEventListener('click', () => windowEl.classList.add('hidden'));
+
     function enableDragScroll(el) {
         if (!el) return;
         
@@ -55,7 +58,7 @@
             if (!isDown) return;
             e.preventDefault(); 
             const x = e.pageX - el.offsetLeft;
-            const walk = (x - startX) * 2; 
+            const walk = (x - startX) * 1.2; 
             el.scrollLeft = scrollLeft - walk;
 
             if (Math.abs(walk) > 5) {
@@ -63,10 +66,12 @@
             }
         });
     }
+
     const initialQuickReplies = $('.quick-replies');
     if (initialQuickReplies) {
         enableDragScroll(initialQuickReplies);
     }
+
     function addMessage(text, sender, isHTML = false) {
       const div = document.createElement('div');
       div.className = `msg ${sender}`;
@@ -97,11 +102,14 @@
                         ⭐ ${m.rating} | ${m.rated || 'T13'} | ${m.durationMin}p
                     </div>
                     <div class="chat-actions">
-                        <a href="movie-details.html?id=${m.id}" class="btn-chat-action">
+                        <a href="showtime.html?movie=${m.id}" class="btn-chat-action">
                             Đặt vé
                         </a>
+                        
                         ${m.trailerUrl ? `
-                            <a href="${m.trailerUrl}" target="_blank" class="btn-chat-action outline">
+                            <a href="#" 
+                               class="btn-chat-action outline js-watch-trailer" 
+                               data-trailer="${m.trailerUrl}">
                                 Trailer
                             </a>` : ''}
                     </div>
@@ -114,6 +122,7 @@
         body.appendChild(div);
         scrollToBottom();
     }
+
     function scrollToBottom() {
       body.scrollTop = body.scrollHeight;
     }
@@ -178,10 +187,24 @@
     window.sendQuickReply = (text) => {
       handleSend(text);
     };
+
     body.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-chat-action');
       if (!btn) return;
-      if (btn.tagName === 'A') return;
+      if (btn.classList.contains('js-watch-trailer')) {
+        e.preventDefault(); 
+        const trailerUrl = btn.dataset.trailer;
+        if (window.openTrailerModal) {
+            window.openTrailerModal(trailerUrl);
+        } else {
+            window.open(trailerUrl, '_blank');
+        }
+        return;
+      }
+
+      if (btn.tagName === 'A' && !btn.dataset.payload) {
+        return;
+      }
 
       const actionPayload = btn.dataset.payload;
       const actionText = btn.textContent;
