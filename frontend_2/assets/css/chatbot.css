@@ -1,4 +1,3 @@
-
 :root {
   --chat-primary: #E50914; 
   --chat-primary-hover: #ff4d57;
@@ -8,6 +7,7 @@
   --chat-text: #ffffff;
   --chat-text-muted: #a0a0a0;
   --shadow-neon: 0 0 15px rgba(229, 9, 20, 0.5); 
+  --chat-border: rgba(255, 255, 255, 0.1); 
 }
 
 .chat-widget {
@@ -110,9 +110,11 @@
   overscroll-behavior-y: contain;
 }
 
-.chat-body::-webkit-scrollbar { width: 6px; }
-.chat-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+/* Scrollbar dọc cho nội dung chat */
+.chat-body::-webkit-scrollbar { width: 5px; }
+.chat-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
 .chat-body::-webkit-scrollbar-track { background: transparent; }
+.chat-body:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); }
 
 .msg {
   display: flex;
@@ -198,7 +200,8 @@
   margin-top: 8px;
   -webkit-overflow-scrolling: touch; 
 }
-.quick-replies::-webkit-scrollbar { display: none; }
+
+/* ĐÃ XÓA dòng 'display: none' ở đây để hiện scrollbar mới */
 
 .chip-btn {
   background: rgba(255,255,255,0.06);
@@ -235,6 +238,9 @@
 
 .chat-card-body {
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
 }
 
 .chat-card-title {
@@ -252,6 +258,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex-grow: 1;
 }
 .chat-actions {
   display: flex;
@@ -315,9 +322,7 @@
   overscroll-behavior-x: contain;
 }
 
-.chat-carousel::-webkit-scrollbar { height: 4px; }
-.chat-carousel::-webkit-scrollbar-track { background: transparent; }
-.chat-carousel::-webkit-scrollbar-thumb { background: var(--chat-primary); border-radius: 4px; }
+/* ĐÃ XÓA đoạn style scrollbar cũ bị trùng ở đây */
 
 .chat-carousel .chat-card {
   min-width: 220px; 
@@ -327,7 +332,9 @@
   margin-top: 0;    
   
   background: rgba(255,255,255,0.05); 
-  border: 1px solid var(--chat-border);
+  border: 1px solid var(--chat-border); 
+  display: flex;   
+  flex-direction: column;
 }
 
 .chat-carousel .chat-card img {
@@ -348,11 +355,36 @@
   mask-image: linear-gradient(to right, black 85%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
 }
+
 .quick-replies, 
 .chat-carousel {
   display: flex !important;
   flex-wrap: nowrap !important;
   overflow-x: auto !important; 
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-replies::-webkit-scrollbar, 
+.chat-carousel::-webkit-scrollbar {
+    height: 4px;
+    width: 0px;  
+}
+
+.quick-replies::-webkit-scrollbar-track, 
+.chat-carousel::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+.quick-replies::-webkit-scrollbar-thumb, 
+.chat-carousel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15); 
+    border-radius: 10px; 
+}
+
+.quick-replies:hover::-webkit-scrollbar-thumb, 
+.chat-carousel:hover::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5); 
 }
 
 .chip-btn, 
@@ -366,4 +398,16 @@
 .quick-replies {
   overscroll-behavior: contain; 
   -ms-scroll-chaining: none;  
+}
+.quick-replies, 
+.chat-carousel {
+  cursor: grab; 
+  user-select: none; 
+  -webkit-user-select: none; 
+}
+
+.quick-replies.dragging, 
+.chat-carousel.dragging {
+  cursor: grabbing !important;
+  scroll-behavior: auto !important; 
 }

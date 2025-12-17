@@ -1,17 +1,14 @@
 package com.example.cinema.repository;
 
 import com.example.cinema.entity.*;
-
 import jakarta.transaction.Transactional;
-
 import java.util.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-
-public interface BookingRepository extends JpaRepository<Booking, Long>{ 
+public interface BookingRepository extends JpaRepository<Booking, Long> { 
     
     // (BookingService)
     @Query(value = "SELECT * FROM booking " +
@@ -22,15 +19,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
     Booking findLatestPending(@Param("accountId") Long accountId);
 
     // (ConcessionService)
-        @Query("SELECT b FROM Booking b WHERE b.accountId = :accountId AND b.status = 'PENDING' ORDER BY b.bookingId DESC")
-        Booking getPendingBooking(@Param("accountId") Long accountId);
-
-
+    @Query("SELECT b FROM Booking b WHERE b.accountId = :accountId AND b.status = 'PENDING' ORDER BY b.bookingId DESC")
+    Booking getPendingBooking(@Param("accountId") Long accountId);
 
     @Modifying
     @Query(value = "DELETE FROM booking WHERE booking_id = :bookingId AND status = 'PENDING'", nativeQuery = true)
     void deletePendingBookingById(@Param("bookingId") Long bookingId);
-
 
     @Query(value="""
             select * from booking
@@ -38,8 +32,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
             """, nativeQuery = true)
     List<Booking> findAllPendingByAccountId(@Param("accountId") Long accountId);
 
-
-    //Profile service
+    // Profile service
     @Query(value = """
             SELECT COALESCE(SUM(total_amount), 0)
             FROM booking
@@ -66,29 +59,30 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
             join hall h on h.hall_id = st.hall_id
             join theater t on t.theater_id = h.theater_id 
             where b.account_id = :accountId and b.status = 'PAID'
-            ORDER BY st.start_time DESC
+            ORDER BY st.start_at DESC
             """, nativeQuery = true)
     List<Map<String, Object>> findPaidBookingSummary(@Param("accountId") Long accountId);
 
-        @Query(value="""
-                        select * from booking 
-                        where booking_id = :bookingId
-                        """, nativeQuery = true)
-        Booking findByBooking(@Param("bookingId") Long bookingId);
+    @Query(value="""
+            select * from booking 
+            where booking_id = :bookingId
+            """, nativeQuery = true)
+    Booking findByBooking(@Param("bookingId") Long bookingId);
 
-        @Query(value = """
-                SELECT 
+    // === ĐÃ SỬA LẠI HÀM NÀY ĐỂ LẤY QR_CODE ===
+    @Query(value = """
+        SELECT 
             b.booking_id,
             b.total_amount,
             b.status,
             b.created_at,
+            b.qr_code, 
             
             m.title AS movie_title,
             m.poster_url,
             
-            
-			DATE(st.start_at) AS show_date,
-			TIME(st.start_at) AS show_start_time,
+            DATE(st.start_at) AS show_date,
+            TIME(st.start_at) AS show_start_time,
             th.name AS theater_name,
             
             CONCAT(s.row_label, s.seat_number) AS seat_code,
@@ -110,10 +104,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long>{
 
         WHERE b.account_id = :accountId 
         ORDER BY b.created_at DESC
-
         """, nativeQuery = true)
-        List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
+    List<Map<String, Object>> findBookingHistoryInfo(@Param("accountId") Long accountId);
+
+    @Query(value = "SELECT * FROM booking WHERE account_id = :accountId AND status = 'PAID' ORDER BY booking_id DESC LIMIT 1", nativeQuery = true)
+    Optional<Booking> findLatestPaidBooking(@Param("accountId") Long accountId);
 }
-
-
-

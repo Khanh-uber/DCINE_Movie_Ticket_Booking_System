@@ -185,7 +185,7 @@
     window.location.href = 'profile.html';
   }
 
-  async function init() {
+async function init() {
     let raw = null;
     raw = await fetchOrderFromBackend();
     if (!raw) {
@@ -217,9 +217,31 @@
     const view = buildOrderView(raw);
     render(view);
 
-    const dlBtn = $('#btnDownloadQr');
-    if (dlBtn) dlBtn.addEventListener('click', downloadQr);
+    const qrImg = document.getElementById('ticket-qr-img');
+    const qrSource = raw.ticketQr || raw.qrCode; 
+    let finalSrc = null; 
 
+    if (qrSource) {
+        finalSrc = qrSource.startsWith('data:image') ? qrSource : `data:image/png;base64,${qrSource}`;
+        if (qrImg) {
+            qrImg.src = finalSrc;
+            qrImg.style.display = 'block';
+        }
+    } else {
+        console.warn("Không tìm thấy dữ liệu ảnh QR!");
+        if (qrImg) qrImg.alt = "Không có mã QR";
+    }
+    const btnDownload = document.getElementById('btnDownloadQr');
+    if (btnDownload && finalSrc) {
+        btnDownload.onclick = () => {
+            const link = document.createElement('a');
+            link.href = finalSrc; 
+            link.download = `Ve_DCINE_${raw.orderId || 'ticket'}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+    }
     const homeBtn = $('#btnGoHome');
     if (homeBtn) homeBtn.addEventListener('click', goHome);
 

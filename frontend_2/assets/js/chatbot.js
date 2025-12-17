@@ -10,33 +10,116 @@
     const form = $('#chat-form');
     const input = $('#chat-input');
     const body = $('#chat-messages');
-
     toggleBtn.addEventListener('click', () => {
       windowEl.classList.remove('hidden');
       setTimeout(() => input.focus(), 100); 
     });
     
     closeBtn.addEventListener('click', () => windowEl.classList.add('hidden'));
+    function enableDragScroll(el) {
+        if (!el) return;
+        
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        let isDragging = false;
 
+        el.addEventListener('mousedown', (e) => {
+            isDown = true;
+            isDragging = false;
+            el.classList.add('dragging'); 
+            startX = e.pageX - el.offsetLeft;
+            scrollLeft = el.scrollLeft;
+        });
+
+        el.addEventListener('mouseleave', () => {
+            isDown = false;
+            el.classList.remove('dragging');
+        });
+
+        el.addEventListener('mouseup', (e) => {
+            isDown = false;
+            el.classList.remove('dragging');
+
+            if (isDragging) {
+                const captureClick = (ev) => {
+                    ev.stopPropagation(); 
+                    ev.preventDefault(); 
+                    window.removeEventListener('click', captureClick, true);
+                };
+                window.addEventListener('click', captureClick, true);
+            }
+        });
+
+        el.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault(); 
+            const x = e.pageX - el.offsetLeft;
+            const walk = (x - startX) * 2; 
+            el.scrollLeft = scrollLeft - walk;
+
+            if (Math.abs(walk) > 5) {
+                isDragging = true;
+            }
+        });
+    }
+    const initialQuickReplies = $('.quick-replies');
+    if (initialQuickReplies) {
+        enableDragScroll(initialQuickReplies);
+    }
     function addMessage(text, sender, isHTML = false) {
       const div = document.createElement('div');
       div.className = `msg ${sender}`;
-      
-      const content = isHTML ? text : text.replace(/\n/g, '<br>');
+      let content = text;
+      if (!isHTML && typeof text === 'string') {
+          content = text.replace(/\n/g, '<br>');
+      } else if (isHTML && typeof text === 'string') {
+          content = text.replace(/\n/g, '<br>');
+      }
+
       div.innerHTML = `<div class="bubble">${content}</div>`;
-      
+      const newQuickReplies = div.querySelector('.quick-replies');
+      if (newQuickReplies) enableDragScroll(newQuickReplies);
       body.appendChild(div);
       scrollToBottom();
     }
+    function addMovieCarousel(movies) {
+        if (!Array.isArray(movies) || movies.length === 0) return;
 
-    // 3. Cuộn xuống dưới cùng
+        const div = document.createElement('div');
+        div.className = 'msg bot'; 
+        const cardsHtml = movies.map(m => `
+            <div class="chat-card">
+                <img src="${m.posterUrl}" draggable="false" loading="lazy" onerror="this.src='https://via.placeholder.com/150x200?text=No+Image'">
+                <div class="chat-card-body">
+                    <div class="chat-card-title" title="${m.title}">${m.title}</div>
+                    <div class="chat-card-desc">
+                        ⭐ ${m.rating} | ${m.rated || 'T13'} | ${m.durationMin}p
+                    </div>
+                    <div class="chat-actions">
+                        <a href="movie-details.html?id=${m.id}" class="btn-chat-action">
+                            Đặt vé
+                        </a>
+                        ${m.trailerUrl ? `
+                            <a href="${m.trailerUrl}" target="_blank" class="btn-chat-action outline">
+                                Trailer
+                            </a>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        div.innerHTML = `<div class="chat-carousel">${cardsHtml}</div>`;
+        const carouselEl = div.querySelector('.chat-carousel');
+        enableDragScroll(carouselEl);
+        body.appendChild(div);
+        scrollToBottom();
+    }
     function scrollToBottom() {
       body.scrollTop = body.scrollHeight;
     }
 
     async function handleSend(text) {
       if (!text.trim()) return;
-
       addMessage(text, 'user');
       input.value = '';
 
@@ -67,12 +150,22 @@
           })
         });
 
-        const data = await res.json();
+        const resData = await res.json(); 
         document.getElementById(loadingId).remove();
-        addMessage(data.reply || "Xin lỗi, hệ thống đang bận.", 'bot', true); 
+
+        if (resData.reply) {
+            addMessage(resData.reply, 'bot', true); 
+        }
+        if (resData.data && Array.isArray(resData.data) && resData.data.length > 0) {
+            addMovieCarousel(resData.data);
+        }
+        if (!resData.reply && (!resData.data || resData.data.length === 0)) {
+            addMessage("Xin lỗi, mình không hiểu ý bạn.", 'bot');
+        }
 
       } catch (err) {
-        document.getElementById(loadingId).remove();
+        if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
+        console.error(err);
         addMessage("⚠️ Lỗi kết nối. Vui lòng thử lại sau.", 'bot');
       }
     }
@@ -88,14 +181,10 @@
     body.addEventListener('click', (e) => {
       const btn = e.target.closest('.btn-chat-action');
       if (!btn) return;
+      if (btn.tagName === 'A') return;
 
-      // Nếu là link chuyển trang (có href)
-      if (btn.hasAttribute('href')) {
-        return; // Để trình duyệt tự xử lý chuyển trang
-      }
-      const actionPayload = btn.dataset.payload; // Lấy dữ liệu ẩn
+      const actionPayload = btn.dataset.payload;
       const actionText = btn.textContent;
-
       if (actionPayload || actionText) {
         handleSend(actionPayload || actionText);
       }

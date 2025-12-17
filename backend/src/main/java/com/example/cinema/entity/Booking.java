@@ -24,7 +24,7 @@ public class Booking {
     @Column(name = "status")
     private String status;
 
-    @Column(name = "qr_code")
+    @Column(name = "qr_code", columnDefinition = "LONGTEXT")
     private String qrCode;
 
     @Column(name = "created_at")

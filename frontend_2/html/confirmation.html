@@ -49,8 +49,9 @@
       <!-- Cột trái: Vé + QR -->
       <section class="ticket-box" aria-label="Vé xem phim">
         <div class="qr-section">
-          <div class="qr-frame">
-            <div id="qr-code-container"></div>
+          <div class="qr-frame" style="background: white; padding: 10px; border-radius: 8px;">
+            <img id="ticket-qr-img" src="" alt="Đang tải QR..." 
+              style="width: 100%; height: auto; display: block; object-fit: contain;">
           </div>
             <button type="button" class="btn-download-qr" id="btnDownloadQr">
             <i class="fa-solid fa-download"></i>

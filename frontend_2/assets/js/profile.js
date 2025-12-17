@@ -131,7 +131,8 @@
       time,
       seats,
       concessions: concessionTexts,
-      total
+      total,
+      qrCode: b.ticketQr || b.qrCode || null
     };
   }
   function normalizeVoucher(v) {
@@ -378,7 +379,7 @@ async function guardAuth() {
             </div>
             ${
               isFuture
-                ? `<button class="btn-qr" onclick="window.showQR('${t.id}')">
+                ? `<button class="btn-qr" onclick="window.showQr('${t.qrCode}', '${t.id}')">
                      <i class="fa-solid fa-qrcode"></i> QR Code
                    </button>`
                 : `<div class="ticket-status-used">Đã dùng</div>`
@@ -604,31 +605,32 @@ window.logout = async () => {
   }
 };
 
-  window.showQR = (ticketId) => {
+window.showQr = (qrBase64, ticketId) => {
     const modal = document.getElementById('qrModal');
-    const box   = document.getElementById('qrcode');
-    const codeEl= document.getElementById('modal-ticket-code');
-    if (!modal || !box || !codeEl) return;
-
-    box.innerHTML = '';
-
-    if (window.QRCode) {
-      // eslint-disable-next-line no-undef
-      new QRCode(box, { text: ticketId, width: 180, height: 180 });
-    } else {
-      const fallback = document.createElement('div');
-      fallback.style.background = '#ffffff';
-      fallback.style.color = '#000000';
-      fallback.style.padding = '12px 16px';
-      fallback.style.fontFamily = 'monospace';
-      fallback.textContent = ticketId;
-      box.appendChild(fallback);
-    }
-
-    codeEl.textContent = ticketId;
+    const img = document.getElementById('qrcode-img'); 
+    const codeEl = document.getElementById('modal-ticket-code');
+    const btnDownload = document.getElementById('btn-download-qr'); 
+    const finalSrc = qrBase64 && qrBase64.length > 50 ? qrBase64 : '../assets/images/no-qr.png';
+    img.src = finalSrc;
+    
+    codeEl.textContent = ticketId || '';
     modal.style.display = 'flex';
+    if (btnDownload) {
+        if (!qrBase64 || qrBase64.length <= 50) {
+            btnDownload.style.display = 'none';
+        } else {
+            btnDownload.style.display = 'inline-flex';
+            btnDownload.onclick = () => {
+                const link = document.createElement('a');
+                link.href = finalSrc;
+                link.download = `Ve_DCINE_${ticketId || 'QR'}.png`; 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+        }
+    }
   };
-
   window.closeModal = () => {
     const modal = document.getElementById('qrModal');
     if (modal) modal.style.display = 'none';
