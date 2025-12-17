@@ -3,6 +3,8 @@ package com.example.cinema.service;
 import org.springframework.stereotype.Service;
 
 import com.example.cinema.dto.ChatResponse;
+import com.example.cinema.dto.FaissContextResponse;
+import com.example.cinema.dto.FaissContextResponse.FaissContext;
 import com.example.cinema.dto.MovieDTO;
 import com.example.cinema.dto.ShowtimeDTO;
 import com.example.cinema.dto.ShowtimeFlatDTO;
@@ -39,9 +41,10 @@ public class ChatService {
     private final ShowTimeRepository showTimeRepo;
     private final TimeParserService timeParserService;
     private final MemoryService memoryService;
+    private final FaissClientService faissClientService;
 
     public ChatService(LLMService llmService, ShowtimeService showtimeService, MovieService movieService, ReplyHelper replyHelper, LLMReplyService replyService, MovieLookupService movieLookupService,
-        DateParserService dateParserService, TheaterLookupService theaterLookupService, FormatShowtimes formatShowtimes, ObjectMapper objectMapper, MemoryService memoryService, ShowTimeRepository showTimeRepo, TimeParserService timeParserService) {
+        DateParserService dateParserService, TheaterLookupService theaterLookupService, FormatShowtimes formatShowtimes, ObjectMapper objectMapper, FaissClientService faissClientService, MemoryService memoryService, ShowTimeRepository showTimeRepo, TimeParserService timeParserService) {
         this.llmService = llmService;
         this.showtimeService = showtimeService;
         this.movieService = movieService;
@@ -55,6 +58,7 @@ public class ChatService {
         this.showTimeRepo = showTimeRepo;
         this.timeParserService = timeParserService;
         this.memoryService = memoryService;
+        this.faissClientService = faissClientService;
         
     }
     private boolean isHardIntentChange(String currentIntent, String lastIntent) {
@@ -299,10 +303,20 @@ public class ChatService {
         List<String> moods = e.getMood() != null ? e.getMood() : List.of();
         if (moods == null || moods.isEmpty()) {
             String instruction = """
-            Người dùng muốn tìm phim theo tâm trạng, 
-            nhưng không rõ tâm trạng thuộc loại nào.
-            Hãy trả lời thân thiện, gợi ý họ mô tả cụ thể hơn,
-            ví dụ: "buồn", "vui", "căng thẳng", "nhẹ nhàng"...
+            Bạn là trợ lý ảo D-Cine "chất chơi", thân mật và am hiểu tâm lý GenZ.
+
+            GIỌNG ĐIỆU:
+            - Hơi "nhây" và đùa cợt một chút. Dùng từ: "bà dà", "đồng chí", "bất ổn", "chill".
+            - Emoji biểu cảm: 🤔, 🎭, 💅, 🍿.
+
+            NỘI DUNG TRẢ LỜI:
+            1. "Trách yêu" người dùng: Hỏi vặn lại rằng muốn xem theo mood mà không nói mood gì thì sao biết đường chiều.
+            - Ví dụ: "Ủa rồi mood gì không nói sao tui biết đường mò?" hoặc "Tính thử thách trí tuệ nhân tạo hả cưng?"
+            2. Gợi ý các "vibe" cụ thể để họ chọn nhanh:
+            - "Đang 'bất ổn' muốn khóc một dòng sông?" 😭
+            - "Hay đời vui quá muốn cười banh rạp?" 😂
+            - "Hoặc muốn thót tim với phim kinh dị?" 👻
+            3. Kêu gọi hành động: "Nói lẹ cái mood đi, tui lục kho phim cho nè!"
         """;
 
             String reply = replyService.reply(
@@ -344,13 +358,21 @@ public class ChatService {
     String moodText = moods.isEmpty() ? "tâm trạng hiện tại" : String.join(", ", moods);
 
     String instruction = """
-        Người dùng đang ở mood: %s.
-        Đây là danh sách phim phù hợp theo mood đó.
-        Hãy viết câu trả lời:
-        - Ngắn gọn (1–2 câu), vui vẻ, thân thiện.
-        - KHÔNG liệt kê tên phim (FE sẽ hiển thị).
-        - Tạo cảm giác được gợi ý cá nhân hoá.
-        - Cuối câu hỏi người dùng muốn xem chi tiết phim nào.
+        Bạn là "bạn tâm giao" của người dùng tại rạp D-Cine, rất hiểu ý và "bắt trend".
+    
+        THÔNG TIN: Người dùng đang muốn tìm phim theo mood: "%s".
+
+        GIỌNG ĐIỆU:
+        - Nếu mood buồn/tâm trạng: Giọng an ủi, vỗ về, dùng từ "chữa lành", "ôm cái nè", "suy".
+        - Nếu mood vui/sôi động: Giọng hào hứng, rủ rê "quẩy", "cháy phố", "xõa".
+        - Luôn dùng từ ngữ GenZ: "hợp vibe", "trúng tủ", "keo lì".
+        - Emoji bắt buộc phải khớp với mood (Ví dụ buồn dùng 🥺🌧️, vui dùng 🔥💃).
+
+        YÊU CẦU NỘI DUNG (Tối đa 2 câu):
+        1. Đồng cảm: Xác nhận bạn đã hiểu mood đó (Ví dụ: "Đang buồn hả thương ghê..." hoặc "Máu chiến vậy là phải xem phim này...").
+        2. Giới thiệu: Khẳng định danh sách bên dưới là những lựa chọn "chuẩn vibe" nhất hệ mặt trời dành riêng cho họ.
+        3. TUYỆT ĐỐI KHÔNG liệt kê tên phim.
+        4. Mời mọc: "Ưng bé nào thì bấm vô xem chi tiết liền nha!"
         """.formatted(moodText);
 
     String reply = replyService.reply(
@@ -372,10 +394,19 @@ public class ChatService {
         // 1.1 Nếu người dùng chưa nói tên phim → hỏi lại
         if (movieTitle == null || movieTitle.isBlank()) {
             String instruction = """
-                Người dùng muốn xem đánh giá phim nhưng chưa nói tên phim.
-                Hãy trả lời thân thiện:
-                - Nhắc rằng bạn cần tên phim để đánh giá.
-                - Đùa nhẹ một câu cho dễ thương.
+                Bạn là "chiến thần review" của rạp D-Cine, phong cách xéo xắc nhưng đáng yêu.
+
+                TÌNH HUỐNG: Khách muốn xin review/đánh giá mà... quên nói tên phim.
+
+                GIỌNG ĐIỆU:
+                - Hơi "cà khịa" nhẹ nhàng vui vẻ: "Ủa alo?", "tính hack não tui hả", "người tàng hình".
+                - Dùng từ lóng: "check var", "bóc phốt", "lên thớt".
+                - Emoji biểu cảm: 🧐, 🙄, 🎬, 📝.
+
+                NỘI DUNG TRẢ LỜI:
+                1. Trêu chọc nhẹ: Hỏi khách xem có phải đang muốn review phim "Vô Danh" hay đang thử thách trí tuệ của chatbot?
+                2. Yêu cầu hành động: Nhắc khách khai mau tên phim để bạn còn "check var" xem phim đó là siêu phẩm hay "bom xịt".
+                3. Ngắn gọn, súc tích (1-2 câu).
             """;
 
             String reply = replyService.reply(
@@ -392,11 +423,20 @@ public class ChatService {
         if (movieDTO == null) {
             // phim không tồn tại trong hệ thống
             String instruction = """
-                Không tìm thấy phim người dùng yêu cầu trong hệ thống.
-                Hãy trả lời thân thiện:
-                - Xin lỗi vì không tìm thấy phim bạn yêu cầu.
-                - Gợi ý người dùng kiểm tra lại tên.
-            """;
+            Bạn là chuyên gia review phim D-Cine, biết tuốt mọi bộ phim trên đời.
+            
+            TÌNH HUỐNG: Người dùng hỏi review phim "%s", nhưng bạn lục tung dữ liệu vẫn KHÔNG TÌM THẤY.
+
+            GIỌNG ĐIỆU:
+            - Bối rối, gãi đầu gãi tai: "Ủa", "lạ à nghen", "nghe tên lạ hoắc".
+            - Dùng từ GenZ: "tam sao thất bản", "check var", "lag nhẹ".
+            - Tuyệt đối KHÔNG xin lỗi. Hãy biến nó thành một tình huống vui vẻ.
+
+            YÊU CẦU NỘI DUNG:
+            1. Xác nhận tên phim vừa hỏi nghe rất lạ, chưa có trong kho review.
+            2. Đoán mò: Có phải khách gõ sai chính tả, nhớ nhầm tên, hay phim này... chưa ra mắt?
+            3. Gợi ý: "Cưng check lại tên phim chuẩn đi rồi quay lại tui review tới bến luôn!"
+        """.formatted(movieTitle);
 
             String reply = replyService.reply(
                     "hoi_danh_gia",
@@ -424,17 +464,19 @@ public class ChatService {
 
         // 5. Instruction cho LLM tạo câu trả lời
         String instruction = """
-            Bạn *LUÔN LUÔN* phải trả lời đánh giá dựa trên dữ liệu trong context.
-            KHÔNG ĐƯỢC nói rằng không có thông tin, không có dữ liệu hoặc không tìm thấy.
-            
-            Nếu context ít thông tin:
-            - Hãy nhận xét nhẹ nhàng dựa trên title, rating, genre.
-            - Hãy thêm câu gợi ý liên quan đến suất chiếu
+            Bạn là "chiến thần review" phim của D-Cine, có gu thưởng thức cực chất.
 
-            YÊU CẦU:
-            - 2–3 câu.
-            - Giọng vui vẻ, thân thiện.
-            - Không bịa chi tiết không nằm trong context.
+            DỮ LIỆU TỪ CONTEXT:
+            - Sử dụng Rating (Context.rating) để quyết định thái độ:
+                + Nếu Rating >= 8.0: Khen nức nở ("siêu phẩm", "đỉnh nóc kịch trần", "không xem phí cả đời").
+                + Nếu Rating < 8.0: Khen tính giải trí, diễn viên đẹp hoặc hợp để xả stress.
+            - Sử dụng Cast (Context.cast) và Genre (Context.genres) để thêm chi tiết.
+
+            YÊU CẦU NỘI DUNG (2-3 câu):
+            1. Nhận xét phim dựa trên dữ liệu. KHÔNG ĐƯỢC nói "không có thông tin".
+            - Nếu Context thiếu mô tả (description): Hãy chém gió dựa trên Thể loại (Ví dụ: "Phim hành động thì bao cháy, kỹ xảo bao đẹp!").
+            2. Lời văn: Cuốn hút, dùng slang GenZ ("visual đỉnh", "bánh cuốn", "chấn động").
+            3. Call-to-Action: Thách thức người dùng đi xem để tự kiểm chứng ("Muốn biết thực hư thì check lịch chiếu ngay đi cưng!").
         """;
 
         String reply = replyService.reply(
@@ -753,6 +795,7 @@ public class ChatService {
         String dateText = e.getDate_phrase();
         String timeText = safe(e.getTime_phrase());
         String theaterText = e.getTheater();
+        String locationText = e.getLocation();
         // 1) Thiếu movie hỏi lại
         if (movieText == null || movieText.isBlank()) {
 
@@ -807,7 +850,7 @@ public class ChatService {
         System.out.println("DATE CHUAN HOA:" + date);
         
         // 4) parse theater
-        TheaterDTO theater = theaterLookupService.findTheater(theaterText);
+        TheaterDTO theater = theaterLookupService.findTheater(theaterText, locationText);
         Long theaterId = (theater != null) ? theater.getId() : null;
 
         // 5) parse time
@@ -828,7 +871,7 @@ public class ChatService {
         if (rows == null || rows.isEmpty()) {
             Map<String, Object> ctx = new HashMap<>();
             ctx.put("movie", movie.getTitle());
-            ctx.put("date", date.toString());
+            ctx.put("date", date != null ? date.toString() : "");
             ctx.put("time", timeText.isBlank() ? null : timeText);
             ctx.put("theater", theater != null ? theater.getName() : null);
 
@@ -890,7 +933,6 @@ public class ChatService {
 
         String instruction = """
             Bạn là chuyên gia gợi ý xem phim với phong cách rủ rê, thân mật, đùa cợt và ăn chơi của D-Cine.
-
                 GIỌNG ĐIỆU:
                 - Bắt buộc dùng các từ lóng: "cưng", "lên kèo", "quẩy", "siêu cuốn", "cháy", "nhức nách".
                 - Sử dụng emoji nhiệt tình (🔥, 🍿, 😉).
@@ -898,19 +940,15 @@ public class ChatService {
                 1. Mở đầu nhiệt tình:
                 - Xác nhận tên phim (Context.movie) và ngày (Context.date) bằng giọng điệu phấn khích.
                 2. XỬ LÝ LỌC:
-                - Nếu Context.time CÓ giá trị: Phải nói rõ đây là kết quả ĐÃ LỌC theo buổi/giờ đó.
-                    Ví dụ: "Tui đã lọc suất [Tối] cho cưng rồi nè!"
-                - Nếu Context.theater CÓ giá trị: Nhắc rõ tên rạp đã lọc.
-
-                3. TRÌNH BÀY LỊCH CHIẾU (QUAN TRỌNG):
-                - KHÔNG được liệt kê toàn bộ dữ liệu trong Context.showtimes_by_theater.
-                - Chỉ hiển thị TỐI ĐA:
-                    + 3 rạp.
-                    + 3 suất chiếu cho mỗi rạp.
-                - Chỉ hiển thị GIỜ chiếu (HH:mm).
+                - Nếu Context.time CÓ giá trị: Phải nói rõ đây là kết quả ĐÃ LỌC theo buổi/giờ đó
+                - Dựa vào Context.showtimes_by_theater.
+                    Nhiệm vụ:
+                    - In ra danh sách rạp và giờ chiếu.
+                    - Mỗi rạp một dòng.
+                    - Chỉ hiển thị giờ (HH:mm).
+                    - Không thêm thông tin ngoài dữ liệu đã cho.
                 - Nếu một rạp có nhiều suất hơn giới hạn, chỉ lấy các suất GẦN NHẤT.
                 - Nếu dữ liệu vượt quá giới hạn, diễn đạt ngắn gọn (ví dụ: "còn nhiều suất khác nữa").
-
                 4. KÊU GỌI HÀNH ĐỘNG:
                 - Kết thúc bằng lời rủ rê tiếp tục hành động.
                 - Ví dụ:
@@ -926,6 +964,113 @@ public class ChatService {
 
         return new ChatResponse(reply);
 }
+    private ChatResponse handleThongTinPhim(IntentResult.Entities e, String userMessage) {
+
+        // 1️⃣ Lấy tên phim (nếu có)
+        String movieText = e.getMovie();
+
+        // 2️⃣ Nếu user chưa nói rõ phim → hỏi lại
+        if (movieText == null || movieText.isBlank()) {
+
+            String instruction = """
+                Người dùng muốn hỏi thông tin phim nhưng chưa nói tên phim cụ thể.
+                Hãy trả lời thân thiện, ngắn gọn:
+                - Hỏi lại tên phim.
+                - Có thể gợi ý ví dụ: Conan, Dune, Gangster Về Làng...
+            """;
+
+            String reply = replyService.reply(
+                    "hoi_thong_tin_phim",
+                    "{}",
+                    instruction
+            );
+
+            return new ChatResponse(reply);
+        }
+
+        // 3️⃣ GỌI PYTHON FAISS LẤY CONTEXT (RAG)
+        // Ví dụ: faissClient.getContext(query)
+        FaissContextResponse faissCtx =
+                faissClientService.getContext(movieText);
+
+        // 4️⃣ Nếu FAISS không tìm thấy context phù hợp
+        if (faissCtx == null || faissCtx.getContexts().isEmpty()) {
+
+            String instruction = """
+                Không tìm thấy thông tin phim phù hợp trong hệ thống.
+                Hãy trả lời ngắn gọn, thân thiện:
+                - Nói rằng chưa có thông tin về phim này.
+                - Gợi ý người dùng kiểm tra lại tên phim hoặc hỏi phim khác.
+            """;
+
+            String reply = replyService.reply(
+                    "hoi_thong_tin_phim",
+                    "{}",
+                    instruction
+            );
+
+            return new ChatResponse(reply);
+        }
+
+        // 5️⃣ BUILD CONTEXT CHO LLM (RAG)
+        StringBuilder ctx = new StringBuilder();
+
+        for (FaissContext c : faissCtx.getContexts()) {
+            ctx.append("=== PHIM ===\n");
+            ctx.append(c.getContent()).append("\n\n");
+        }
+
+        String context = ctx.toString();
+        System.out.println("===== RAG CONTEXT =====");
+        System.out.println(context);
+        System.out.println("=======================");
+        // 6️⃣ Instruction cho LLM
+        String instruction = """
+            Người dùng đang hỏi thông tin về một bộ phim.
+            Context có thể chứa thông tin của nhiều phim tương tự.
+
+            YÊU CẦU:
+            - Chỉ chọn bộ phim phù hợp nhất với câu hỏi
+            - Giới thiệu ngắn gọn nội dung phim
+            - 2–3 câu, tự nhiên, dễ hiểu
+            - Không trộn thông tin của nhiều phim
+        """;
+
+        // 7️⃣ Gọi LLM
+        String reply = replyService.reply(
+                "hoi_thong_tin_phim",
+                context,
+                instruction
+        );
+
+        return new ChatResponse(reply);
+    }
+    private ChatResponse handleGreeting(){
+        String instruction = """
+            Bạn là trợ lý ảo của rạp phim D-Cine với tính cách năng động, trẻ trung, "chất chơi".
+
+            GIỌNG ĐIỆU BẮT BUỘC:
+            - Cực kỳ thân mật, không chào kiểu robot cứng nhắc.
+            - Dùng từ lóng GenZ: "hé lô", "cưng", "lên kèo", "xõa", "check var".
+            - Emoji bắt buộc: 👋, 🍿, 🔥, 😎.
+
+            NỘI DUNG (Tối đa 2 câu):
+            1. Chào hỏi thật mặn mà: "Hé lô cưng", "Khách quý tới thăm".
+            2. Mời mọc hành động ngay: Rủ rê hỏi lịch chiếu hoặc tìm phim hot để đi "quẩy".
+
+            VÍ DỤ MONG MUỐN:
+            - "Hé lô cưng! 👋 Nay rảnh không, check lịch chiếu rồi lên kèo đi xõa liền đi! 🔥"
+            - "D-Cine nghe nè! 🍿 Đang kiếm phim gì hay để tui check var lịch chiếu cho bạn ngay và luôn? 😎"
+            """;
+
+        String reply = replyService.reply(
+            "chao_hoi",
+            "{}",
+            instruction
+        );
+
+        return new ChatResponse(reply);
+    }
     public ChatResponse handleMessage(String message, String memoryKey) {
 
 
@@ -936,9 +1081,9 @@ public class ChatService {
         String intentName = intentResult.getIntent();
         var e = intentResult.getEntities();
         
-        if (isHardIntentChange(intentName, ctx.getLastIntent())) {
-            ctx.clear();
-        }
+        // if (isHardIntentChange(intentName, ctx.getLastIntent())) {
+        //     ctx.clear();
+        // }
         // merge entity;
         if (e.getMovie() == null) e.setMovie(ctx.getMovie());
         if (e.getTheater() == null) e.setTheater(ctx.getTheater());
@@ -948,7 +1093,9 @@ public class ChatService {
 
         ChatResponse res;
         switch (intentName) {
-
+            case "chao_hoi":
+                res = handleGreeting();
+                break;
             case "hoi_phim_dang_chieu":
                 res = handleNowShowing();
                 break;
@@ -986,7 +1133,9 @@ public class ChatService {
             case "hoi_co_chieu":
                 res =  handleFullShowtime(e);
                 break;
-
+            // case "hoi_thong_tin_phim":
+            //     res = handleThongTinPhim(e, message);
+            //     break;
             default:
                 res = new ChatResponse(
                 "Mình chưa hiểu câu hỏi này. Bạn có thể nói rõ hơn không?"
@@ -1002,4 +1151,4 @@ public class ChatService {
         ctx.setLastIntent(intentName);
         return res;
     }
-}
+} 

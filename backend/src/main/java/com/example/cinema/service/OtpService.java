@@ -15,9 +15,10 @@ import com.example.cinema.repository.OtpRepository;
 public class OtpService {
 
     private final OtpRepository otpRepo;
-    
-    public OtpService(OtpRepository otpRepo){
+    private final EmailService emailService;
+    public OtpService(OtpRepository otpRepo, EmailService emailService){
         this.otpRepo = otpRepo;
+        this.emailService = emailService;
     }
 
     // === Gui OTP ===
@@ -25,11 +26,14 @@ public class OtpService {
         String identifier = req.getIdentifier().trim();
         String channel = req.getChannelType(); // email/ phone / both
 
+        //2) Sinh OTP
         String code = String.format("%06d", (int) (Math.random() * 1_000_000));
         LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(3);
+
         // 3. Xóa các OTP cũ của user này (nếu có)
         otpRepo.deleteIdentifier(identifier);
 
+        //4) Tao OTP Record
         OtpRecord otp = new OtpRecord();
         otp.setExpiresAt(expiresAt);
         otp.setIdentifier(identifier);
@@ -41,10 +45,9 @@ public class OtpService {
         // luu db 
         otpRepo.save(otp);
 
-        if (channel.equalsIgnoreCase("EMAI"))
-            
-        
-        System.out.println("Ma OTP cua ban cho "+identifier+" la "+ code);
+        if (channel.equalsIgnoreCase("EMAIL")){
+            emailService.sendOtpMail(identifier, code);
+        }
 
         //tra phan hoi chuan Json FE
         return Map.of(

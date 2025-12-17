@@ -27,7 +27,7 @@ public class LLMReplyService {
         QUY TẮC:
         1. Chỉ dùng thông tin có trong context.
         2. Nếu thiếu dữ liệu cần thiết → giải thích ngắn gọn và đề nghị khách cung cấp thêm.
-        3. Nếu context rỗng hoặc không có dữ liệu phù hợp → xin lỗi nhẹ nhàng và gợi ý hướng khác.
+        3. Nếu context rỗng hoặc không có dữ liệu phù hợp.
         4. Không trả lời lan man, không phân tích dài dòng, không suy luận ngoài phạm vi câu hỏi.
         5. Giữ câu trả lời tối đa 3 câu, ngắn gọn và tự nhiên.
 

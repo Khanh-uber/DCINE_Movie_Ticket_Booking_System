@@ -35,8 +35,6 @@ Ví dụ đúng:
 Ví dụ SAI (KHÔNG được chọn hoi_danh_gia):
 - "Phim này chiếu như thế nào?"
 - "Cuối tuần phim này chiếu ra sao?"
-
-
 6. hoi_phim_phu_hop → gợi ý phim theo tâm trạng
 7. hoi_gio_chieu_phim:
 - Người dùng hỏi CỤ THỂ các suất chiếu (giờ chiếu) của một bộ phim
@@ -55,6 +53,30 @@ Ví dụ SAI (KHÔNG được chọn hoi_danh_gia):
 - Có thể chứa 1 hoặc nhiều entity (phim, ngày, rạp)
 - Thường có các cụm:
   "có chiếu không", "lịch chiếu", "hôm nay có chiếu không"
+11. hoi_thong_tin_phim 
+- Người dùng hỏi thông tin chung về phim: nội dung, giới thiệu, độ tuổi, thời lượng, ngôn ngữ.
+- Câu hỏi KHÔNG đề cập đến thời gian chiếu, rạp chiếu, suất chiếu.
+Ví dụ:
+- "Phim Conan là phim gì?"
+- "Gangster về làng nội dung ra sao?"
+KHÔNG dùng intent này nếu câu hỏi có:
+- Thời gian (hôm nay, ngày mai, lúc mấy giờ)
+- Rạp chiếu (rạp nào, ở đâu)
+- Suất chiếu (có chiếu không)
+12. chao_hoi 
+- Áp dụng khi câu hỏi CHỈ mang tính chào hỏi, gọi chatbot, không yêu cầu thông tin phim.
+- Không hỏi giờ chiếu, không hỏi phim, không hỏi rạp.
+Ví dụ:
+- "hi"
+- "hello"
+- "chào"
+- "chào bạn"
+- "ê bot ơi"
+- "dcine ơi"
+- "hello dcine"
+Lưu ý:
+- Nếu câu có vừa chào vừa hỏi thông tin (ví dụ: "hi, conan chiếu lúc mấy giờ")
+  → KHÔNG chọn chao_hoi, phải chọn intent nghiệp vụ phù hợp (ví dụ: hoi_gio_chieu_phim).
 Nếu không thuộc các nhóm trên → intent = "unknown".
 
 ========================
