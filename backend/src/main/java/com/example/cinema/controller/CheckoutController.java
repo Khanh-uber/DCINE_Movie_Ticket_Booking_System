@@ -53,7 +53,19 @@ public class CheckoutController {
     public ResponseEntity<?> summary() {
         return ResponseEntity.ok(Collections.emptyMap());
     }
-    
+    @GetMapping("/last-confirmed")
+    public ResponseEntity<?> getLastConfirmedBooking(HttpSession session) {
+        try {
+            Long accountId = (Long) session.getAttribute("accountId");
+            
+            if (accountId == null) {
+                return ResponseEntity.status(401).body("Vui lòng đăng nhập để xem vé.");
+            }
+            return ResponseEntity.ok(checkoutService.getLastConfirmedBooking(accountId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @PostMapping("/apply-voucher")
     public ResponseEntity<?> applyVoucher(@RequestBody Map<String, Object> payload) throws Exception {
         System.out.println("===== PAYLOAD RECEIVED =====");
