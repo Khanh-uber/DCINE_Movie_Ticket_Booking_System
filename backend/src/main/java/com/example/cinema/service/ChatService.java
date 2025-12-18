@@ -345,7 +345,8 @@ public class ChatService {
             Hãy đưa ra lời khuyên nhẹ nhàng và đề xuất họ chọn mood khác.
         """;
 
-        String reply = replyService.reply(
+        String reply = replyService.reply
+        (
                 "hoi_phim_phu_hop",
                 context,
                 instruction

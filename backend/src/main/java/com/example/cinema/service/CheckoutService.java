@@ -105,7 +105,7 @@ public class CheckoutService {
                 }
             }
             
-            // Tạo QR (IP 192.168.1.11)
+            // Tạo QR (Nhớ thay IP 192.168.1.11 bằng IP máy bạn)
             String IP = "10.247.24.116"; 
             String PORT = "8080"; 
             String deeplink = String.format("http://%s:%s/mobile-pay.html?trans=%s", IP, PORT, transactionId);
