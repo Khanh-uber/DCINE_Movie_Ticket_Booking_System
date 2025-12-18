@@ -83,13 +83,4 @@ public class CheckoutController {
 
         return ResponseEntity.ok(calculatedOrder);
     }
-    @GetMapping("/last-confirmed")
-    public ResponseEntity<?> lastConfirmed(HttpSession session){
-        Long accountId = (Long) session.getAttribute("accountId");
-        if (accountId == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
-        }
-        Map<String, Object> response = checkoutService.getLastConfirmed(accountId);
-        return ResponseEntity.ok(response);
-    }
 }
