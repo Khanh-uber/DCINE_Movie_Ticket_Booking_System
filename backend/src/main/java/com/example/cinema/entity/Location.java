@@ -21,13 +21,6 @@ public class Location {
     @JsonProperty("province_id")
     private Long provinceId;
 
-    @Column(name = "name")
-    @JsonProperty("name")   // FE gọi 'name'
-    private String name;
-
-    @Column(name = "address")
-    @JsonProperty("address")  // FE hiển thị địa chỉ
-    private String address;
 
     public Location() {}
 
@@ -40,9 +33,4 @@ public class Location {
     public Long getProvinceId() { return provinceId; }
     public void setProvinceId(Long provinceId) { this.provinceId = provinceId; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
 }

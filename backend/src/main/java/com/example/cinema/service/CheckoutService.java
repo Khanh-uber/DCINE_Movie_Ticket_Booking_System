@@ -8,6 +8,20 @@ import java.io.ByteArrayOutputStream;
 
 import com.example.cinema.entity.*;
 import com.example.cinema.repository.*;
+// import com.example.cinema.entity.Booking;
+// import com.example.cinema.entity.BookingVoucher;
+// import com.example.cinema.entity.BookingVoucherId;
+// import com.example.cinema.entity.Payment;
+// import com.example.cinema.entity.Voucher;
+// import com.example.cinema.repository.BookingConcessionRepository;
+// import com.example.cinema.repository.BookingRepository;
+// import com.example.cinema.repository.BookingSeatRepository;
+// import com.example.cinema.repository.BookingVoucherRepository;
+// import com.example.cinema.repository.PaymentRepository;
+// import com.example.cinema.repository.ShowTimeRepository;
+// import com.example.cinema.repository.VoucherRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import com.example.cinema.socket.SocketService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -27,9 +41,15 @@ public class CheckoutService {
     private final BookingRepository bookingRepo;
     private final VoucherRepository voucherRepo;
     private final BookingVoucherRepository bookingVoucherRepo;
-    private final AccountService accountService;
     private final SocketService socketService;
-
+    private final AccountService accountService;  
+    private final PaymentRepository paymentRepo;
+    private final BookingSeatRepository bookingSeatRepo;
+    private final BookingConcessionRepository bookingConcessionRepo;
+    private final ShowTimeRepository showtimeRepo;
+    private String generateBookingCode(Long bookingId) {
+        return "DCINE-" + String.format("%06d", bookingId);
+    }
     // Helper an toàn
     private Long safeLong(Object obj) {
         if (obj == null) return 0L;
@@ -60,7 +80,6 @@ public class CheckoutService {
             String transactionId = "trans_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
             Booking booking = bookingRepo.findByBooking(((Number) order.get("bookingId")).longValue());
             if (booking == null) throw new RuntimeException("Booking not found");
-
             Payment pm = new Payment();
             pm.setBookingId(booking.getBookingId());
             pm.setTransactionId(transactionId);
@@ -87,7 +106,7 @@ public class CheckoutService {
             }
             
             // Tạo QR (Nhớ thay IP 192.168.1.11 bằng IP máy bạn)
-            String IP = "192.168.1.11"; 
+            String IP = "192.168.190.1"; 
             String PORT = "8080"; 
             String deeplink = String.format("http://%s:%s/mobile-pay.html?trans=%s", IP, PORT, transactionId);
             String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + URLEncoder.encode(deeplink, StandardCharsets.UTF_8);
@@ -101,6 +120,10 @@ public class CheckoutService {
             response.put("transactionId", transactionId);
             response.put("order", order);
             response.put("qr", qrMap);
+            response.put("orderId", pm.getPaymentId());
+            // // ⭐ LOG RESPONSE ĐỂ DEBUG
+            // System.out.println("===== RESPONSE CONFIRM =====");
+            // System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(response));
 
             return response;
         } catch (Exception e) {
@@ -320,6 +343,36 @@ public class CheckoutService {
         }
         discount = Math.min(discount, subTotal);
         return discount ;
+    }
+
+    public Map<String, Object> getLastConfirmed(Long accountId){
+        List<Payment> list = paymentRepo.getLastByAccountId(accountId);
+        if (list.isEmpty()) {
+            throw new RuntimeException("No recent payment found");
+        }
+
+        Payment p = list.get(0);
+        Booking b = bookingRepo.findById(p.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Booking not found for payment"));
+        
+        List<String> seatCodes = bookingSeatRepo.findSeatsCode(b.getBookingId());
+
+        List<Map<String, Object>> combos = bookingConcessionRepo.findConcession(b.getBookingId());
+        Map<String, Object> movieInfo = showtimeRepo.getShowtimeMeta(b.getShowtimeId());
+        String bookingCode = generateBookingCode(b.getBookingId());
+        Map<String, Object> result = new HashMap<>();
+        result.put("orderId", bookingCode);
+        result.put("bookingId", p.getBookingId());
+        result.put("movieTitle", movieInfo.get("movieTitle"));
+        result.put("theaterName", movieInfo.get("theaterName"));
+        result.put("showDate", movieInfo.get("date"));
+        result.put("showTime", movieInfo.get("time"));
+        result.put("paymentMethod", p.getMethod());
+        result.put("total", p.getAmount());
+        result.put("createdAt", p.getCreatedAt());
+        result.put("seats", seatCodes);
+        result.put("combos", combos);
+        return result;
     }
     public Map<String, Object> getLastConfirmedBooking(Long accountId) {
         Booking booking = bookingRepo.findLatestPaidBooking(accountId)

@@ -7,6 +7,7 @@ public class TheaterDTO {
     private Long id;
     private String name;
     private String city;
+    private Long locationId;
     
     public TheaterDTO(){}
 
@@ -33,5 +34,8 @@ public class TheaterDTO {
 
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+
+    public Long getLocationId(){return locationId;}
+    public void setLocationId(Long locationId){this.locationId = locationId;}
     
 }

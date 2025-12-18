@@ -45,6 +45,9 @@ public class ProfileService {
         this.bookingConcessionRepo = bookingConcessionRepo;
         this.bookingSeatRepo = bookingSeatRepo;
     }
+    private String generateBookingCode(Long bookingId) {
+        return "DCINE-" + String.format("%06d", bookingId);
+    }
     private String safeStr(Object v) {
         return v == null ? null : v.toString();
     }
@@ -257,7 +260,8 @@ public class ProfileService {
         showtime.put("time", safe(row.get("show_start_time"))); // alias: show_start_time
 
         Map<String, Object> obj = new LinkedHashMap<>();
-        obj.put("bookingId", row.get("booking_id"));
+        obj.put("bookingCode", generateBookingCode((Long) row.get("booking_id")));
+        obj.put("id", row.get("booking_id"));
         obj.put("totalAmount", row.get("total_amount"));
         obj.put("status", safe(row.get("status")));
         obj.put("qrCode", safe(row.get("qr_code")));

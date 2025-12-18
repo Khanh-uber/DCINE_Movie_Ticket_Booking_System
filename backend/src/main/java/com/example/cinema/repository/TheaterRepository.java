@@ -26,4 +26,7 @@ public interface TheaterRepository extends JpaRepository<Theater, Long> {
     """, nativeQuery = true)
     List<Map<String,Object>> findTheaters(@Param("provinceId") Long provinceId);
 
+    @Query(value = "SELECT * FROM theater", nativeQuery = true)
+    List<Theater> findAll();
+
 }

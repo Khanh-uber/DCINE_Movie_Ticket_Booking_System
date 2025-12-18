@@ -1,7 +1,8 @@
 package com.example.cinema.dto;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 public class ShowtimeFlatDTO {
@@ -21,14 +22,28 @@ public class ShowtimeFlatDTO {
     private Long hallId;
     private String hallName;
 
-    private Date startAt;
-    private Date endAt;
+    private LocalDateTime startAt;
+    private LocalDateTime endAt;
 
     private String format;
     private BigDecimal basePrice;
 
     public ShowtimeFlatDTO() {}
-
+    public ShowtimeFlatDTO(
+            Long id,
+            Long movieId,
+            String movieTitle,
+            String theaterName,
+            String hallName,
+            Timestamp startAt
+    ) {
+        this.id = id;
+        this.movieId = movieId;
+        this.movieTitle = movieTitle;
+        this.theaterName = theaterName;
+        this.hallName = hallName;
+        this.startAt = startAt.toLocalDateTime(); // convert thủ công
+    }
     public static ShowtimeFlatDTO fromMap(Map<String, Object> map) {
         ShowtimeFlatDTO dto = new ShowtimeFlatDTO();
 
@@ -47,8 +62,8 @@ public class ShowtimeFlatDTO {
         dto.setHallId(getLong(map.get("hallId")));
         dto.setHallName((String) map.get("hallName"));
 
-        dto.setStartAt((Date) map.get("startAt"));
-        dto.setEndAt((Date) map.get("endAt"));
+        dto.setStartAt((LocalDateTime) map.get("startAt"));
+        dto.setEndAt((LocalDateTime) map.get("endAt"));
 
         dto.setFormat((String) map.get("format"));
 
@@ -102,12 +117,11 @@ public class ShowtimeFlatDTO {
     public String getHallName() { return hallName; }
     public void setHallName(String hallName) { this.hallName = hallName; }
 
-    public Date getStartAt() { return startAt; }
-    public void setStartAt(Date startAt) { this.startAt = startAt; }
+    public LocalDateTime getStartAt() { return startAt; }
+    public void setStartAt(LocalDateTime startAt) { this.startAt = startAt; }
 
-    public Date getEndAt() { return endAt; }
-    public void setEndAt(Date endAt) { this.endAt = endAt; }
-
+    public LocalDateTime getEndAt() { return endAt; }
+    public void setEndAt(LocalDateTime endAt) { this.endAt = endAt; }
     public String getFormat() { return format; }
     public void setFormat(String format) { this.format = format; }
 

@@ -1,10 +1,13 @@
 package com.example.cinema.repository;
 
+import com.example.cinema.dto.ShowtimeFlatDTO;
 import com.example.cinema.entity.Showtime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -107,4 +110,72 @@ List<Map<String,Object>> findShowtimesForFE(
         WHERE s.showtime_id = :showtimeId
         """, nativeQuery = true)
     Map<String, Object> getShowtimeMeta(@Param("showtimeId") Long showtimeId);
+
+    @Query(value = """
+        SELECT 
+            s.showtime_id AS id,
+            s.movie_id AS movieId,
+            m.title AS movieTitle,
+            t.name AS theaterName,
+            h.name AS hallName,
+            s.start_at AS startAt
+        FROM showtime s
+        JOIN movie m ON m.movie_id = s.movie_id
+        JOIN hall h ON h.hall_id = s.hall_id
+        JOIN theater t ON t.theater_id = h.theater_id
+        WHERE s.movie_id = :movieId
+          AND DATE(s.start_at) = :date
+        """, nativeQuery = true)
+    List<ShowtimeFlatDTO> findShowtimeByMovieAndDate(@Param("movieId") Long movieId, @Param("date") LocalDate date);
+
+
+    @Query(value = """
+        SELECT 
+            st.showtime_id      AS showtimeId,
+            st.start_at         AS startAt,
+            st.end_at           AS endAt,
+            h.name              AS hallName,
+            th.name             AS theaterName,
+            m.title             AS movieTitle
+        FROM showtime st
+        JOIN hall h       ON h.hall_id = st.hall_id
+        JOIN theater th   ON th.theater_id = h.theater_id
+        JOIN movie m      ON m.movie_id = st.movie_id
+        WHERE th.theater_id = :theaterId
+          AND DATE(st.start_at) = :date
+        ORDER BY st.start_at
+        """, nativeQuery = true)
+    List<Map<String, Object>> findShowtimesByTheaterAndDateRaw(
+            @Param("theaterId") Long theaterId,
+            @Param("date") LocalDate date
+    );
+
+    @Query(value = """
+        SELECT 
+            st.showtime_id      AS showtimeId,
+            st.start_at         AS startAt,
+            st.end_at           AS endAt,
+            h.name              AS hallName,
+            th.name             AS theaterName,
+            m.title             AS movieTitle
+        FROM showtime st
+        JOIN hall h       ON h.hall_id = st.hall_id
+        JOIN theater th   ON th.theater_id = h.theater_id
+        JOIN movie m      ON m.movie_id = st.movie_id
+        WHERE m.movie_id = :movieId
+          AND (:theaterId IS NULL OR th.theater_id = :theaterId)
+          AND (:date IS NULL OR DATE(st.start_at) = :date)
+          AND (
+            :fromTime IS NULL
+            OR TIME(st.start_at) BETWEEN :fromTime AND :toTime
+            )
+        ORDER BY st.start_at
+        """, nativeQuery = true)
+    List<Map<String, Object>> findShowtimesByMovieTheaterDate(
+            @Param("movieId") Long movieId,
+            @Param("theaterId") Long theaterId,
+            @Param("date") LocalDate date,
+            @Param("fromTime") LocalTime fromTime,
+            @Param("toTime") LocalTime toTime
+    );
 }

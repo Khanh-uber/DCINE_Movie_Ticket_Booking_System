@@ -89,4 +89,45 @@ public class MovieService {
         }
         return dtos;
     }
+
+    public List<MovieDTO> getHotMovies(){
+        List<Movie> movies = movieRepo.findHotMovies();
+        List<MovieDTO> dtos = new ArrayList<>();
+
+        for (Movie movie : movies){
+            MovieDTO dto = MovieDTO.fromEntity(movie);
+
+            dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
+            dto.setCast(personRepo.findCastByMovieId(movie.getId()));
+            dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+    public List<MovieDTO> getMoviesByGenre(List<String> genres){
+        List<Movie> movies = movieRepo.findMoviesByGenre(genres);
+        List<MovieDTO> dtos = new ArrayList<>();
+
+        for (Movie movie : movies){
+            MovieDTO dto = MovieDTO.fromEntity(movie);
+            
+            dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
+            dto.setCast(personRepo.findCastByMovieId(movie.getId()));
+            dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+    MovieDTO getMovieDetails(Long movieTitle) {
+        Movie movie = movieRepo.findByMovieId(movieTitle);
+        if (movie == null) {
+            return null;
+        }
+        MovieDTO dto = MovieDTO.fromEntity(movie);
+        dto.setGenres(movieRepo.findGenresByMovieId(movie.getId()));
+        dto.setCast(personRepo.findCastByMovieId(movie.getId()));
+        dto.setDirector(personRepo.findDirectorByMovieId(movie.getId()));
+        return dto;
+    }
+    
 }

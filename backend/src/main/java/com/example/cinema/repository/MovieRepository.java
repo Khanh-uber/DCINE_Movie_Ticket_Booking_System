@@ -1,9 +1,12 @@
 package com.example.cinema.repository;
 
+import com.example.cinema.dto.MovieDTO;
 import com.example.cinema.entity.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.access.method.P;
+
 import java.util.*;
 // import org.springframework.transaction.annotation.*;
 import jakarta.transaction.Transactional;
@@ -111,4 +114,46 @@ public interface MovieRepository extends JpaRepository<Movie, Long>{
         LIMIT 1
         """, nativeQuery = true)
     String findDirectorByMovieId(@Param("movieId") Long movieId);
+    
+    @Query(value = """
+        SELECT m.title
+        FROM movie m
+        WHERE m.active = true
+        """, nativeQuery = true)
+    List<String> findAllTitles();
+    @Query(value = """
+        SELECT m.*
+        FROM movie m
+        JOIN movie_genre mg ON m.movie_id = mg.movie_id
+        JOIN genre g ON mg.genre_id = g.genre_id
+        WHERE g.name in :genres
+        AND m.active = true
+        ORDER BY m.release_date DESC
+        """, nativeQuery = true)
+    List<Movie> findMoviesByGenre(@Param("genres") List<String> genres);
+
+    @Query(value = """
+        SELECT *
+        FROM movie m
+        WHERE m.rating >= 8.0
+        AND m.active = true
+        ORDER BY m.rating DESC, m.release_date DESC
+        """, nativeQuery = true)
+    List<Movie> findHotMovies();
+
+    @Query(value = """
+        SELECT m.title
+        FROM movie m
+        WHERE m.active = true
+        """, nativeQuery = true)
+    List<String> findAllMovieTitles();
+
+    @Query(value = """
+        SELECT *
+        FROM movie m
+        WHERE m.title = :title
+        AND m.active = true
+        """, nativeQuery = true)
+    Movie findByTitle(@Param("title") String title);
+
 }

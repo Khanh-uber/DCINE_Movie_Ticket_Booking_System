@@ -17,12 +17,13 @@ public class Cast_person {
     @Column(name = "cast_url")
     private String castUrl;
     
+    
     public enum Role {
         ACTOR,
         DIRECTOR
     }
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name="role_type")
     private Role role;
 
     public Cast_person(){}

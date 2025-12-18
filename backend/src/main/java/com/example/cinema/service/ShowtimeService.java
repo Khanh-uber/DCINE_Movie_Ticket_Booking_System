@@ -1,9 +1,14 @@
 package com.example.cinema.service;
 
+import com.example.cinema.dto.ShowtimeDTO;
 import com.example.cinema.dto.ShowtimeDetailDTO;
+import com.example.cinema.dto.ShowtimeFlatDTO;
 import com.example.cinema.repository.ShowTimeRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -25,4 +30,41 @@ public class ShowtimeService {
         return ShowtimeDetailDTO.fromRaw(raw);
     }
 
+    public List<ShowtimeFlatDTO> getShowtimesByMovieAndDate(Long movieId, LocalDate date) {
+        return repo.findShowtimeByMovieAndDate(movieId, date);
+    }
+
+    public List<ShowtimeFlatDTO> getShowtimesByTheaterAndDate(Long theaterId, LocalDate date) {
+        List<Map<String, Object>> rows = repo.findShowtimesByTheaterAndDateRaw(theaterId, date);
+        
+    
+
+        return rows.stream().map(r -> {
+            ShowtimeFlatDTO dto = new ShowtimeFlatDTO();
+            Object startObj = r.get("startAt");
+            Object endObj   = r.get("endAt");
+            if (startObj instanceof java.sql.Timestamp ts) {
+                dto.setStartAt(ts.toLocalDateTime());
+            } else if (startObj instanceof LocalDateTime ldt) {
+                dto.setStartAt(ldt);
+            } else {
+                throw new IllegalStateException(
+                    "Unsupported startAt type: " + startObj
+                );
+            }
+            if (endObj instanceof java.sql.Timestamp ts) {
+                dto.setEndAt(ts.toLocalDateTime());
+            } else if (endObj instanceof LocalDateTime ldt) {
+                dto.setEndAt(ldt);
+            } else {
+                throw new IllegalStateException(
+                    "Unsupported endAt type: " + endObj
+                );
+            }
+            dto.setHallName(String.valueOf(r.get("hallName")));
+            dto.setTheaterName(String.valueOf(r.get("theaterName")));
+            dto.setMovieTitle(String.valueOf(r.get("movieTitle")));
+            return dto;
+        }).toList();
+    }
 }

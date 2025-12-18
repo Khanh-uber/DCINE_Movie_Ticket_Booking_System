@@ -55,4 +55,28 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         WHERE bc.booking_id = :bookingId
     """, nativeQuery = true)
     List<Map<String, Object>> findCombosByBooking(@Param("bookingId") Long bookingId);
+
+
+    // (ConfirmService)
+    @Query(value="""
+            SELECT 
+                p.payment_id,
+                p.transaction_id,
+                p.method,
+                p.amount,
+                p.status AS payment_status,
+                p.created_at AS payment_created_at,
+                p.total_amount, 
+                
+                b.booking_id,
+                b.showtime_id,
+                b.account_id,
+                b.status AS booking_status,
+
+            FROM payment p
+            JOIN booking b ON b.booking_id = p.booking_id
+            WHERE b.account_id = 1
+            ORDER BY p.created_at;
+            """, nativeQuery = true)
+    List<Payment> getLastByAccountId(@Param("accountId") Long accountId);
 }
