@@ -57,13 +57,47 @@
   const isValidPhone    = (v) => /^0\d{9,10}$/.test(v.replace(/\s|-/g,'').replace(/^\+84/,'0'));
   const isValidUsername = (v) => /^[a-zA-Z0-9_.]{4,20}$/.test(v);
 
+  // Hàm chuẩn hóa chuỗi Họ và tên tự động theo quy tắc hệ thống
+  function formatFullnameInput() {
+    let v = fullname.value;
+    if (!v) return;
+    
+    // 1. Cắt khoảng trắng ở đầu, cuối và loại bỏ khoảng trắng kép ở giữa các từ
+    v = v.trim().replace(/\s+/g, ' ');
+    
+    // 2. Viết hoa chữ cái đầu của mỗi từ
+    v = v.split(' ')
+         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+         .join(' ');
+         
+    fullname.value = v;
+  }
+
   function validateFullname(show=true){
     const v = (fullname?.value || '').trim();
-    const ok = v.length >= 2;
-    if (show) ok ? clearFieldError(fullnameBox, errFullname)
-                 : showFieldError(fullnameBox, errFullname, 'Vui lòng nhập họ tên.');
+    
+    // Regex hỗ trợ Unicode toàn phần cho chữ tiếng Việt có dấu và khoảng trắng, độ dài từ 2-50 ký tự
+    const nameRegex = /^[\p{L}\s]{2,50}$/u;
+    const ok = nameRegex.test(v);
+    
+    if (show) {
+      if (ok) {
+        clearFieldError(fullnameBox, errFullname);
+      } else {
+        let errorMsg = 'Vui lòng nhập họ tên.';
+        if (v.length < 2 || v.length > 50) {
+          errorMsg = 'Họ và tên phải có độ dài từ 2-50 ký tự.';
+        } else if (/[0-9]/.test(v)) {
+          errorMsg = 'Họ và tên không được chứa chữ số.';
+        } else if (/[@#$%*<>\/\\_.]/.test(v)) {
+          errorMsg = 'Họ và tên không được chứa ký tự đặc biệt.';
+        }
+        showFieldError(fullnameBox, errFullname, errorMsg);
+      }
+    }
     return ok;
   }
+  
   function validateUsername(show=true){
     const v = (username?.value || '').trim();
     const ok = !!v && isValidUsername(v);
@@ -150,7 +184,7 @@
   segPhone?.addEventListener('click', ()=> setMode('phone'));
 
   // ===== Field events =====
-  fullname?.addEventListener('blur',  ()=>{ touchedFullname = true; validateFullname(true); checkFormValid(); });
+  fullname?.addEventListener('blur',  ()=>{ formatFullnameInput(); touchedFullname = true; validateFullname(true); checkFormValid(); });
   username?.addEventListener('blur',  ()=>{ touchedUsername = true; validateUsername(true); checkFormValid(); });
   ident   ?.addEventListener('blur',  ()=>{ touchedIdent    = true; validateIdent(true); checkFormValid(); });
   password?.addEventListener('blur',  ()=>{ touchedPassword = true; validatePassword(true); validateConfirm(true); checkFormValid(); });
@@ -236,12 +270,38 @@
         if (formError){ formError.textContent = msg; formError.style.display = 'block'; }
 
         const m = (msg || '').toLowerCase();
+        
+        // Làm sạch toàn bộ trạng thái lỗi trước khi ánh xạ lỗi mới
+        clearFieldError(fullnameBox, errFullname);
         clearFieldError(usernameBox, errUsername);
         clearFieldError(identBox, errIdent);
-        if (m.includes('username')) showFieldError(usernameBox, errUsername, msg);
-        if (m.includes('email'))   { showFieldError(identBox, errIdent, msg); setMode('email'); }
-        if (m.includes('phone') || m.includes('số') || m.includes('sdt') || m.includes('so dien thoai')){
-          showFieldError(identBox, errIdent, msg); setMode('phone');
+        clearFieldError(passwordBox, errPassword);
+        clearFieldError(confirmBox, errConfirm);
+
+        // 1. Ánh xạ lỗi trường Họ và tên
+        if (m.includes('fullname') || m.includes('họ tên') || m.includes('họ và tên')) {
+          showFieldError(fullnameBox, errFullname, msg);
+        }
+        // 2. Ánh xạ lỗi Tên đăng nhập
+        if (m.includes('username') || m.includes('tên đăng nhập')) {
+          showFieldError(usernameBox, errUsername, msg);
+        }
+        // 3. Ánh xạ lỗi Mật khẩu
+        if (m.includes('password') || m.includes('mật khẩu')) {
+          showFieldError(passwordBox, errPassword, msg);
+        }
+        // 4. Ánh xạ lỗi Xác nhận mật khẩu
+        if (m.includes('confirm') || m.includes('nhập lại')) {
+          showFieldError(confirmBox, errConfirm, msg);
+        }
+        // 5. Ánh xạ lỗi Email / Số điện thoại (Chỉ chuyển tab hoặc báo lỗi chính xác khi không trùng từ khóa password)
+        if (m.includes('email')) { 
+          showFieldError(identBox, errIdent, msg); 
+          if (mode !== 'email') setMode('email'); 
+        } 
+        else if ((m.includes('phone') || m.includes('số') || m.includes('sdt') || m.includes('so dien thoai')) && !(m.includes('password') || m.includes('mật khẩu'))) {
+          showFieldError(identBox, errIdent, msg); 
+          if (mode !== 'phone') setMode('phone');
         }
 
         formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');
@@ -262,7 +322,6 @@
       formWrap?.classList.remove('shake'); void formWrap?.offsetWidth; formWrap?.classList.add('shake');
     } finally {
       signUpBtn?.classList.remove('loading');
-      // Cho phép bấm lại nếu lỗi; nếu thành công thì đã redirect.
       if (signUpBtn) signUpBtn.disabled = !checkFormValid();
     }
   });

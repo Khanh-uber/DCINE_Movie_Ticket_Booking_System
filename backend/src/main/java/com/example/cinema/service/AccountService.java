@@ -13,6 +13,7 @@ import com.example.cinema.dto.ForgotPasswordRequest;
 import com.example.cinema.dto.LoginRequest;
 import com.example.cinema.dto.RegisterRequest;
 import com.example.cinema.entity.*;
+
 @Transactional
 @Service
 public class AccountService {
@@ -37,74 +38,107 @@ public class AccountService {
     public Account register(RegisterRequest req) {
         String id = req.getUsername();
         String psw = req.getPassword();
-        // String type = req.getRegisterType().toUpperCase();
         String email = req.getEmail();
         String phone = req.getPhone();
         String cp = req.getConfirmPassword();
+        String fullName = req.getFullName();
 
-
-        // 1. Kiểm tra rỗng
+        // 1. KIỂM TRA VÀ CHUẨN HÓA TRƯỜNG HỌ VÀ TÊN 
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new RuntimeException("Họ và tên không được để trống");
+        }
         
+        // Tự động cắt bỏ khoảng trắng ở đầu và cuối chuỗi
+        fullName = fullName.trim();
+        
+        // Không cho phép có 2 hoặc nhiều khoảng trắng liên tiếp nhau giữa các từ
+        fullName = fullName.replaceAll("\\s+", " ");
+        
+        // Kiểm tra độ dài từ 2-50 ký tự
+        if (fullName.length() < 2 || fullName.length() > 50) {
+            throw new RuntimeException("Họ và tên phải có độ dài từ 2 đến 50 ký tự");
+        }
+        
+        // Kiểm tra ký tự hợp lệ: Chỉ chứa chữ cái Unicode tiếng Việt có dấu và khoảng trắng.
+        // Chặn hoàn toàn chữ số (0-9) và ký tự đặc biệt (@, #, $, %, *, <, >, /, \...)
+        if (!fullName.matches("^[\\p{L} ]+$")) {
+            throw new RuntimeException("Họ và tên chỉ được chứa chữ cái, không chứa số hay ký tự đặc biệt");
+        }
+        
+        // Tự động viết hoa chữ cái đầu của mỗi từ 
+        String[] words = fullName.split(" ");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                sb.append(Character.toUpperCase(word.charAt(0)))
+                  .append(word.substring(1).toLowerCase())
+                  .append(" ");
+            }
+        }
+        fullName = sb.toString().trim();
+
+
+        // 2. KIỂM TRA TÊN ĐĂNG NHẬP (USERNAME)
         if (id == null || id.trim().isEmpty())
-            throw new RuntimeException("Tên đăng nhập không được để trống");
-        if (psw == null || psw.trim().isEmpty())
-            throw new RuntimeException("Mật khẩu không được để trống");
+            throw new RuntimeException("username: Tên đăng nhập không được để trống");
+        
+        if (id.length() < 4 || id.length() > 20)
+            throw new RuntimeException("username: Tên đăng nhập phải có độ dài từ 4-20 ký tự");
 
-        // 2. Kiem tra do dai 
-        if (id.length() < 4 || id.length()>20)
-            throw new RuntimeException("Ten dang nhap phai co do dai tu 4-20 ki tu");
-        if (psw.length() < 6) throw new RuntimeException("Mat khau phai co it nhat 6 ki tu");
-
-        // 3. Kiem tra trung
         Account new_user = repo.findByUsername(id);
         if (new_user != null )
-            throw new RuntimeException("Tai khoan da ton tai");
+            throw new RuntimeException("username: Tài khoản đã tồn tại");
 
-        // 4. Kiem tra mat khau trung khop
-        if (psw == null || cp == null || !psw.trim().equals(cp.trim()))
-            throw new RuntimeException("Mật khẩu xác nhận không khớp");
 
-        // 5. Kiem tra tick dong y dieu khoan.
-        // if (!check)
-        //     throw new RuntimeException("Bạn phải đồng ý với Điều khoản & Chính sách trước khi đăng ký");
-        
-        // 6. Kiem tra loai dang ky
+        // 3. KIỂM TRA PHÂN LOẠI VÀ ĐỊNH DẠNG EMAIL / SỐ ĐIỆN THOẠI
         String type;
         if (email != null && !email.trim().isEmpty()) {
             type = "EMAIL";
+            // Kiểm tra định dạng Email hợp lệ
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                throw new RuntimeException("email: Định dạng Email không hợp lệ");
+            }
+            if (repo.findByEmail(email) != null)
+                throw new RuntimeException("email: Email này đã được sử dụng");
         } else if (phone != null && !phone.trim().isEmpty()) {
             type = "PHONE";
+            // Kiểm tra định dạng SĐT (Bắt đầu bằng số 0, gồm từ 10 đến 11 ký tự số)
+            if (!phone.matches("^0\\d{9,10}$")) {
+                throw new RuntimeException("phone: Số điện thoại không đúng định dạng hợp lệ");
+            }
+            if (repo.findByPhone(phone) != null)
+                throw new RuntimeException("phone: Số điện thoại này đã được sử dụng");
         } else {
             throw new RuntimeException("Cần nhập email hoặc số điện thoại để đăng ký");
         }
 
-        if (type.equals("EMAIL")){
-            if (repo.findByEmail(email) != null)
-                throw new RuntimeException("Email da duoc su dung");
-        } 
-        else{
-            if (repo.findByPhone(phone) != null)
-                throw new RuntimeException("So dien thoai duoc su dung");
+
+        // 4. KIỂM TRA MẬT KHẨU (PASSWORD)
+        if (psw == null || psw.trim().isEmpty())
+            throw new RuntimeException("Mật khẩu không được để trống");
+            
+        if (psw.length() < 8) 
+            throw new RuntimeException("Mật khẩu phải có ít nhất 8 ký tự trở lên");
+
+        if (cp == null || !psw.trim().equals(cp.trim()))
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+
+        // Biểu thức chính quy kiểm tra độ phức tạp mật khẩu (Chữ, ký tự từ 0-9, ký tự đặc biệt)
+        if (!psw.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
+            throw new RuntimeException("Mật khẩu phải từ 8 ký tự, gồm chữ cái, ký tự từ 0-9 và ký tự đặc biệt (@$!%*?&)");
         }
 
 
-        // 8. Kiem tra ki tu dac biet
-        if (!psw.matches("^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$")) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 8 ký tự, gồm chữ, số và ký tự đặc biệt");
-}
-        // Ma hoa mat khau
+        // 5. MÃ HÓA VÀ LƯU THÔNG TIN KHÁCH HÀNG & TÀI KHOẢN
         String hashedPassword = pE.encode(req.getPassword());
 
-
-        // Luu vao database 
+        // Lưu thông tin khách hàng vào database 
         Customer c = new Customer();
-        c.setFullName(req.getFullName());
-        c.setPhone(req.getPhone());
-        // c.setDob(req.getDob());
-        c.setPhone(type.equals("PHONE") ?  phone : null);
+        c.setFullName(fullName); 
+        c.setPhone(type.equals("PHONE") ? phone : null);
         customerRepo.save(c);
 
-
+        // Tạo thực thể tài khoản liên kết
         Account acc = new Account();
         acc.setUsername(id);
         acc.setEmail(type.equals("EMAIL") ? email : null);
@@ -116,7 +150,6 @@ public class AccountService {
 
         acc.setCustomer(c);
         repo.save(acc);
-
        
         return acc;
     }
@@ -126,14 +159,12 @@ public class AccountService {
         String id = lr.getEmailOrPhone();
         String psw = lr.getPassword();
 
-        
-
         if (id == null || id.trim().isEmpty())
             throw new RuntimeException("Ten dang nhap khong duoc de trong");
         if (psw == null || psw.trim().isEmpty())
             throw new RuntimeException("Mật khẩu không được để trống");
 
-        // 🔍 Xác định loại đăng nhập dựa theo định dạng
+        // 🔍 Xác định loại đăng nhập dựa theo định dạng cấu trúc đầu vào
         String type;
         if (id.contains("@")) {
             type = "EMAIL";
@@ -144,7 +175,6 @@ public class AccountService {
         }
         
         Account acc = null;
-        // Account acc = repo.findByUsername(lr.getIdentifier());
         switch (type) {
             case "EMAIL":
                 acc = repo.findByEmail(id);
@@ -181,7 +211,7 @@ public class AccountService {
         OtpRecord otp = otpRepo.findByRequestId(requestId);
         if (otp == null) {
             throw new RuntimeException("Mã khôi phục không hợp lệ hoặc đã hết hạn");
-}
+        }
 
         if (!Boolean.TRUE.equals(otp.isVerified()))
             throw new RuntimeException("OTP chưa được xác thực");
@@ -193,17 +223,13 @@ public class AccountService {
         if (acc == null) acc = repo.findByPhone(ident);
         if (acc == null) throw new RuntimeException("Không tìm thấy tài khoản");
         
-
-
         String newPw = fpr.getNewPassword();
         String cfn = fpr.getConfirmPassword();
-
 
         if (newPw == null || newPw.isBlank())
             throw new RuntimeException("Mật khẩu mới không được để trống");
         if (newPw.length() < 6)
             throw new RuntimeException("Mật khẩu mới phải có ít nhất 6 ký tự");
-        
         
         if (cfn == null || !cfn.equals(newPw))
             throw new RuntimeException("Mật khẩu xác thực không đúng với mật khẩu mới");
@@ -211,6 +237,7 @@ public class AccountService {
         otpRepo.deleteByRequestId(requestId);
         return repo.save(acc);
     }
+
     public void updateExactTotalSpending(Long accountId, Long exactTotal) {
         if (accountId == null) return;
         
@@ -220,12 +247,14 @@ public class AccountService {
             repo.save(acc);
         }
     }
+
     public Account findByChannelType(String input){
         Account acc = repo.findByPhone(input);
         if (acc == null)
             acc = repo.findByEmail(input);
         return acc;
     }
+
     public Account getAccountById(Long id) {
         return repo.findById(id).orElse(null);
     }
