@@ -12,10 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
 
 @Configuration
 @EnableWebSecurity
@@ -31,7 +28,8 @@ public class WebSecurityConfig {
                         "/api/auth/**",
                         "/hometest",
                         "/home",
-                        "/api/**"              // mở full API
+                        "/api/**" ,// mở full API
+                        "/api/chatbot/**"            
                 ).permitAll()
                 .anyRequest().permitAll()
             )

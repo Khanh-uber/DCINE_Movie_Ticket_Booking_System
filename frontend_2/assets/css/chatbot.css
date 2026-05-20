@@ -418,3 +418,122 @@
 .chat-carousel.dragging > * {
   scroll-snap-align: none !important;
 }
+
+/* ==========================================================================
+  GIAO DIỆN SƠ ĐỒ GHẾ ĐỒ ÁN DCINE - CHUẨN ĐÉT THEO ẢNH MẪU 1:1
+   ========================================================================== */
+
+/* Nền bong bóng chat chứa sơ đồ ghế (Ép tối màu theo rạp phim) */
+.msg.bot.seat-chat-block {
+    max-width: 90% !important;
+    background: #11141a !important; /* Nền đen sẫm */
+    border: 1px solid #222936 !important;
+    padding: 18px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+    color: #ffffff !important;
+}
+
+/* Giả lập Màn hình chiếu cong bóng bẩy */
+.seat-chat-screen {
+    width: 85%;
+    margin: 8px auto 20px auto;
+    height: 4px;
+    background: linear-gradient(to right, transparent, #ffffff, transparent);
+    box-shadow: 0 -4px 12px #ffffff;
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: #94a3b8;
+    font-weight: bold;
+    padding-bottom: 12px;
+}
+
+/* Lưới bọc ma trận ghế */
+.seat-chat-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* Giãn cách các hàng */
+    align-items: center;
+    background: #090b0e;
+    border-radius: 8px;
+    padding: 16px 8px;
+    overflow-x: auto;
+}
+
+/* Hàng ghế */
+.seat-chat-row {
+    display: flex;
+    gap: 5px; /* Giãn cách các ô ghế nằm cạnh nhau */
+    align-items: center;
+}
+
+/* Ô ghế tĩnh chế độ Xem (Thẻ DIV) - Thiết kế 3D Khối Nổi */
+.seat-view-only {
+    width: 26px;
+    height: 20px;
+    border-radius: 6px; /* Bo góc mềm mại như ảnh */
+    font-size: 8px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+    user-select: none;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0,0,0,0.3); /* Tạo viền gờ dưới chân ghế */
+}
+
+/* 🔵 Màu Ghế Standard (Hàng A, B, C) */
+.seat-view-only[data-zone="standard"] {
+    background: linear-gradient(to bottom, #bae6fd, #7dd3fc); /* Gradient xanh nhẹ bóng bẩy */
+    border: 1px solid #38bdf8;
+    color: #0369a1;
+}
+
+/* 🟡 Màu Ghế VIP (Hàng D, E, F, G, H) */
+.seat-view-only[data-zone="vip"] {
+    background: linear-gradient(to bottom, #fef08a, #fde047); /* Gradient vàng rực rỡ */
+    border: 1px solid #facc15;
+    color: #a16207;
+}
+
+/* 💗 Màu Ghế Đôi Couple (Hàng I, J) */
+.seat-view-only[data-zone="couple"] {
+    width: 58px; /* Kéo dãn chiều ngang bao trọn */
+    background: linear-gradient(to bottom, #fbcfe8, #f472b6); /* Gradient hồng cánh sen */
+    border: 1px solid #ec4899;
+    color: #9d174d;
+}
+
+/* ⚫ Màu Ghế Đã Đặt (Booked) - Cháy vé tối màu */
+.seat-view-only[data-state="booked"] {
+    background: #272d37 !important; /* Xám đen huyền bí */
+    border: 1px solid #3f4756 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+}
+
+/* Lối đi hành lang trống (AISLE) */
+.seat-chat-aisle {
+    width: 22px; /* Tạo khoảng trống rạch ròi bẻ đôi hàng ghế */
+}
+
+/* Dòng chú thích nhỏ dưới đáy */
+.seat-chat-legend-hint {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 10px;
+    border-top: 1px solid #1e293b;
+    padding-top: 8px;
+}
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
