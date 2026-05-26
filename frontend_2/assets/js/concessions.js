@@ -13,6 +13,10 @@
     (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + '₫';
 
   const CAT_ORDER = ['combo', 'popcorn', 'beverage', 'hot-food', 'coffee', 'dessert'];
+  const CART_STORAGE_KEY = 'booking_cart';
+  const CONCESSIONS_STORAGE_KEY = 'concessions_cart';
+  const CART_SESSION_KEY = 'concessions_cart';
+  const STORAGE = window.DCineStorage;
 
 const CAT_CONFIG = {
   combo:    { label: 'Combo',    icon: 'ic-ticket-star' },
@@ -99,14 +103,12 @@ const CAT_CONFIG = {
 
   function readBookingCartFallback() {
     try {
-      const raw = localStorage.getItem('booking_cart');
-      if (!raw) return;
-
-      const data = JSON.parse(raw);
+      const data = STORAGE.readJson('booking_cart');
       if (!data || typeof data !== 'object') return;
 
       const meta = data.meta || {};
       const ticketObj = data.ticket || {};
+      const bookingId = data.bookingId || meta.bookingId || ticketObj.bookingId || null;
 
       const finalTheaterName = 
           data.theaterName || meta.theaterName || meta.theater || 
@@ -131,6 +133,7 @@ const CAT_CONFIG = {
       if (!finalAmount && rawItems.length) finalAmount = rawItems.reduce((s, i) => s + (Number(i.price)||0), 0);
 
       state.ticket = {
+        bookingId,
         movieTitle: finalMovieTitle,
         theaterName: finalTheaterName,
         showDate: finalDate,
@@ -142,7 +145,7 @@ const CAT_CONFIG = {
         items: rawItems,
         seats: rawItems.map(i => i.code || i.seatCode).filter(Boolean),
         totalAmount: finalAmount,
-        meta: { ...meta, theaterName: finalTheaterName, endTime: finalEndTime, time: finalTime }
+        meta: { ...meta, bookingId, theaterName: finalTheaterName, endTime: finalEndTime, time: finalTime }
       };
 
     } catch (e) {
@@ -150,26 +153,96 @@ const CAT_CONFIG = {
     }
   }
 
+  function readStoredCartSnapshot() {
+    return STORAGE.readJson(CART_SESSION_KEY) || STORAGE.readJson(CART_STORAGE_KEY);
+  }
+
+  function persistCartSnapshot(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    const currentBooking = STORAGE.readJson('booking_cart') || {};
+    const bookingId = payload.bookingId || payload.ticket?.bookingId || payload.ticket?.meta?.bookingId || currentBooking.bookingId || currentBooking.meta?.bookingId || currentBooking.ticket?.bookingId || null;
+    const showtimeId = payload.showtimeId || currentBooking.showtimeId || currentBooking.meta?.showtimeId || '';
+
+    const mergedTicket = {
+      ...(currentBooking.ticket || {}),
+      ...(payload.ticket || {}),
+      bookingId,
+      meta: {
+        ...((currentBooking.ticket && currentBooking.ticket.meta) || {}),
+        ...((payload.ticket && payload.ticket.meta) || {}),
+        bookingId,
+        showtimeId
+      }
+    };
+
+    const mergedBooking = {
+      ...currentBooking,
+      bookingId,
+      showtimeId,
+      ticket: mergedTicket,
+      totals: {
+        ...(currentBooking.totals || {}),
+        ...(payload.totals || {})
+      }
+    };
+
+    if (!Array.isArray(mergedBooking.items) || mergedBooking.items.length === 0) {
+      const ticketItems = Array.isArray(mergedTicket.items) ? mergedTicket.items : [];
+      if (ticketItems.length) mergedBooking.items = ticketItems;
+    }
+
+    if ((!Array.isArray(mergedBooking.selectedSeats) || mergedBooking.selectedSeats.length === 0) && Array.isArray(mergedBooking.items)) {
+      mergedBooking.selectedSeats = mergedBooking.items
+        .map((it) => (typeof it === 'string' ? it : (it && (it.code || it.seatCode || it.label || it.id))))
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(payload.combos)) {
+      mergedBooking.combos = payload.combos;
+    }
+
+    if (payload.grandTotal != null) {
+      mergedBooking.grandTotal = payload.grandTotal;
+    }
+
+    STORAGE.writeJson(CART_STORAGE_KEY, mergedBooking);
+    STORAGE.writeJson(CONCESSIONS_STORAGE_KEY, {
+      bookingId,
+      showtimeId,
+      ticket: mergedTicket,
+      combos: Array.isArray(payload.combos) ? payload.combos : (Array.isArray(mergedBooking.combos) ? mergedBooking.combos : []),
+      totals: {
+        ...(mergedBooking.totals || {}),
+        ...(payload.totals || {})
+      },
+      grandTotal: payload.grandTotal != null
+        ? payload.grandTotal
+        : (mergedBooking.totals && mergedBooking.totals.grandTotal)
+    });
+  }
+
+  function clearCartSnapshot() {
+    STORAGE.removeJson(CART_STORAGE_KEY);
+  }
+
   function restoreCartFromPreviousSession() {
     if (state.backend.enabled && state.cart.length > 0) return;
-    const currentBookingRaw = localStorage.getItem('booking_cart');
-    let currentShowtimeId = null;
-    if (currentBookingRaw) {
-        try {
-            const currentBooking = JSON.parse(currentBookingRaw);
-            currentShowtimeId = String(currentBooking.showtimeId || (currentBooking.meta && currentBooking.meta.showtimeId) || '');
-        } catch(e) {}
-    }
+
+    const currentBooking = STORAGE.readJson('booking_cart');
+    const currentShowtimeId = String(currentBooking?.showtimeId || (currentBooking?.meta && currentBooking.meta.showtimeId) || '');
     if (!currentShowtimeId || currentShowtimeId === '') return; 
 
     try {
-      const raw = localStorage.getItem('concessions_cart');
+      const snapshot = readStoredCartSnapshot();
+      if (!snapshot) return;
+
+      const raw = JSON.stringify(snapshot);
       if (!raw) return;
-      const data = JSON.parse(raw);
+      const data = snapshot;
       const savedShowtimeId = String(data.showtimeId || '');
       if (savedShowtimeId !== currentShowtimeId) {
         console.warn(`[concessions] Stale cart detected. Clearing old combo cart.`);
-        localStorage.removeItem('concessions_cart');
+        clearCartSnapshot();
         return; 
       }
       if (Array.isArray(data.combos) && data.combos.length > 0) {
@@ -187,10 +260,17 @@ const CAT_CONFIG = {
     if (!data || typeof data !== 'object') return;
 
     if (data.ticket && typeof data.ticket === 'object') {
-      state.ticket = data.ticket;
+      state.ticket = {
+        ...data.ticket,
+        bookingId: data.bookingId || data.ticket.bookingId || data.ticket.meta?.bookingId || state.ticket?.bookingId || null,
+        meta: {
+          ...(data.ticket.meta || {}),
+          bookingId: data.bookingId || data.ticket.bookingId || data.ticket.meta?.bookingId || state.ticket?.bookingId || null
+        }
+      };
     }
 
-    if (Array.isArray(data.combos)) {
+    if (Array.isArray(data.combos) && state.cart.length === 0) {
       state.cart = data.combos
         .map(raw => {
           const variant = raw.variant || raw.size || '';
@@ -252,6 +332,13 @@ const CAT_CONFIG = {
           renderTicketSummary();
           renderCart();
           updateTotals();
+          persistCartSnapshot({
+            ticket: state.ticket || {},
+            combos: state.cart,
+            totals: state.totals,
+            bookingId: state.ticket?.bookingId || state.ticket?.meta?.bookingId || null,
+            showtimeId: (state.ticket && state.ticket.meta && state.ticket.meta.showtimeId) || (state.ticket && state.ticket.showtimeId) || ''
+          });
           return;
         }
         console.warn('[concessions] summary not ok:', res.status);
@@ -269,6 +356,13 @@ const CAT_CONFIG = {
     renderTicketSummary();
     renderCart();
     updateTotals();
+    persistCartSnapshot({
+      ticket: state.ticket || {},
+      combos: state.cart,
+      totals: state.totals,
+      bookingId: state.ticket?.bookingId || state.ticket?.meta?.bookingId || null,
+      showtimeId: (state.ticket && state.ticket.meta && state.ticket.meta.showtimeId) || (state.ticket && state.ticket.showtimeId) || ''
+    });
   }
 
   /**
@@ -307,6 +401,13 @@ const CAT_CONFIG = {
       renderTicketSummary();
       renderCart();
       updateTotals();
+      persistCartSnapshot({
+        ticket: state.ticket || {},
+        combos: state.cart,
+        totals: state.totals,
+        bookingId: state.ticket?.bookingId || state.ticket?.meta?.bookingId || null,
+        showtimeId: (state.ticket && state.ticket.meta && state.ticket.meta.showtimeId) || (state.ticket && state.ticket.showtimeId) || ''
+      });
     } catch (err) {
       console.warn('[concessions] syncCartWithBackend failed, fallback FE only', err);
       state.backend.enabled = false;
@@ -368,7 +469,7 @@ const CAT_CONFIG = {
 
 function safeParseBooking() {
   try {
-    return JSON.parse(localStorage.getItem('booking_cart') || '{}');
+    return STORAGE.readJson('booking_cart') || {};
   } catch {
     return {};
   }
@@ -630,6 +731,13 @@ function buildBreadcrumb() {
     } else {
       renderCart();
       updateTotals();
+      persistCartSnapshot({
+        ticket: state.ticket || {},
+        combos: state.cart,
+        totals: state.totals,
+        bookingId: state.ticket?.bookingId || state.ticket?.meta?.bookingId || null,
+        showtimeId: (state.ticket && state.ticket.meta && state.ticket.meta.showtimeId) || (state.ticket && state.ticket.showtimeId) || ''
+      });
     }
   }
 
@@ -716,6 +824,12 @@ function buildBreadcrumb() {
     } else {
       renderCart();
       updateTotals();
+      persistCartSnapshot({
+        ticket: state.ticket || {},
+        combos: state.cart,
+        totals: state.totals,
+        showtimeId: (state.ticket && state.ticket.meta && state.ticket.meta.showtimeId) || (state.ticket && state.ticket.showtimeId) || ''
+      });
     }
   }
 
@@ -730,25 +844,40 @@ function buildBreadcrumb() {
     return 0;
   }
 
-  function updateTotals() {
-    const grandEl = $('#grandTotal');
-    if (!grandEl) return;
-
-    // Nếu có totals từ BE -> ưu tiên hiển thị
-    if (state.backend.enabled && state.totals && typeof state.totals.grandTotal === 'number') {
-      grandEl.textContent = toVND(state.totals.grandTotal);
-      return;
-    }
-
-    const ticketBase = getTicketBaseAmount();
-    const combosTotal = state.cart.reduce((sum, it) => {
+  function computeTotals() {
+    const ticketAmount = getTicketBaseAmount();
+    const combosAmount = state.cart.reduce((sum, it) => {
       const line = typeof it.lineTotal === 'number'
         ? it.lineTotal
         : (Number(it.unitPrice || 0) * Number(it.qty || 0));
       return sum + line;
     }, 0);
 
-    grandEl.textContent = toVND(ticketBase + combosTotal);
+    const grandTotal = state.backend.enabled && state.totals && typeof state.totals.grandTotal === 'number'
+      ? Number(state.totals.grandTotal)
+      : ticketAmount + combosAmount;
+
+    return {
+      ticketAmount,
+      combosAmount,
+      grandTotal
+    };
+  }
+
+  function updateTotals() {
+    const grandEl = $('#grandTotal');
+    if (!grandEl) return;
+
+    const totals = computeTotals();
+    if (!state.backend.enabled || !state.totals || typeof state.totals.grandTotal !== 'number') {
+      state.totals = {
+        ticketAmount: totals.ticketAmount,
+        combosAmount: totals.combosAmount,
+        grandTotal: totals.grandTotal
+      };
+    }
+
+    grandEl.textContent = toVND(totals.grandTotal);
   }
 
   // ===== Init =====
@@ -759,6 +888,16 @@ function buildBreadcrumb() {
     if (btnBackSeat) {
       btnBackSeat.addEventListener('click', (e) => {
         e.preventDefault();
+        const canUseHistoryBack =
+          document.referrer &&
+          /\/seat-map\.html(?:\?|$)/i.test(document.referrer) &&
+          window.history.length > 1;
+
+        if (canUseHistoryBack) {
+          window.history.back();
+          return;
+        }
+
         const cart = safeParseBooking();
         const stId = cart.showtimeId;
         const href = stId
@@ -768,11 +907,16 @@ function buildBreadcrumb() {
       });
     }
 
-    // 1) Load ticket + cart từ BE (summary) trước, lỗi thì fallback localStorage
-    await loadTicketAndCart();
+    // 1) Khôi phục cart local trước để không bị BE summary ghi đè state mới nhất
     restoreCartFromPreviousSession();
+    if (!state.ticket) {
+      readBookingCartFallback();
+    }
 
-    // 2) Load danh sách combos (menu) từ BE / JSON
+    // 2) Load ticket + cart từ BE (summary) sau, nhưng không ghi đè cart local đã có
+    await loadTicketAndCart();
+
+    // 3) Load danh sách combos (menu) từ BE / JSON
     const rawCombos = await getJSON('/concessions', '../data/combos.json');
     state.combos = normalizeCombos(rawCombos);
 
@@ -800,13 +944,7 @@ const btnCheckout = $('#btnCheckout');
     if (btnCheckout) {
       btnCheckout.addEventListener('click', () => {
         // 1. Tính toán tổng tiền
-        const ticketBase = getTicketBaseAmount();
-        const combosTotal = state.cart.reduce((s, it) => {
-          const line = typeof it.lineTotal === 'number'
-            ? it.lineTotal
-            : (Number(it.unitPrice || 0) * Number(it.qty || 0));
-          return s + line;
-        }, 0);
+        const totals = computeTotals();
 
         // 2. --- CHIẾN THUẬT VÉT CẠN DỮ LIỆU ---
         let finalTheaterName = '';
@@ -825,27 +963,35 @@ const btnCheckout = $('#btnCheckout');
         }
 
         try {
-            const rawBooking = localStorage.getItem('booking_cart');
-            if (rawBooking) {
-                const b = JSON.parse(rawBooking);
-                if (!finalTheaterName) {
-                    finalTheaterName = b.theaterName || b.cinemaName || b.tenRap || (b.cinema && b.cinema.name) || (b.meta && b.meta.theaterName);
-                }
-                if (!finalDate) finalDate = b.showDate || b.date || (b.meta && b.meta.date);
-                if (!finalTime) finalTime = b.showTime || b.time || (b.meta && b.meta.time);
-                
-                if (!finalEndTime) finalEndTime = b.endTime || (b.meta && b.meta.endTime);
+          const booking = safeParseBooking();
+          if (booking && Object.keys(booking).length > 0) {
+            if (!finalTheaterName) {
+              finalTheaterName = booking.theaterName || booking.cinemaName || booking.tenRap || (booking.cinema && booking.cinema.name) || (booking.meta && booking.meta.theaterName);
             }
+            if (!finalDate) finalDate = booking.showDate || booking.date || (booking.meta && booking.meta.date);
+            if (!finalTime) finalTime = booking.showTime || booking.time || (booking.meta && booking.meta.time);
+                
+            if (!finalEndTime) finalEndTime = booking.endTime || (booking.meta && booking.meta.endTime);
+          }
         } catch (e) { console.warn("Lỗi đọc booking_cart fallback", e); }
 
         let finalShowtimeId = '';
         try {
-            const rawBooking = localStorage.getItem('booking_cart');
-            if (rawBooking) {
-                const b = JSON.parse(rawBooking);
-                finalShowtimeId = b.showtimeId || (b.meta && b.meta.showtimeId) || '';
-            }
+          const booking = safeParseBooking();
+          finalShowtimeId = booking.showtimeId || (booking.meta && booking.meta.showtimeId) || '';
         } catch (e) { console.warn("Lỗi đọc showtimeId từ booking_cart", e); }
+
+        let persistedBookingId = null;
+        try {
+          const booking = safeParseBooking();
+          const rawBookingId = booking.bookingId || (booking.meta && booking.meta.bookingId) || (booking.ticket && booking.ticket.bookingId) || null;
+          const bookingIdText = String(rawBookingId ?? '').trim();
+          const numericBookingId = Number.parseInt(bookingIdText, 10);
+          persistedBookingId = Number.isFinite(numericBookingId) && numericBookingId > 0
+            ? numericBookingId
+            : (bookingIdText || null);
+        } catch (e) { console.warn('Lỗi đọc bookingId từ booking_cart', e); }
+
         const payload = {
           ticket: state.ticket || {}, 
           theaterName: finalTheaterName, 
@@ -854,22 +1000,33 @@ const btnCheckout = $('#btnCheckout');
           endTime: finalEndTime, 
           
           showtimeId: finalShowtimeId,
+          bookingId: persistedBookingId || state.ticket?.bookingId || state.ticket?.meta?.bookingId || null,
           
           combos: state.cart,
-          grandTotal: ticketBase + combosTotal
+          grandTotal: totals.grandTotal
         };
         if (payload.ticket) {
             if (!payload.ticket.theaterName) payload.ticket.theaterName = finalTheaterName;
             if (!payload.ticket.showDate) payload.ticket.showDate = finalDate;
             if (!payload.ticket.showTime) payload.ticket.showTime = finalTime;
             if (!payload.ticket.endTime) payload.ticket.endTime = finalEndTime; // [MỚI 5]
+            if (payload.bookingId) {
+              payload.ticket.bookingId = payload.bookingId;
+              payload.ticket.meta = {
+                ...(payload.ticket.meta || {}),
+                bookingId: payload.bookingId
+              };
+            }
         }
 
-        try {
-          localStorage.setItem('concessions_cart', JSON.stringify(payload)); 
-        } catch (e) {
-          console.warn('[concessions] cannot save concessions_cart', e);
+        if (payload.bookingId) {
+          payload.meta = {
+            ...(payload.meta || {}),
+            bookingId: payload.bookingId
+          };
         }
+
+        persistCartSnapshot(payload);
         location.href = 'payment.html';
       });
     }

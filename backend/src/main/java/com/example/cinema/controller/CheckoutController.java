@@ -56,7 +56,7 @@ public class CheckoutController {
     @GetMapping("/last-confirmed")
     public ResponseEntity<?> getLastConfirmedBooking(HttpSession session) {
         try {
-            Long accountId = (Long) session.getAttribute("accountId");
+            Long accountId = resolveAccountId(session);
             
             if (accountId == null) {
                 return ResponseEntity.status(401).body("Vui lòng đăng nhập để xem vé.");
@@ -80,5 +80,22 @@ public class CheckoutController {
         Map<String, Object> calculatedOrder = checkoutService.calculateOrderSummary(order, code);
 
         return ResponseEntity.ok(calculatedOrder);
+    }
+
+    private Long resolveAccountId(HttpSession session) {
+        Object value = session.getAttribute("accountId");
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Long.valueOf(text.trim());
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return null;
     }
 }

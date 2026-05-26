@@ -24,7 +24,7 @@ public class ProfileController {
     }
     @GetMapping
     public ResponseEntity<?> getProfile(HttpSession session) {
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
         }
@@ -32,7 +32,7 @@ public class ProfileController {
     }
     @PutMapping
     public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateRequest request, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
         }
@@ -41,7 +41,7 @@ public class ProfileController {
 
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
         }
@@ -55,11 +55,28 @@ public class ProfileController {
     }
     @GetMapping("/bookings")
     public Map<String, Object> getBookings(HttpSession session) {
-        Long accId = (Long) session.getAttribute("accountId");
+        Long accId = resolveAccountId(session);
         if (accId == null) throw new RuntimeException("Unauthorized");
 
         List<Map<String, Object>> bookings = profileService.getBookingHistory(accId);
 
         return Map.of("bookings", bookings);
+    }
+
+    private Long resolveAccountId(HttpSession session) {
+        Object value = session.getAttribute("accountId");
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Long.valueOf(text.trim());
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return null;
     }
 }

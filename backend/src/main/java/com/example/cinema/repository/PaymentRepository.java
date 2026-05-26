@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByTransactionId(String transactionId);
+    Optional<Payment> findByBookingId(Long bookingId);
 
     // FIX 1 & 2: Ghép tên ghế và dùng đúng cột giá (price_at_booking)
     @Query(value = """

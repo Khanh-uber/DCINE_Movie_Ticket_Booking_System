@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả thanh toán - D-Cine</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 40px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.5); max-width: 450px; width: 100%; }
+        h2 { margin-top: 0; font-size: 26px; }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+        p { color: #b0b0b0; font-size: 16px; line-height: 1.6; }
+        .btn { display: inline-block; margin-top: 25px; padding: 12px 30px; background-color: #ff9800; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.2s; }
+        .btn:hover { background-color: #e65100; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 id="statusTitle">Đang xử lý kết quả...</h2>
+        <p id="statusDesc">Vui lòng không đóng trình duyệt lúc này.</p>
+        <a href="index.html" class="btn">Quay về trang chủ</a>
+    </div>
+
+    <script src="../assets/js/storage-helper.js"></script>
+    <script src="../assets/js/payment-result.js"></script>
+</body>
+</html>

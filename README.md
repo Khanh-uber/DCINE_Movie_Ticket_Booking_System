@@ -19,6 +19,7 @@
 * **Real-time Payment:** Tích hợp **Socket.IO** để cập nhật trạng thái thanh toán ngay lập tức từ thiết bị di động lên trình duyệt web.
 * **Dynamic Pricing:** Tính giá vé động theo loại ghế, thời gian, combo và voucher khuyến mãi.
 
+
 ---
 
 ## 📂 Tài liệu & Báo cáo (Attachments)
@@ -99,3 +100,20 @@ Di chuyển vào thư mục backend và chạy lệnh:
 ```bash
 cd backend
 mvn spring-boot:run
+```
+
+### Ghi chú dev tạm thời
+Trong lúc kiểm thử nội bộ, dự án có thể dùng một controller dev-only để giả lập `accountId` trong session. File này không được giữ trong repo chính thức.
+
+Nếu cần khôi phục lại để test cục bộ, hãy restore từ Git history của máy bạn:
+```bash
+git restore --source=HEAD -- backend/src/main/java/com/example/cinema/controller/DevAuthController.java
+```
+
+cd "c:\LAM\UI_UX\BE\DCINE_Movie_Ticket_Booking_System\backend"
+.\mvnw.cmd spring-boot:run
+
+cd "c:\LAM\UI_UX\BE\DCINE_Movie_Ticket_Booking_System\frontend_2"
+npm install -g http-server  
+http-server -p 3000 -c-1 --cors
+# mở http://localhost:3000/html/index.html

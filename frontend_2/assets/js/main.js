@@ -1660,12 +1660,15 @@ const items = data
     const API = window.API_BASE || '/api';
     let data = [];
     try{
-      const res = await fetch(`${API}/concessions/combos`, {
-  cache: 'no-store',
-  credentials: 'include'
-});
+      const res = await fetch(`${API}/concessions`, {
+        cache: 'no-store',
+        credentials: 'include'
+      });
 
-      if (res.ok) data = await res.json();
+      if (res.ok) {
+        const raw = await res.json();
+        data = Array.isArray(raw) ? raw : (Array.isArray(raw?.items) ? raw.items : []);
+      }
     }catch{}
 
     if (!Array.isArray(data) || data.length===0){
