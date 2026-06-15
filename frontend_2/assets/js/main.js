@@ -154,9 +154,13 @@ async function ensureMovieTpl() {
 
     let validEl = null;
     if (p.validUntil) {
+      let validText = String(p.validUntil);
+      if (validText.includes('T')) {
+        validText = validText.replace('T', ' ');
+      }
       validEl = document.createElement('div');
       validEl.className = 'promo-valid';
-      validEl.textContent = `HSD: ${p.validUntil}`;
+      validEl.textContent = `HSD: ${validText}`;
     }
 
     const codeBox = document.createElement('div');

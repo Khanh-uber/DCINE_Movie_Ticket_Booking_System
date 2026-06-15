@@ -47,7 +47,7 @@ public class ProfileController {
         }
         
         try {
-           //profileService.changePassword(accountId, request);
+            profileService.changePassword(request, accountId);
             return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

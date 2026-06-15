@@ -146,7 +146,9 @@ public class AccountService {
         acc.setPassword(hashedPassword);
         acc.setRole(Account.Role.CUSTOMER);
         acc.setActive(Account.Status.ACTIVE);
-        acc.setTotalSpending(BigDecimal.ZERO); 
+        acc.setTotalSpending(BigDecimal.ZERO);
+        acc.setAvatarUrl("/assets/images/users/avatar_default.webp");
+        acc.setCreatedAt(LocalDateTime.now());
 
         acc.setCustomer(c);
         repo.save(acc);
