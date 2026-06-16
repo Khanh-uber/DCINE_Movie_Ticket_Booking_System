@@ -48,6 +48,10 @@
   // Lưu lần preview giá gần nhất từ BE
   let lastPricingPreview = null;
 
+  // Persist selected seats per showtime so a refresh restores the same UI state.
+  const SEAT_SELECTION_STORAGE_PREFIX = 'seatmap:selected:';
+  const STORAGE = window.DCineStorage;
+
   // ===== API BASE + helpers =====
   const API = window.API_BASE || '/api';
 
@@ -121,6 +125,203 @@ async function createBooking(showtimeId, seatsPayload) {
     show:{ id:null, theater:'D-Cine', date:'', time:'', end: '', format:'' },
     movie:{ id:null, title:'—', posterUrl:'', trailerUrl:'', year:'', genres:[], duration:'' }
   };
+
+  function seatSelectionStorageKey() {
+    const id = state.show.id || showtimeId();
+    return `${SEAT_SELECTION_STORAGE_PREFIX}${id}`;
+  }
+
+  function persistSelectedSeats() {
+    if (!state.show.id) return;
+
+    const payload = {
+      selected: [...state.selected],
+      assigned: [...state.assigned.entries()]
+    };
+
+    STORAGE.writeJson(seatSelectionStorageKey(), payload, [sessionStorage]);
+  }
+
+  function clearPersistedSelectedSeats() {
+    if (!state.show.id) return;
+    STORAGE.removeJson(seatSelectionStorageKey(), [sessionStorage]);
+  }
+
+  function safeParseBooking() {
+    try {
+      return STORAGE.readJson('booking_cart') || {};
+    } catch (err) {
+      console.warn('[seatmap] Failed to read booking_cart snapshot', err);
+      return {};
+    }
+  }
+
+  function resolveBookingShowtimeId() {
+    const fromState = Number(state.show.id);
+    if (Number.isFinite(fromState) && fromState > 0) {
+      return fromState;
+    }
+
+    const q = new URLSearchParams(location.search);
+    for (const rawValue of [q.get('showtimeId'), q.get('st'), q.get('showtime')]) {
+      const parsed = Number(rawValue);
+      if (Number.isFinite(parsed) && parsed > 0) {
+        return parsed;
+      }
+    }
+
+    const cart = safeParseBooking();
+    const fromCart = Number(cart.showtimeId || cart.meta?.showtimeId || cart.ticket?.showtimeId);
+    if (Number.isFinite(fromCart) && fromCart > 0) {
+      return fromCart;
+    }
+
+    return null;
+  }
+
+  function setSeatSelectionVisual(seatEl, isSelected) {
+    if (!seatEl) return;
+    seatEl.classList.toggle('selected', !!isSelected);
+    seatEl.classList.toggle('active', !!isSelected);
+  }
+
+  function getBookingCartSelectionSnapshot() {
+    try {
+      const bookingCart = window.DCineStorage?.readJson('booking_cart');
+      if (!bookingCart || typeof bookingCart !== 'object') return null;
+
+      const currentShowtimeId = String(state.show.id || showtimeId() || '');
+      const snapshotShowtimeId = String(
+        bookingCart.showtimeId || bookingCart.meta?.showtimeId || bookingCart.ticket?.showtimeId || ''
+      );
+      if (!snapshotShowtimeId || snapshotShowtimeId !== currentShowtimeId) return null;
+
+      const sourceItems = Array.isArray(bookingCart.items)
+        ? bookingCart.items
+        : Array.isArray(bookingCart.ticket?.items)
+          ? bookingCart.ticket.items
+          : Array.isArray(bookingCart.ticket?.seats)
+            ? bookingCart.ticket.seats
+          : Array.isArray(bookingCart.seats)
+            ? bookingCart.seats
+            : [];
+
+      const selected = [];
+      const assigned = [];
+
+      sourceItems.forEach((item) => {
+        if (!item) return;
+        if (typeof item === 'string') {
+          selected.push(item);
+          assigned.push([item, 'adult']);
+          return;
+        }
+
+        const code = item.code || item.seatCode || item.label || item.id;
+        if (!code) return;
+        selected.push(code);
+        assigned.push([code, item.type === 'child' ? 'child' : 'adult']);
+      });
+
+      if (!selected.length) return null;
+      return { selected, assigned };
+    } catch (err) {
+      console.warn('[seatmap] Failed to read booking_cart snapshot', err);
+      return null;
+    }
+  }
+
+  function restoreSelectedSeatsFromBookingCart() {
+    const snapshot = getBookingCartSelectionSnapshot();
+    if (!snapshot) return false;
+
+    state.selected.clear();
+    state.assigned.clear();
+
+    const validSelected = new Set();
+    const validAssigned = new Map();
+
+    snapshot.selected.forEach((code) => {
+      const seat = state.seats[code];
+      const el = document.getElementById(`s-${code}`);
+      if (!seat || !el) return;
+      if (seat.state === 'booked') return;
+
+      seat.state = 'selected';
+      el.dataset.state = 'selected';
+      el.setAttribute('aria-selected', 'true');
+      setSeatSelectionVisual(el, true);
+      validSelected.add(code);
+    });
+
+    snapshot.assigned.forEach(([code, type]) => {
+      if (!validSelected.has(code)) return;
+      validAssigned.set(code, type === 'child' ? 'child' : 'adult');
+    });
+
+    validSelected.forEach((code) => {
+      if (!validAssigned.has(code)) validAssigned.set(code, 'adult');
+    });
+
+    state.selected = validSelected;
+    state.assigned = validAssigned;
+    persistSelectedSeats();
+    return true;
+  }
+
+  function restoreSelectedSeatsFromSession() {
+    state.selected.clear();
+    state.assigned.clear();
+
+    if (!state.show.id) return;
+
+    try {
+      const parsed = STORAGE.readJson(seatSelectionStorageKey(), [sessionStorage]);
+      if (!parsed) return;
+      const selected = Array.isArray(parsed?.selected) ? parsed.selected : [];
+      const assigned = Array.isArray(parsed?.assigned) ? parsed.assigned : [];
+
+      selected.forEach((code) => {
+        if (!code || !state.seats[code]) return;
+        const seatState = state.seats[code].state;
+        if (seatState === 'booked') return;
+        state.selected.add(code);
+      });
+
+      assigned.forEach(([code, type]) => {
+        if (!code || !state.selected.has(code)) return;
+        state.assigned.set(code, type === 'child' ? 'child' : 'adult');
+      });
+    } catch (err) {
+      console.warn('[seatmap] Failed to restore selected seats from sessionStorage', err);
+      clearPersistedSelectedSeats();
+    }
+  }
+
+  function applyPersistedSelectionToGrid() {
+    if (!state.selected.size) return;
+
+    const validSelected = new Set();
+    const validAssigned = new Map();
+
+    state.selected.forEach((code) => {
+      const seat = state.seats[code];
+      const el = document.getElementById(`s-${code}`);
+      if (!seat || !el) return;
+      if (seat.state === 'booked') return;
+
+      validSelected.add(code);
+      validAssigned.set(code, state.assigned.get(code) === 'child' ? 'child' : 'adult');
+      el.dataset.state = 'selected';
+      el.setAttribute('aria-selected', 'true');
+      setSeatSelectionVisual(el, true);
+    });
+
+    state.selected = validSelected;
+    state.assigned = validAssigned;
+
+    persistSelectedSeats();
+  }
 
   // ===== Helpers =====
 
@@ -400,6 +601,25 @@ async function loadSeatStatesFromApi() {
   });
 }
 
+  async function refreshSeatMapState() {
+    if (!state.show.id) return;
+
+    const preservedSelected = new Set(state.selected);
+    const preservedAssigned = new Map(state.assigned);
+
+    await loadSeatStatesFromApi();
+    renderGrid();
+
+    state.selected = preservedSelected;
+    state.assigned = preservedAssigned;
+    if (!restoreSelectedSeatsFromBookingCart()) {
+      restoreSelectedSeatsFromSession();
+    }
+    applyPersistedSelectionToGrid();
+    renderPriceMatrix();
+    syncSummary();
+  }
+
   const pop = { el:null, seatEl:null, code:'', zone:'' };
 
   function openSeatPopover(seatEl, code){
@@ -436,9 +656,11 @@ async function loadSeatStatesFromApi() {
     state.selected.add(pop.code);
     pop.seatEl.dataset.state = 'selected';
     pop.seatEl.setAttribute('aria-selected','true');
+    setSeatSelectionVisual(pop.seatEl, true);
     sendSeatHold([pop.code], 'hold');
 
     closeSeatPopover();
+    persistSelectedSeats();
     syncSummary();
   }
 
@@ -594,6 +816,7 @@ async function loadSeatStatesFromApi() {
       $('#hint').textContent = 'Hãy chọn ghế để tiếp tục.';
       gateCTA();
       lastPricingPreview = null;
+      clearPersistedSelectedSeats();
       return;
     }
 
@@ -606,53 +829,104 @@ async function loadSeatStatesFromApi() {
 async function onContinue(goTo = 'concessions.html') {
   if (!state.selected.size) return;
 
-  const id = state.show.id || showtimeId();
-  const seatsPayload = [...state.selected].map(code => ({
-    code,
-    type: state.assigned.get(code) || 'adult'
-  }));
+  try {
+    const id = resolveBookingShowtimeId();
+    if (!id) {
+      alert('Không xác định được suất chiếu. Vui lòng tải lại trang Seatmap.');
+      return;
+    }
 
-  const booking = await createBooking(id, seatsPayload);
+    const seatsPayload = [...state.selected].map(code => ({
+      code,
+      type: state.assigned.get(code) || 'adult'
+    }));
 
-  if (!booking) {
-    alert('Không tạo được booking, vui lòng thử lại.');
-    return;
-  }
+    const existingBooking = safeParseBooking();
+    const mergedSeatMap = new Map();
 
-  let items = Array.isArray(booking.items) ? booking.items : [];
-  if (items.length === 0) {
-      items = seatsPayload.map(s => ({
+    const existingItems = Array.isArray(existingBooking.items) ? existingBooking.items : [];
+    existingItems.forEach((item) => {
+      if (!item) return;
+      const code = typeof item === 'string'
+        ? item
+        : (item.code || item.seatCode || item.label || item.id);
+      if (!code) return;
+      mergedSeatMap.set(code, {
+        code,
+        type: item.type === 'child' ? 'child' : 'adult'
+      });
+    });
+
+    seatsPayload.forEach((seat) => {
+      mergedSeatMap.set(seat.code, {
+        code: seat.code,
+        type: seat.type || 'adult'
+      });
+    });
+
+    const mergedSeatsPayload = [...mergedSeatMap.values()];
+
+    let booking = await createBooking(id, mergedSeatsPayload);
+
+    if (!booking) {
+      booking = {
+        bookingId: 'local-' + Date.now(),
+        items: mergedSeatsPayload.map(s => ({
           code: s.code,
           type: s.type,
-          price: getDisplayPrice(
-              state.seats[s.code]?.zone || zoneOf(s.code[0]), 
-              s.type
-          )
-      }));
-  }
-
-  const total = typeof booking.totalAmount === 'number'
-    ? booking.totalAmount
-    : items.reduce((sum, it) => sum + (it.price || 0), 0);
-
-  const bookingId = booking.bookingId || booking.id || booking.bookingCode;
-
-  localStorage.setItem('booking_cart', JSON.stringify({
-    bookingId,         
-    showtimeId: id,
-    items,
-    totalAmount: total,
-    status: booking.status || 'PENDING',
-    meta: {
-      theater:    state.show.theater,
-      date:       state.show.date,
-      time:       state.show.time,
-      endTime:    state.show.end,
-      movieId:    state.movie.id,
-      movieTitle: state.movie.title
+          price: getDisplayPrice(state.seats[s.code]?.zone || zoneOf(s.code[0]), s.type)
+        })),
+        selectedSeats: mergedSeatsPayload.map((s) => s.code),
+        totalAmount: mergedSeatsPayload.reduce((sum, s) => sum + getDisplayPrice(state.seats[s.code]?.zone || zoneOf(s.code[0]), s.type), 0),
+        status: 'PENDING',
+        _local: true
+      };
     }
-  }));
-  location.href = goTo;
+
+    let items = Array.isArray(booking.items) ? booking.items : [];
+    if (items.length === 0) {
+      items = seatsPayload.map(s => ({
+        code: s.code,
+        type: s.type,
+        price: getDisplayPrice(
+          state.seats[s.code]?.zone || zoneOf(s.code[0]),
+          s.type
+        )
+      }));
+    }
+
+    const total = typeof booking.totalAmount === 'number'
+      ? booking.totalAmount
+      : items.reduce((sum, it) => sum + (it.price || 0), 0);
+
+    const bookingId = booking.bookingId || booking.id || booking.bookingCode;
+    const selectedSeats = Array.isArray(booking.selectedSeats)
+      ? booking.selectedSeats
+      : items.map((it) => it && (it.code || it.seatCode || it.label || it.id)).filter(Boolean);
+
+    STORAGE.writeJson('booking_cart', {
+      bookingId,
+      showtimeId: id,
+      items,
+      selectedSeats,
+      totalAmount: total,
+      status: booking.status || 'PENDING',
+      meta: {
+        bookingId,
+        theater: state.show.theater,
+        date: state.show.date,
+        time: state.show.time,
+        endTime: state.show.end,
+        movieId: state.movie.id,
+        movieTitle: state.movie.title
+      }
+    });
+
+    location.href = goTo;
+  } catch (err) {
+    console.error('[seatmap] Continue flow failed', err);
+    alert('Không thể tiếp tục sang bước tiếp theo. Vui lòng thử lại.');
+  }
 }
 
 
@@ -688,9 +962,11 @@ async function onContinue(goTo = 'concessions.html') {
           if (el) {
             el.dataset.state = 'available';
             el.setAttribute('aria-selected','false');
+            setSeatSelectionVisual(el, false);
           }
         });
         sendSeatHold(changed, 'release');
+        persistSelectedSeats();
       } else {
         changed.forEach(c => {
           state.selected.add(c);
@@ -699,9 +975,11 @@ async function onContinue(goTo = 'concessions.html') {
           if (el) {
             el.dataset.state = 'selected';
             el.setAttribute('aria-selected','true');
+            setSeatSelectionVisual(el, true);
           }
         });
         sendSeatHold(changed, 'hold');
+        persistSelectedSeats();
       }
 
       syncSummary();
@@ -713,7 +991,9 @@ async function onContinue(goTo = 'concessions.html') {
       state.assigned.delete(code);
       seat.dataset.state = 'available';
       seat.setAttribute('aria-selected','false');
+      setSeatSelectionVisual(seat, false);
       sendSeatHold([code], 'release');
+      persistSelectedSeats();
 
       syncSummary();
       return;
@@ -777,8 +1057,19 @@ async function onContinue(goTo = 'concessions.html') {
     }
     await loadSeatStatesFromApi();
     renderGrid();
+    if (!restoreSelectedSeatsFromBookingCart()) {
+      restoreSelectedSeatsFromSession();
+    }
+    applyPersistedSelectionToGrid();
     renderPriceMatrix();
     syncSummary();
+
+    setInterval(() => {
+      refreshSeatMapState().catch((err) => {
+        console.warn('[seatmap] Live refresh failed', err);
+      });
+    }, 10000);
+
     const grid = $('#seatGrid');
     grid.addEventListener('click', onSeatGridClick);
     grid.addEventListener('mouseenter', onSeatMouseEnter, true);
@@ -801,7 +1092,7 @@ async function onContinue(goTo = 'concessions.html') {
     $('#btnPay').addEventListener('click', () => onContinue('payment.html'));
   });
 window.clearSeatBookingState = () => {
-  localStorage.removeItem('booking_cart');
+  STORAGE.removeJson('booking_cart');
   localStorage.removeItem('orderCombos');
 };
 

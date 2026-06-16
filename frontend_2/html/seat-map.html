@@ -93,7 +93,8 @@
         <ul class="legend" aria-label="Chú thích ghế">
           <li><span class="chip-color selected"></span><span> Selected</span></li>
           <li><span class="chip-color available"></span><span> Available</span></li>
-          <li><span class="chip-color booked"></span><span> Booked</span></li>
+          <li><span class="chip-color held"></span><span> Held (tạm giữ)</span></li>
+          <li><span class="chip-color booked"></span><span> Booked (đã bán)</span></li>
           <li><span class="chip-color vip"></span><span> VIP</span></li>
           <li><span class="chip-color std"></span><span> Standard</span></li>
           <li><span class="chip-color couple"></span><span> Couple (Đôi)</span></li>
@@ -179,8 +180,9 @@
     window.API_BASE  = window.API_BASE  || '/api';
     window.DATA_BASE = window.DATA_BASE || (location.pathname.includes('/html/') ? '../data' : '/data');
   </script>
+  <script src="../assets/js/storage-helper.js?v=1" defer></script>
   <script src="../assets/js/main.js" defer></script>
-  <script src="../assets/js/seatmap.js?v=6" defer></script>
+  <script src="../assets/js/seatmap.js?v=7" defer></script>
   <script src="../assets/js/footer.js" defer></script>
 </body>
 </html>

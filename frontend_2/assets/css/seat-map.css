@@ -470,16 +470,27 @@
 /* Trạng thái */
 .seat[data-state="booked"],
 .seat[data-state="held"] {
-  background: var(--seat-booked) !important;
-  border-color: #1D1F23;
-  color: #BFC6CE;
+  color: #D7DCE3;
   cursor: not-allowed;
   filter: saturate(.85);
-  opacity: .9;
+  opacity: 1;
 }
 
 .seat[data-state="held"] {
-  opacity: .6;
+  background:
+    linear-gradient(135deg, rgba(245, 158, 11, .96), rgba(217, 119, 6, .92)) !important;
+  border-color: #9A4F00;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .12),
+    0 0 0 1px rgba(245, 158, 11, .32);
+  color: #1C1204;
+}
+
+.seat[data-state="booked"] {
+  background: linear-gradient(180deg, #2B2E33, #1C1F24) !important;
+  border-color: #101216;
+  opacity: .96;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .04);
 }
 
 .seat[data-state="selected"] {
@@ -662,8 +673,16 @@
 
 .legend .booked,
 .legend .held {
-  background: var(--seat-booked);
-  border-color: #1D1F23;
+  border-color: #101216;
+}
+
+.legend .booked {
+  background: linear-gradient(180deg, #2B2E33, #1C1F24);
+}
+
+.legend .held {
+  background: linear-gradient(135deg, rgba(245, 158, 11, .96), rgba(217, 119, 6, .92));
+  border-color: #9A4F00;
 }
 
 .legend .vip {

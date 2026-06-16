@@ -27,223 +27,43 @@
   <div id="hdr-include"></div>
 
   <main class="container section payment-container">
-    <!-- Tiêu đề trang -->
     <header class="page-title-container">
-      <h1 class="page-title">THANH TOÁN AN TOÀN</h1>
-      <p class="page-subtitle">Vui lòng nhập thông tin thanh toán để hoàn tất đặt vé của bạn.</p>
+      <h1 class="page-title">THANH TOÁN QUA CỔNG VNPAY</h1>
+      <p class="page-subtitle">
+        Giao diện checkout mới chỉ giữ một luồng thanh toán duy nhất: tạo link VNPAY từ phiên đặt vé đang lưu trong `booking_cart`.
+      </p>
     </header>
 
-    <!-- Tabs phương thức thanh toán -->
-    <div class="payment-tabs" id="paymentTabs">
-      <button type="button" class="tab-btn active" data-method="card">
-        <span class="tab-icon">
-          <img src="../assets/icons/ic-credit-card.svg" alt="" class="icon-svg" />
-        </span>
-        <span>Thẻ Tín Dụng / Ghi Nợ</span>
-      </button>
-      <button type="button" class="tab-btn" data-method="wallet">
-        <span class="tab-icon">
-          <img src="../assets/icons/ic-wallet.svg" alt="" class="icon-svg" />
-        </span>
-        <span>Ví Điện Tử</span>
-      </button>
-      <button type="button" class="tab-btn" data-method="bank">
-        <span class="tab-icon">
-          <img src="../assets/icons/ic-bank.svg" alt="" class="icon-svg" />
-        </span>
-        <span>Chuyển Khoản Ngân Hàng</span>
-      </button>
+    <div id="checkoutStateBanner" class="checkout-state-banner" hidden>
+      <strong id="checkoutStateTitle"></strong>
+      <p id="checkoutStateDesc"></p>
     </div>
 
-    <!-- Khu vực chính 2 cột -->
     <div class="checkout-grid">
-      <!-- Cột trái: Form thanh toán -->
       <section class="form-section">
-        <!-- Card mock -->
-        <div id="cardVisual" class="card-visual">
-          <div class="card-chip"></div>
-          <div class="card-number-display" id="displayCardNumber">#### #### #### ####</div>
-          <div class="card-info-row">
-            <div>
-              <div class="card-label">CARD HOLDER</div>
-              <div class="card-holder-display" id="displayCardName">YOUR NAME</div>
-            </div>
-            <div>
-              <div class="card-label">EXPIRES</div>
-              <div id="displayCardExpiry">MM/YY</div>
-            </div>
-          </div>
-          <div class="card-brand">D-CINE</div>
-        </div>
+        <div class="payment-method-card">
+          <p class="payment-method-kicker">Booking Context</p>
+          <h2 id="paymentMovieTitle" class="payment-method-title">Đang tải...</h2>
+          <p class="payment-method-desc">
+            Hệ thống sẽ tự động hiển thị thông tin phiên đặt vé hiện tại để bạn xác nhận thanh toán nhanh chóng và chính xác.
+          </p>
 
-        <!-- Pane: Thẻ -->
-        <div id="paymentPane-card" class="payment-pane" data-method-pane="card">
-          <form id="cardForm" class="card-form" novalidate>
-            <div class="form-group">
-              <label for="cardNumber">Card Number</label>
-              <input
-                id="cardNumber"
-                type="text"
-                class="form-control"
-                placeholder="0000 0000 0000 0000"
-                maxlength="19"
-                autocomplete="cc-number"
-                inputmode="numeric"
-              />
-            </div>
+          <div id="bookingOverview" class="payment-overview-grid" aria-label="Thông tin đặt vé hiện tại"></div>
 
-            <div class="form-group">
-              <label for="cardName">Name on Card</label>
-              <input
-                id="cardName"
-                type="text"
-                class="form-control"
-                placeholder="NGUYEN VAN A"
-                autocomplete="cc-name"
-              />
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label for="cardExpiry">Expiration Date (MM/YY)</label>
-                <input
-                  id="cardExpiry"
-                  type="text"
-                  class="form-control"
-                  placeholder="MM/YY"
-                  maxlength="5"
-                  inputmode="numeric"
-                />
-              </div>
-              <div class="form-group">
-                <label for="cardCvv">CVV</label>
-                <input
-                  id="cardCvv"
-                  type="password"
-                  class="form-control"
-                  placeholder="123"
-                  maxlength="4"
-                  inputmode="numeric"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="cardBank">Bank</label>
-              <select id="cardBank" class="form-control">
-                <option value="">-- Chọn ngân hàng --</option>
-                <option value="vcb">Vietcombank</option>
-                <option value="tcb">Techcombank</option>
-                <option value="mb">MB Bank</option>
-                <option value="acb">ACB</option>
-              </select>
-            </div>
-
-            <div class="save-card-opt">
-              <input type="checkbox" id="saveCard" />
-              <label for="saveCard">Save this card for next time</label>
-            </div>
-
-            <div class="btn-group">
-              <button type="button" class="btn-delete" id="btnClearCard">Clear</button>
-              <button type="button" class="btn-save" id="btnSaveCard">Save</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Pane: Ví điện tử -->
-        <div id="paymentPane-wallet" class="payment-pane" data-method-pane="wallet" hidden>
-          <div class="wallet-pane">
-            <p>Các ví điện tử hỗ trợ thanh toán:</p>
-            <div class="wallet-logos">
-              <span class="wallet-logo">Momo</span>
-              <span class="wallet-logo">ZaloPay</span>
-              <span class="wallet-logo">ShopeePay</span>
-            </div>
-
-            <p class="wallet-hint">
-            Khi bạn nhấn <strong>Xác nhận thanh toán</strong>, hệ thống sẽ tạo mã QR để
-            bạn quét bằng ứng dụng ví (Momo, ZaloPay, ShopeePay, …) trên điện thoại.
+          <div class="payment-vnpay-note">
+            <strong>Cổng Thanh Toán VNPAY Sandbox</strong>
+            <p>
+              Nhấn nút thanh toán để hệ thống tạo URL an toàn từ backend và chuyển sang cổng VNPAY.
+              Đây là bước xác nhận cuối cùng cho phiên đặt vé đang hoạt động.
             </p>
-
-            <!-- Khung QR inline cho ví điện tử -->
-            <div id="walletQrBox" class="qr-inline-box" hidden>
-            <div class="qr-inline-image">
-                <img id="walletQrImage" src="" alt="Mã QR ví điện tử D-cine" />
-            </div>
-            <a
-                id="walletQrDownload"
-                class="btn-download-qr"
-                href="#"
-                download="dcine-wallet-qr.png"
-            >
-                Tải mã QR về máy
-            </a>
-            <p class="qr-inline-note">
-                Sau khi bạn quét và thanh toán thành công trên điện thoại,
-                sau khi xác nhận <strong>PAID</strong> sẽ chuyển bạn sang trang xác
-                nhận vé.
-            </p>
-            </div>
-        </div>
-    </div>
-
-        <!-- Pane: Chuyển khoản -->
-        <div id="paymentPane-bank" class="payment-pane" data-method-pane="bank" hidden>
-          <div class="bank-pane">
-            <h3>Hướng dẫn chuyển khoản</h3>
-            <ul>
-              <li><span>Ngân hàng:</span> MB-Bank</li>
-              <li><span>Số tài khoản:</span> 0931661547</li>
-              <li><span>Chủ tài khoản:</span> LAM THUY KHUONG</li>
-              <li><span>Nội dung:</span> DCINE &lt;SĐT&gt; &lt;MÃ ĐẶT VÉ&gt;</li>
-            </ul>
-            <p class="bank-hint">
-              Khi nhấn <strong>Xác nhận thanh toán</strong>, hệ thống sẽ tạo mã QR demo
-              để bạn quét bằng ứng dụng ngân hàng.
-            </p>
-                <!-- Khung QR inline cho chuyển khoản -->
-            <div id="bankQrBox" class="qr-inline-box" hidden>
-            <div class="qr-inline-image">
-                <img id="bankQrImage" src="" alt="Mã QR chuyển khoản D-cine" />
-            </div>
-            <a
-                id="bankQrDownload"
-                class="btn-download-qr"
-                href="#"
-                download="dcine-bank-qr.png"
-            >
-                Tải mã QR về máy
-            </a>
-            <p class="qr-inline-note">
-                Sau khi bạn chuyển khoản thành công, khi xác nhận thanh toán thành công
-                bạn sẽ được chuyển sang trang xác nhận vé.
-            </p>
-            </div>
           </div>
         </div>
       </section>
 
-      <!-- Cột phải: Order summary + voucher + nút thanh toán -->
       <aside class="order-summary-box" aria-label="Tóm tắt thanh toán">
         <h3 class="summary-title">CHI TIẾT THANH TOÁN</h3>
 
-        <!-- Line items -->
-        <div id="summaryItems" class="summary-items">
-          <!-- JS render: vé + combo -->
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="summary-item">
-          <span>Tạm tính:</span>
-          <span id="sumSubTotal">0đ</span>
-        </div>
-
-        <div id="discountRow" class="summary-item summary-discount" hidden>
-          <span>Giảm giá <span id="sumDiscountCode"></span>:</span>
-          <span id="sumDiscountAmount">-0đ</span>
-        </div>
+        <div id="summaryRows" class="summary-items"></div>
 
         <div class="divider solid"></div>
 
@@ -256,7 +76,6 @@
           Không tìm thấy đơn hàng. Vui lòng quay lại chọn combo/ghế.
         </p>
 
-        <!-- Voucher -->
         <section class="voucher-box" aria-label="Mã ưu đãi">
           <label for="voucherCode" class="voucher-label">
             <span class="icon-inline">
@@ -283,16 +102,12 @@
           <p id="voucherMessage" class="voucher-message"></p>
         </section>
 
-        <!-- Actions -->
         <div class="summary-actions">
           <button type="button" id="btnBackConcessions" class="btn-back">
-            <span class="btn-icon">
-              <img src="../assets/icons/ic-arrow-left.svg" alt="" class="icon-svg" />
-            </span>
-            <span>Quay lại chọn combo</span>
+            <span>QUAY LẠI</span>
           </button>
           <button type="button" id="btnConfirmPayment" class="btn-confirm">
-            <span>XÁC NHẬN THANH TOÁN</span>
+            <span>THANH TOÁN QUA CỔNG VNPAY</span>
             <span class="btn-icon">
               <img src="../assets/icons/ic-check.svg" alt="" class="icon-svg" />
             </span>
@@ -301,7 +116,6 @@
       </aside>
     </div>
 
-    <!-- Secure info -->
     <div class="secure-info">
       <span class="secure-icon">
         <img src="../assets/icons/ic-lock.svg" alt="" class="icon-svg" />
@@ -315,14 +129,11 @@
 
   <!-- JS -->
   <script>window.API_BASE = window.API_BASE || 'http://localhost:8080/api';</script>
+  <script src="../assets/js/storage-helper.js?v=1" defer></script>
   <script src="../assets/js/header.js" defer></script>
   <script src="../assets/js/main.js" defer></script>
   <script src="../assets/js/footer.js" defer></script>
-  <script src="../assets/js/payment.js?v=1" defer></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-  <script src="../assets/js/payment-realtime.js"></script>
+  <script src="../assets/js/payment.js?v=2" defer></script>
 
 </body>
 </html>

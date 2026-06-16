@@ -30,6 +30,7 @@ public class BookingService {
     private final SeatTypeRepository seatTypeRepo;
     private final BookingSeatRepository bookingSeatRepo;
     private final RedisSeatService redisSeatService;
+    private final SeatLockService seatLockService;
     private final HttpSession session;
     private final ConcessionService concessionService;
     private final BookingConcessionRepository bookingConcessionRepo;
@@ -38,7 +39,7 @@ public class BookingService {
     
     public BookingService(SeatRepository seatRepo, ShowTimeRepository showtimeRepo, BookingSeatRepository bookingSeatRepo, 
         SeatLayoutRepository seatLayoutRepo, SeatTypeRepository seatTypeRepo, BookingRepository bookingRepo, 
-        RedisSeatService redisSeatService, HttpSession session, ConcessionService concessionService,BookingConcessionRepository bookingConcessionRepo,
+        RedisSeatService redisSeatService, SeatLockService seatLockService, HttpSession session, ConcessionService concessionService,BookingConcessionRepository bookingConcessionRepo,
         PaymentRepository paymentRepo){
         this.seatRepo = seatRepo;
         this.showtimeRepo = showtimeRepo;
@@ -47,6 +48,7 @@ public class BookingService {
         this.bookingRepo = bookingRepo;
         this.bookingSeatRepo = bookingSeatRepo;
         this.redisSeatService = redisSeatService;
+        this.seatLockService = seatLockService;
         this.session = session;
         this.concessionService = concessionService;
         this.bookingConcessionRepo = bookingConcessionRepo;
@@ -153,6 +155,12 @@ public class BookingService {
         
         // XÓA GHẾ ĐANG GIỮ TRONG REDIS
         redisSeatService.clearForUser(showtimeId, accountId);
+        // XÓA GHẾ ĐANG GIỮ TRONG BẢNG seat_locks
+        try {
+            seatLockService.promoteHeldLocksToPendingBooking(showtimeId, accountId, booking.getBookingId());
+        } catch (Exception ex) {
+            // don't block booking on lock promotion
+        }
 
         // 7) UPDATE TOTAL VÀ TRẢ VỀ
         booking.setTotalAmount(total);

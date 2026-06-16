@@ -29,7 +29,7 @@ public class ConcessionController {
 
     @GetMapping("/concessions/summary")
     public ResponseEntity<?> getSummary(HttpSession session) { 
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Hết phiên đăng nhập"));
         }
@@ -38,11 +38,28 @@ public class ConcessionController {
     }
     @PostMapping("/concessions/cart")
     public ResponseEntity<?> updateCart(@RequestBody ConcessionCartRequest req, HttpSession session) {
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập"));
         }
         ConcessionResponse res = concessionService.updateCart(req, accountId);
         return ResponseEntity.ok(res);
+    }
+
+    private Long resolveAccountId(HttpSession session) {
+        Object value = session.getAttribute("accountId");
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Long.valueOf(text.trim());
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return null;
     }
 }

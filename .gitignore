@@ -1,0 +1,57 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+
+# Python
+env/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*.pyo
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Java / Maven
+target/
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+*.jar.original
+*.log
+.mvn/
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# IDEs
+.idea/
+*.iml
+*.iws
+out/
+.vscode/
+
+# Logs and runtime files
+logs/
+*.log
+
+# Generated / temporary
+*.swp
+*.swo
+*.tmp
+
+# Database
+*.sql
+
+# Misc
+Thumbs.db
+desktop.ini

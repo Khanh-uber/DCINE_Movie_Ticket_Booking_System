@@ -312,8 +312,8 @@ if (query && query.trim() !== '') {
       Array.isArray(m.director)
       ? m.director.map(d => d && (d.name || d.fullName || String(d))).join(' ')
       : (m.director || m.directorName),
-      Array.isArray(m.cast) ? m.cast.join(' ') : m.cast,
-      Array.isArray(m.actors) ? m.actors.join(' ') : m.actors,
+      Array.isArray(m.cast) ? m.cast.map(c => c && (c.name || c.fullName || String(c))).join(' ') : m.cast,
+      Array.isArray(m.actors) ? m.actors.map(a => a && (a.name || a.fullName || String(a))).join(' ') : m.actors,
       Array.isArray(m.genres) ? m.genres.join(' ') : m.genre,
       Array.isArray(m.tags) ? m.tags.join(' ') : m.tags,
     ];

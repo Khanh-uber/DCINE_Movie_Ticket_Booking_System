@@ -1,1004 +1,779 @@
-(() => { 
+(() => {
   'use strict';
 
-  const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const API = window.API_BASE || '/api';
-
-  const toVND = (n) =>
-    (Math.round(Number(n) || 0)).toLocaleString('vi-VN') + 'đ';
+  const API_BASE = (window.API_BASE || '/api').replace(/\/+$/, '');
+  const buildApiUrl = (path) => `${API_BASE}/${String(path || '').replace(/^\/+/, '')}`;
+  const STORAGE = window.DCineStorage || {
+    readJson(key) {
+      try { return JSON.parse(sessionStorage.getItem(key) || localStorage.getItem(key) || 'null'); } catch { return null; }
+    },
+    writeJson() {},
+    removeJson() {}
+  };
 
   const state = {
     bookingId: null,
     order: null,
-    backend: {
-      enabled: true,
-      lastError: null
-    },
-    paymentMethod: 'card',
-    promotions: {
-      loaded: false,
-      list: []
-    },
-    pendingPayment: null,      
-    qr: {
-      method: null,
-      imageUrl: null
-    }
+    promotions: [],
+    promotionsLoaded: false,
+    backendEnabled: true
   };
-  function enrichPaymentData(payment) {
-      if (!payment) return null;
 
-      try {
+  const $ = (selector, root = document) => root.querySelector(selector);
 
-          const rawCart = localStorage.getItem('concessions_cart');
-          let cartData = rawCart ? JSON.parse(rawCart) : {};
-
-          const rawBooking = localStorage.getItem('booking_cart');
-          let bookingData = rawBooking ? JSON.parse(rawBooking) : {};
-
-          const realDate = 
-              cartData.showDate || cartData.date || (cartData.ticket && cartData.ticket.showDate) ||
-              (cartData.meta && cartData.meta.date) || 
-              bookingData.showDate || bookingData.date || bookingData.ngayChieu ||
-              (bookingData.meta && bookingData.meta.date);
-
-          const realTime = 
-              cartData.showTime || cartData.time || (cartData.ticket && cartData.ticket.showTime) ||
-              (cartData.meta && cartData.meta.time) || 
-              bookingData.showTime || bookingData.time || bookingData.gioChieu ||
-              (bookingData.meta && bookingData.meta.time);
-          const realEndTime = 
-              cartData.endTime || (cartData.ticket && cartData.ticket.endTime) ||
-              (cartData.meta && cartData.meta.endTime) || 
-              bookingData.endTime || (bookingData.meta && bookingData.meta.endTime);
-
-          if (realDate) payment.showDate = realDate;
-          if (realTime) payment.showTime = realTime; 
-          if (realEndTime) payment.endTime = realEndTime; 
-          if (realTime && realDate) {
-              let timeStr = realTime; 
-              if (realEndTime && realEndTime !== "") { 
-                  timeStr = `${realTime} ~ ${realEndTime}`; 
-              }
-
-              payment.showtimeText = `${timeStr} • ${realDate}`; 
-              payment.showTime = timeStr; 
-          }
-
-      } catch (e) {
-          console.warn("Lỗi trong quá trình enrichPaymentData", e);
-      }
-
-      return payment;
-  }
-
-  // ---------- Helpers ----------
-  async function callMarkPaid(transactionId) {
-    console.log("🔥 FE callMarkPaid() CALLED WITH:", transactionId);
-  try {
-    const res = await fetch(API + `/checkout/mark-paid?trans=${transactionId}`, {
-      method: "POST",
-      credentials: "include"
-    });
-
-    if (res.ok) {
-      console.log("✔ mark-paid success");
-      return await res.json();
-    } else {
-      console.error("❌ mark-paid failed");
+  function toPositiveInteger(value) {
+    if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+      return value;
     }
 
-  } catch (err) {
-    console.error("❌ Error calling mark-paid:", err);
+    const text = String(value ?? '').trim();
+    if (!/^\d+$/.test(text)) return null;
+
+    const parsed = Number.parseInt(text, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
-}
-  async function getJSON(apiPath, localPath) {
-    if (state.backend.enabled && apiPath) {
-      try {
-        const res = await fetch(API + apiPath, { cache: 'no-store', credentials: 'include' });
-        if (res.ok) {
-          return await res.json();
-        }
-      } catch (err) {
-        console.warn('[payment] API error', apiPath, err);
-        state.backend.enabled = false;
-        state.backend.lastError = String(err);
-      }
-    }
-    if (!localPath) return null;
-    try {
-      const res = await fetch(localPath, { cache: 'no-store', credentials: 'include' });
-      if (res.ok) return await res.json();
-    } catch (err) {
-      console.warn('[payment] local JSON error', localPath, err);
+
+  function firstPositiveInteger(values) {
+    for (const value of values) {
+      const parsed = toPositiveInteger(value);
+      if (parsed) return parsed;
     }
     return null;
   }
 
-  function parseOrder(raw) {
-    if (!raw || typeof raw !== 'object') return null;
-    const ticket = raw.ticket && typeof raw.ticket === 'object' ? raw.ticket : null;
-    let combos = [];
-    if (Array.isArray(raw.combos)) combos = raw.combos;
-    else if (Array.isArray(raw.items)) combos = raw.items;
-    const totals = raw.totals && typeof raw.totals === 'object' ? raw.totals : null;
-    let grandTotal = null;
-    if (totals && typeof totals.grandTotal === 'number') grandTotal = totals.grandTotal;
-    else if (typeof raw.grandTotal === 'number') grandTotal = raw.grandTotal;
-    const discount = raw.discount && typeof raw.discount === 'object' ? raw.discount : null;
-    if (!ticket) return null;
-    return { ticket, combos, totals, grandTotal, discount };
+  function sumTicketItems(items) {
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((sum, item) => sum + (Number(item?.price) || 0), 0);
   }
 
-  function readLocalFallback() {
-    try {
-      const raw = localStorage.getItem('concessions_cart');
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      if (!data || typeof data !== 'object') return;
-      
-      let ticketAmount = 0;
-      let itemsArr = [];
-      let seatsArr = []; 
-      if (data.ticket && Array.isArray(data.ticket.items) && data.ticket.items.length > 0) {
-          itemsArr = data.ticket.items;
-          seatsArr = itemsArr.map(i => i.code || i.seatCode);
-          ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
-      } 
-      else {
-          const rawBooking = localStorage.getItem('booking_cart');
-          if (rawBooking) {
-              const bookingData = JSON.parse(rawBooking);
-          
-              const bookingId = bookingData.bookingId;
-              data.bookingId = bookingId;  
-              // [SỬA]: Ưu tiên đọc trường 'items' (chứa chi tiết ghế + giá từ BE)
-              if (Array.isArray(bookingData.items) && bookingData.items.length > 0) {
-                  itemsArr = bookingData.items; 
-                  seatsArr = itemsArr.map(s => s.code || s.seatCode);
-                  ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
-              }
-              else if (Array.isArray(bookingData.selectedSeats)) { 
-                  itemsArr = bookingData.selectedSeats;
-                  seatsArr = itemsArr.map(s => s.code);
-                  ticketAmount = itemsArr.reduce((sum, item) => sum + (Number(item.price)||0), 0);
-              }
-          }
-      }
-      if (ticketAmount === 0) {
-          if (data.ticket && typeof data.ticket.totalAmount === 'number') {
-              ticketAmount = data.ticket.totalAmount;
-          }
-          else if (data.totalPrice) {
-              ticketAmount = Number(data.totalPrice);
-          }
-      }
-      const combosTotal = (data.combos || []).reduce((sum, item) => {
-          const unitPrice = Number(item.unitPrice || item.price || 0);
-          const lineTotal = Number(item.lineTotal || 0);
-          const qty = Number(item.qty || item.quantity || 1);
-          return sum + (lineTotal > 0 ? lineTotal : unitPrice * qty);
-      }, 0);
-
-      const grandTotal = data.grandTotal || (ticketAmount + combosTotal);
-
-      const finalTicket = data.ticket || {};
-      if (!finalTicket.items) finalTicket.items = itemsArr;
-      if (!finalTicket.seats && itemsArr.length > 0) {
-          finalTicket.seats = itemsArr.map(i => i.code || i.seatCode);
-      }
-      if (!finalTicket.movieTitle) {
-          finalTicket.movieTitle = data.movieName || data.movieTitle || data.filmName || 'Phim chưa xác định';
-      }
-
-      const rawCinema = 
-          data.theaterName || data.cinemaName || data.theater || 
-          data.cinema || data.branchName || 
-          (data.ticket && data.ticket.theaterName) || 
-          (data.ticket && data.ticket.cinemaName);
-
-      if (!finalTicket.theaterName) {
-          finalTicket.theaterName = rawCinema || 'D-cine Quận 1';
-      }
-
-      if (!finalTicket.showDate) finalTicket.showDate = data.showDate || data.date;
-      if (!finalTicket.showTime) finalTicket.showTime = data.showTime || data.time;
-      if (!finalTicket.endTime) finalTicket.endTime = data.endTime;
-      if (!finalTicket.format) finalTicket.format = data.format || (data.meta && data.meta.format);
-
-      state.order = {
-        bookingId: data.bookingId,
-        ticket: finalTicket, 
-        combos: data.combos || [],
-        totals: { 
-            ticketAmount: ticketAmount,
-            combosAmount: combosTotal,
-            subTotal: grandTotal, 
-            vat: 0, 
-            grandTotal: grandTotal,
-            grand: grandTotal
-        }, 
-        grandTotal: grandTotal
-      };
-      
-    } catch (err) {
-      console.warn('[payment] cannot parse concessions_cart', err);
-    }
-  }
-
-  async function loadOrder() {
-    let orderPayload = null;
-    if (state.backend.enabled) {
-      try {
-        const res = await fetch(API + '/checkout/summary', {
-          cache: 'no-store',
-          credentials: 'include'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const order = parseOrder(data);
-          if (order) {
-              state.order.bookingId = state.bookingId;
-              order.bookingId = state.bookingId;
-              state.order = order;
-              return;
-          }
-        } else {
-          state.backend.enabled = false;
-          state.backend.lastError = 'HTTP ' + res.status;
-        }
-      } catch (err) {
-        state.backend.enabled = false;
-        state.backend.lastError = String(err);
-      }
-    }
-    
-    readLocalFallback(); 
-    
-    orderPayload = state.order;
-    if (state.backend.enabled && orderPayload) {
-      try {
-        const payload = { order: orderPayload, voucherCode: '' };
-        const res = await fetch(API + '/checkout/apply-voucher', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          cache: 'no-store',
-          credentials: 'include'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.totals) {
-              state.order = data;
-              if (state.bookingId) state.order.bookingId = state.bookingId;
-          }
-
-        }
-      } catch (err) {
-        console.warn('[payment] voucher error', err);
-      }
-    }
-  }
-
-  function computeTicketAmount(order) {
-      if (!order || !order.ticket) return 0;
-      const t = order.ticket;
-      if (order.totals && typeof order.totals.ticketAmount === 'number') return order.totals.ticketAmount;
-      if (typeof t.totalPrice === 'number') return t.totalPrice;
-      if (typeof t.price === 'number') return t.price;
-      if (typeof t.amount === 'number') return t.amount;
-      if (typeof t.totalAmount === 'number') return t.totalAmount;
-      if (Array.isArray(t.items)) return t.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
-      return 0;
-    }
-
-  function computeCombosAmount(order, ticketAmount) {
-    if (!order) return 0;
-    if (order.totals && typeof order.totals.combosAmount === 'number') return order.totals.combosAmount;
-    return (order.combos || []).reduce((sum, it) => {
-      if (!it) return sum;
-      const unit = typeof it.unitPrice === 'number' ? it.unitPrice : typeof it.price === 'number' ? it.price : 0;
-      const qty = typeof it.qty === 'number' ? it.qty : typeof it.quantity === 'number' ? it.quantity : 0;
-      if (typeof it.lineTotal === 'number') return sum + it.lineTotal;
-      return sum + unit * qty;
+  function sumComboItems(items) {
+    if (!Array.isArray(items)) return 0;
+    return items.reduce((sum, item) => {
+      if (!item) return sum;
+      const quantity = Number(item.qty ?? item.quantity ?? 1) || 1;
+      const unitPrice = Number(item.unitPrice ?? item.price ?? 0) || 0;
+      const lineTotal = Number(item.lineTotal ?? item.totalPrice ?? item.total ?? 0) || 0;
+      return sum + (lineTotal > 0 ? lineTotal : unitPrice * quantity);
     }, 0);
   }
 
-function getTotals(order) {
-  let ticketAmount = 0, combosAmount = 0, subTotal = 0, vat = 0, discountAmount = 0, discountCode = '', grand;
-  const t = order.totals;
-
-  if (t) {
-    ticketAmount = typeof t.ticketAmount === 'number' ? t.ticketAmount : computeTicketAmount(order);
-    combosAmount = typeof t.combosAmount === 'number' ? t.combosAmount : computeCombosAmount(order, ticketAmount);
-    subTotal = typeof t.subTotal === 'number' ? t.subTotal : ticketAmount + combosAmount;
-    vat = 0;
-    discountAmount = typeof t.discountAmount === 'number' ? t.discountAmount : 0;
-    discountCode = t.discountCode || t.code || (order.discount && order.discount.code) || (order._voucher && order._voucher.code) || '';
-    const beGrand = typeof t.grandTotal === 'number'
-      ? t.grandTotal
-      : (typeof order.grandTotal === 'number' ? order.grandTotal : null);
-    const feCalcGrand = Math.max(0, subTotal - discountAmount);
-    grand = (beGrand != null && Math.abs(beGrand - feCalcGrand) < 1000) ? beGrand : feCalcGrand;
-  } else {
-    ticketAmount = computeTicketAmount(order);
-    combosAmount = computeCombosAmount(order, ticketAmount);
-    subTotal = ticketAmount + combosAmount;
-    vat = 0;
-    if (order.discount && typeof order.discount.amount === 'number') {
-      discountAmount = order.discount.amount;
-      discountCode = order.discount.code || '';
-    } else if (order._voucher && typeof order._voucher.amount === 'number') {
-      discountAmount = order._voucher.amount;
-      discountCode = order._voucher.code || '';
-    }
-    grand = Math.max(0, subTotal - discountAmount);
+  function readMergedCartSnapshot() {
+    const booking = STORAGE.readJson('booking_cart') || {};
+    const concessions = STORAGE.readJson('concessions_cart') || {};
+    return {
+      booking,
+      concessions,
+      bookingId: booking.bookingId || booking.id || booking.meta?.bookingId || booking.ticket?.bookingId || concessions.bookingId || concessions.id || concessions.meta?.bookingId || concessions.ticket?.bookingId || null
+    };
   }
-  return { ticketAmount, combosAmount, subTotal, vat, discountAmount, discountCode, grand };
-}
 
+  function extractBookingIdFromSnapshot(snapshot) {
+    const b = snapshot && snapshot.booking ? snapshot.booking : {};
+    const c = snapshot && snapshot.concessions ? snapshot.concessions : {};
+    return firstPositiveInteger([
+      snapshot?.bookingId,
+      b.bookingId,
+      b.id,
+      b.meta?.bookingId,
+      b.ticket?.bookingId,
+      c.bookingId,
+      c.id,
+      c.meta?.bookingId,
+      c.ticket?.bookingId
+    ]);
+  }
 
-  function extractTicketMeta(ticket) {
-      if (!ticket) return { movieTitle: '', showtimeText: '', seatsText: '', theaterName: '' };
-      const meta = ticket.meta && typeof ticket.meta === 'object' ? ticket.meta : {};
-      const movieTitle = meta.movieTitle || ticket.movieTitle || ticket.title || '';
-      const date = meta.date || ticket.date || ticket.showDate || '';
-      const startTime = meta.time || ticket.time || ticket.showTime || '';
-      const endTime = meta.endTime || ticket.endTime || '';
-      
-      let timeDisplay = startTime;
-      if (startTime && endTime) timeDisplay = `${startTime} ~ ${endTime}`;
+  function extractBookingContext(snapshot) {
+    const booking = snapshot.booking && typeof snapshot.booking === 'object' ? snapshot.booking : {};
+    const concessions = snapshot.concessions && typeof snapshot.concessions === 'object' ? snapshot.concessions : {};
+    const bookingTicket = booking.ticket && typeof booking.ticket === 'object' ? booking.ticket : {};
+    const concessionTicket = concessions.ticket && typeof concessions.ticket === 'object' ? concessions.ticket : {};
+    const bookingMeta = booking.meta && typeof booking.meta === 'object' ? booking.meta : {};
+    const concessionMeta = concessions.meta && typeof concessions.meta === 'object' ? concessions.meta : {};
+    const movieSource = booking.movie && typeof booking.movie === 'object'
+      ? booking.movie
+      : concessions.movie && typeof concessions.movie === 'object'
+        ? concessions.movie
+        : bookingTicket.movie && typeof bookingTicket.movie === 'object'
+          ? bookingTicket.movie
+          : concessionTicket.movie && typeof concessionTicket.movie === 'object'
+            ? concessionTicket.movie
+            : {};
 
-      const theaterName = ticket.theaterName || ticket.cinemaName || (meta && meta.theaterName) || 'D-cine Quận 1';
+    const movieTitle = normalizeText(
+      bookingTicket.movieTitle || bookingTicket.movieName || bookingTicket.title ||
+      booking.movieTitle || booking.movieName || booking.title ||
+      bookingMeta.movieTitle || bookingMeta.movieName || bookingMeta.title ||
+      concessions.movieTitle || concessions.movieName || concessions.title ||
+      concessionTicket.movieTitle || concessionTicket.movieName || concessionTicket.title ||
+      concessionMeta.movieTitle || concessionMeta.movieName || concessionMeta.title ||
+      movieSource.movieTitle || movieSource.movieName || movieSource.title || movieSource.name ||
+      'Phim chưa xác định'
+    );
 
-      let seatsArr = [];
-      if (Array.isArray(ticket.items)) {
-          seatsArr = ticket.items
-              .map(it => it && (it.code || it.seatCode || it.label))
-              .filter(Boolean);
+    const cinemaName = normalizeText(
+      bookingTicket.cinemaName || bookingTicket.theaterName || bookingTicket.cinema || bookingTicket.theater ||
+      booking.cinemaName || booking.theaterName || booking.cinema || booking.theater ||
+      bookingMeta.cinemaName || bookingMeta.theaterName || bookingMeta.cinema || bookingMeta.theater ||
+      concessions.cinemaName || concessions.theaterName || concessions.cinema || concessions.theater ||
+      concessionTicket.cinemaName || concessionTicket.theaterName || concessionTicket.cinema || concessionTicket.theater ||
+      concessionMeta.cinemaName || concessionMeta.theaterName || concessionMeta.cinema || concessionMeta.theater ||
+      'D-cine Quận 1'
+    );
+
+    const showDate = normalizeText(
+      bookingTicket.showDate || bookingTicket.date || bookingTicket.ngayChieu ||
+      booking.showDate || booking.date || booking.ngayChieu ||
+      bookingMeta.showDate || bookingMeta.date || bookingMeta.ngayChieu ||
+      concessions.showDate || concessions.date || concessions.ngayChieu ||
+      concessionTicket.showDate || concessionTicket.date || concessionTicket.ngayChieu ||
+      concessionMeta.showDate || concessionMeta.date || concessionMeta.ngayChieu ||
+      ''
+    );
+
+    const showTime = normalizeText(
+      bookingTicket.showTime || bookingTicket.time || bookingTicket.gioChieu || bookingTicket.showtimeText ||
+      booking.showTime || booking.time || booking.gioChieu || booking.showtimeText ||
+      bookingMeta.showTime || bookingMeta.time || bookingMeta.gioChieu ||
+      concessions.showTime || concessions.time || concessions.showtimeText ||
+      concessionTicket.showTime || concessionTicket.time || concessionTicket.gioChieu || concessionTicket.showtimeText ||
+      concessionMeta.showTime || concessionMeta.time || concessionMeta.gioChieu ||
+      ''
+    );
+
+    const endTime = normalizeText(
+      bookingTicket.endTime || bookingTicket.end_at ||
+      booking.endTime || booking.end_at ||
+      bookingMeta.endTime || bookingMeta.end_at ||
+      concessions.endTime || concessions.end_at ||
+      concessionTicket.endTime || concessionTicket.end_at ||
+      concessionMeta.endTime || concessionMeta.end_at ||
+      ''
+    );
+
+    const seatItems = Array.isArray(bookingTicket.items)
+      ? bookingTicket.items
+      : Array.isArray(booking.items)
+        ? booking.items
+        : Array.isArray(concessionTicket.items)
+          ? concessionTicket.items
+          : [];
+
+    return {
+      booking,
+      concessions,
+      ticket: bookingTicket,
+      concessionTicket,
+      movieTitle,
+      cinemaName,
+      showDate,
+      showTime,
+      endTime,
+      seatItems
+    };
+  }
+
+  function toVND(value) {
+    return `${Math.round(Number(value) || 0).toLocaleString('vi-VN')}đ`;
+  }
+
+  function normalizeText(value) {
+    return String(value ?? '').replace(/\s+/g, ' ').trim();
+  }
+
+  function normalizeSeatCodes(input) {
+    const seats = [];
+    const pushSeat = (value) => {
+      if (!value) return;
+      if (typeof value === 'string') {
+        seats.push(value);
+        return;
       }
-      if (!seatsArr.length && Array.isArray(ticket.seats)) {
-          seatsArr = ticket.seats.filter(Boolean);
+      if (typeof value === 'object') {
+        seats.push(value.code || value.seatCode || value.label || value.id || '');
       }
-      if (!seatsArr.length && ticket.ticket && Array.isArray(ticket.ticket.items)) {
-          seatsArr = ticket.ticket.items
-              .map(it => it && (it.code || it.seatCode || it.label))
-              .filter(Boolean);
+    };
+
+    if (Array.isArray(input)) {
+      input.forEach(pushSeat);
+    } else if (input && typeof input === 'object') {
+      if (Array.isArray(input.seats)) input.seats.forEach(pushSeat);
+      if (Array.isArray(input.items)) input.items.forEach(pushSeat);
+      if (Array.isArray(input.selectedSeats)) input.selectedSeats.forEach(pushSeat);
+    } else {
+      pushSeat(input);
+    }
+
+    return seats.map(normalizeText).filter(Boolean);
+  }
+
+  function clearNode(node) {
+    if (!node) return;
+    node.innerHTML = '';
+  }
+
+  function buildSeatLabel(ticket) {
+    const seats = [];
+    if (ticket && Array.isArray(ticket.items)) {
+      seats.push(...ticket.items.map((item) => item && (item.code || item.seatCode || item.label)).filter(Boolean));
+    }
+    if (!seats.length && ticket && Array.isArray(ticket.seats)) {
+      seats.push(...ticket.seats.filter(Boolean));
+    }
+    if (!seats.length && ticket && ticket.ticket && Array.isArray(ticket.ticket.items)) {
+      seats.push(...ticket.ticket.items.map((item) => item && (item.code || item.seatCode || item.label)).filter(Boolean));
+    }
+    if (!seats.length) {
+      const snapshot = readMergedCartSnapshot();
+      seats.push(...normalizeSeatCodes(snapshot.booking.selectedSeats || snapshot.booking.items || snapshot.concessions.ticket?.items || []));
+    }
+    return seats.sort((a, b) => a.localeCompare(b, 'en', { numeric: true })).join(', ');
+  }
+
+  function getTitleFontSize(title) {
+    const length = normalizeText(title).length;
+    if (!length) return '2rem';
+    if (length <= 18) return '2.25rem';
+    if (length <= 24) return '2rem';
+    if (length <= 32) return '1.75rem';
+    if (length <= 42) return '1.55rem';
+    return '1.35rem';
+  }
+
+  function buildLocalOrderFromSnapshot() {
+    const snapshot = readMergedCartSnapshot();
+    const booking = snapshot.booking || {};
+    const concessions = snapshot.concessions || {};
+    const context = extractBookingContext(snapshot);
+
+    const ticket = booking.ticket && typeof booking.ticket === 'object' ? { ...booking.ticket } : {};
+    const ticketItems = Array.isArray(ticket.items) ? ticket.items : (Array.isArray(context.seatItems) ? context.seatItems : []);
+
+    if (!ticket.items && ticketItems.length) ticket.items = ticketItems;
+
+    const movieTitle = context.movieTitle;
+    const cinemaName = context.cinemaName;
+    const showDate = context.showDate;
+    const showTime = context.showTime;
+    const endTime = context.endTime;
+    const seatsText = buildSeatLabel(ticket || booking);
+
+    const combos = Array.isArray(concessions.combos)
+      ? concessions.combos
+      : Array.isArray(concessions.items)
+        ? concessions.items
+        : Array.isArray(booking.combos)
+          ? booking.combos
+          : Array.isArray(booking.itemsCombos)
+            ? booking.itemsCombos
+            : [];
+
+    const ticketAmount = Number(
+      booking.ticketAmount ?? ticket.totalAmount ?? ticket.totalPrice ?? ticket.price ?? booking.ticket?.totalAmount ?? 0
+    ) || (Array.isArray(ticket.items)
+      ? ticket.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0)
+      : 0);
+
+    const combosAmount = sumComboItems(combos);
+
+    const discountAmount = Number(
+      concessions.discountAmount ?? concessions.totals?.discountAmount ?? booking.discountAmount ?? booking.totals?.discountAmount ?? 0
+    ) || 0;
+    const discountCode = normalizeText(
+      concessions.discountCode || concessions.totals?.discountCode || concessions._voucher?.code || booking.discountCode || booking.totals?.discountCode || ''
+    );
+    const subTotal = ticketAmount + combosAmount;
+    const grandTotal = Math.max(0, subTotal - discountAmount);
+
+    return {
+      bookingId: extractBookingIdFromSnapshot(snapshot),
+      ticket: {
+        movieTitle,
+        cinemaName,
+        showDate,
+        showTime,
+        endTime,
+        seatsText,
+        items: ticketItems,
+        seats: seatsText ? seatsText.split(', ').filter(Boolean) : []
+      },
+      combos,
+      totals: {
+        ticketAmount,
+        combosAmount,
+        discountAmount,
+        discountCode,
+        subTotal,
+        grandTotal
       }
-      if (!seatsArr.length) {
-          const raw = localStorage.getItem('booking_cart');
-          if (raw) {
-              try {
-                  const data = JSON.parse(raw);
-                  if (Array.isArray(data.selectedSeats)) {
-                      seatsArr = data.selectedSeats.map(s => s.code);
-                  }
-              } catch {}
-          }
-      }
+    };
+  }
 
-      // Sắp xếp ghế trước khi hiển thị
-      seatsArr.sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
-      return {
-          movieTitle: movieTitle.toUpperCase(),
-          showtimeText: [timeDisplay, date].filter(Boolean).join(' • '),
-          seatsText: seatsArr.join(', '),
-          theaterName: theaterName
-      };
+  function parseBackendOrder(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const ticket = raw.ticket && typeof raw.ticket === 'object' ? raw.ticket : null;
+    const totals = raw.totals && typeof raw.totals === 'object' ? raw.totals : null;
+    const combos = Array.isArray(raw.combos) ? raw.combos : (Array.isArray(raw.items) ? raw.items : []);
+    if (!ticket && !totals) return null;
+    return {
+      bookingId: raw.bookingId || null,
+      ticket: ticket || {},
+      combos,
+      totals: totals || {},
+      discount: raw.discount && typeof raw.discount === 'object' ? raw.discount : null,
+      grandTotal: Number(raw.grandTotal ?? totals?.grandTotal ?? totals?.grand ?? 0) || 0
+    };
+  }
 
-      };
+  function computeTotals(order) {
+    const totals = order && order.totals ? order.totals : {};
+    const ticketItems = Array.isArray(order?.ticket?.items) ? order.ticket.items : [];
+    const comboItems = Array.isArray(order?.combos) ? order.combos : (Array.isArray(order?.items) ? order.items : []);
+    const ticketAmount = Number(
+      totals.ticketAmount ?? order?.ticket?.totalAmount ?? order?.ticket?.totalPrice ?? order?.ticket?.price ?? sumTicketItems(ticketItems)
+    ) || sumTicketItems(ticketItems);
+    const combosAmount = sumComboItems(comboItems) || (Number(totals.combosAmount ?? 0) || 0);
+    const discountAmount = Number(totals.discountAmount ?? order?.discount?.amount ?? 0) || 0;
+    const discountCode = normalizeText(totals.discountCode || order?.discount?.code || '');
+    const subTotal = ticketAmount + combosAmount;
+    const grandTotal = Math.max(0, subTotal - discountAmount);
 
-  function renderOrderSummary() {
-    const itemsWrap = $('#summaryItems');
-    const subTotalEl = $('#sumSubTotal');
-    const vatEl = $('#sumVat');
-    const discountRow = $('#discountRow');
-    const discountCodeEl = $('#sumDiscountCode');
-    const discountAmountEl = $('#sumDiscountAmount');
-    const grandEl = $('#sumGrandTotal');
-    const warnEl = $('#orderWarning');
-    const confirmBtn = $('#btnConfirmPayment');
+    return { ticketAmount, combosAmount, discountAmount, discountCode, subTotal, grandTotal };
+  }
 
-    if (!state.order) {
-      if (confirmBtn) confirmBtn.disabled = true;
+  function setBanner(kind, title, message) {
+    const banner = $('#checkoutStateBanner');
+    const bannerTitle = $('#checkoutStateTitle');
+    const bannerDesc = $('#checkoutStateDesc');
+    if (!banner || !bannerTitle || !bannerDesc) return;
+
+    if (!title && !message) {
+      banner.hidden = true;
+      banner.className = 'checkout-state-banner';
       return;
     }
-    if (confirmBtn) confirmBtn.disabled = false;
-    if (warnEl) warnEl.hidden = true;
 
-    const totals = getTotals(state.order);
-    state.order._computedTotals = totals;
-    state.order.grandTotal = totals.grand;
-
-    if (itemsWrap) {
-      const { ticket, combos } = state.order;
-      const meta = extractTicketMeta(ticket);
-      const lines = [];
-      const rowStyle = 'display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #ccc; line-height: 1.4;';
-      const priceStyle = 'color: #fff; font-weight: 500;';
-
-      // 1. Tên phim
-      if (meta.movieTitle) {
-        lines.push(`
-          <div class="summary-item" style="margin-bottom: 8px;">
-            <strong style="font-size: 15px; text-transform: uppercase; line-height: 1.3;">
-              ${meta.movieTitle}
-            </strong>
-          </div>
-        `);
-      }
-
-      // 2. Rạp
-      if (meta.theaterName) {
-        lines.push(`
-          <div style="${rowStyle}">
-            <span>${meta.theaterName}</span>
-            <span></span>
-          </div>
-        `);
-      }
-
-      // 3. Suất chiếu - Ngày (KHÔNG CÓ GIÁ)
-      if (meta.showtimeText) {
-        lines.push(`
-          <div style="${rowStyle}">
-            <span>${meta.showtimeText}</span>
-            <span></span>
-          </div>
-        `);
-      }
-
-      // 4. Ghế + TIỀN VÉ CÙNG 1 HÀNG
-      if (meta.seatsText) {
-        lines.push(`
-          <div style="${rowStyle}">
-            <span>Ghế: ${meta.seatsText}</span>
-            <span style="${priceStyle}">${toVND(totals.ticketAmount)}</span>
-          </div>
-        `);
-      }
-
-      // 5. Combo + giá combo
-      const totalCombosAmount = totals.combosAmount;
-      if (totalCombosAmount > 0) {
-        const comboList = (combos || []).map(c => {
-            const name = c.title || c.name || 'Combo';
-            const qty = c.qty || c.quantity || 1;
-            return qty > 1 ? `${name} (x${qty})` : name;
-        }).join(' + ');
-        
-        lines.push(`
-          <div style="${rowStyle}">
-            <span>Combo: ${comboList}</span>
-            <span style="${priceStyle}">${toVND(totalCombosAmount)}</span>
-          </div>
-        `);
-      }
-      itemsWrap.innerHTML = lines.join('');
-    }
-    
-    if (subTotalEl) subTotalEl.textContent = toVND(totals.subTotal);
-    if (discountRow) {
-        if (totals.discountAmount > 0) {
-            discountRow.style.display = 'flex'; 
-            if (discountAmountEl) discountAmountEl.textContent = `-${toVND(totals.discountAmount)}`;
-            if (discountCodeEl) discountCodeEl.textContent = `(${totals.discountCode || 'Mã ưu đãi'})`;
-        } else {
-            discountRow.style.display = 'flex'; 
-            if (discountAmountEl) discountAmountEl.textContent = `-0₫`;
-            if (discountCodeEl) discountCodeEl.textContent = '';
-        }
-    }
-
-    if (grandEl) grandEl.textContent = toVND(totals.grand);
+    banner.hidden = false;
+    banner.className = `checkout-state-banner ${kind || ''}`.trim();
+    bannerTitle.textContent = title || '';
+    bannerDesc.textContent = message || '';
   }
 
-  function setPaymentMethod(method) {
-    state.paymentMethod = method;
-    const tabs = $$('#paymentTabs .tab-btn');
-    tabs.forEach((btn) => btn.classList.toggle('active', btn.dataset.method === method));
-    ['card', 'wallet', 'bank'].forEach((m) => {
-      const pane = $(`#paymentPane-${m}`);
-      if (pane) pane.hidden = m !== method;
-    });
-    const cardVisual = $('#cardVisual');
-    if (cardVisual) cardVisual.style.display = method === 'card' ? '' : 'none';
+  function updateMovieTitle(title) {
+    const el = $('#paymentMovieTitle');
+    if (!el) return;
+    const clean = normalizeText(title) || 'Phim chưa xác định';
+    el.textContent = clean;
+    el.style.fontSize = getTitleFontSize(clean);
   }
 
-  function initTabs() {
-      $$('#paymentTabs .tab-btn').forEach(btn => btn.addEventListener('click', () => {
-          state.paymentMethod = btn.dataset.method;
-          $$('#paymentTabs .tab-btn').forEach(b => b.classList.toggle('active', b===btn));
-          ['card','wallet','bank'].forEach(m => { 
-              const p = $(`#paymentPane-${m}`); if(p) p.hidden = m!==state.paymentMethod; 
-          });
-          if($('#cardVisual')) $('#cardVisual').style.display = state.paymentMethod==='card'?'':'none';
-      }));
-    }
+  function createOverviewItem(label, value) {
+    const item = document.createElement('div');
+    item.className = 'payment-overview-item';
 
-  function updateCardMock() {
-    const num = $('#cardNumber')?.value || '';
-    const name = $('#cardName')?.value || '';
-    const exp = $('#cardExpiry')?.value || '';
-    if ($('#displayCardNumber')) $('#displayCardNumber').textContent = num || '#### #### #### ####';
-    if ($('#displayCardName')) $('#displayCardName').textContent = name || 'YOUR NAME';
-    if ($('#displayCardExpiry')) $('#displayCardExpiry').textContent = exp || 'MM/YY';
+    const labelEl = document.createElement('span');
+    labelEl.textContent = label;
+
+    const valueEl = document.createElement('strong');
+    valueEl.textContent = value || '--';
+
+    item.append(labelEl, valueEl);
+    return item;
   }
 
-  function initCardForm() {
-    const numEl = $('#cardNumber');
-    if (numEl) {
-      numEl.addEventListener('input', (e) => {
-        let v = e.target.value.replace(/\D/g, '');
-        v = v.slice(0, 16);
-        v = v.replace(/(\d{4})(?=\d)/g, '$1 ');
-        e.target.value = v;
-        updateCardMock();
-      });
+  function renderCheckoutOverview() {
+    const snapshot = readMergedCartSnapshot();
+    const localOrder = buildLocalOrderFromSnapshot();
+    const currentOrder = state.order || localOrder;
+    const ticket = currentOrder.ticket || localOrder.ticket || {};
+    const context = extractBookingContext(snapshot);
+
+    const movieTitle = normalizeText(ticket.movieTitle || currentOrder.movieTitle || localOrder.ticket?.movieTitle || context.movieTitle);
+    const cinemaName = normalizeText(ticket.cinemaName || ticket.theaterName || currentOrder.cinemaName || localOrder.ticket?.cinemaName || context.cinemaName);
+    const showtimeText = normalizeText(
+      [ticket.showDate || currentOrder.showDate || localOrder.ticket?.showDate || context.showDate, ticket.showTime || currentOrder.showTime || localOrder.ticket?.showTime || context.showTime]
+        .filter(Boolean)
+        .join(' • ')
+    );
+
+    updateMovieTitle(movieTitle);
+
+    const overview = $('#bookingOverview');
+    if (!overview) return;
+
+    clearNode(overview);
+    const items = [
+      createOverviewItem('Cinema Screen', cinemaName || 'D-cine Quận 1'),
+      createOverviewItem('Showtime', showtimeText || '--'),
+      createOverviewItem('Selected Seats', ticket.seatsText || 'Chưa có ghế'),
+      createOverviewItem('Booking ID', currentOrder.bookingId ? `#${currentOrder.bookingId}` : (snapshot.booking.bookingId ? `#${snapshot.booking.bookingId}` : '--'))
+    ];
+
+    overview.append(...items);
+
+    const label = $('#paymentMethodLabel');
+    const note = $('#paymentMethodNote');
+    if (label) label.textContent = 'Thanh toán qua cổng VNPAY Sandbox';
+    if (note) {
+      note.textContent = 'Hệ thống sẽ tạo một liên kết thanh toán an toàn và chuyển thẳng sang VNPAY để hoàn tất giao dịch.';
     }
-    const expEl = $('#cardExpiry');
-    if (expEl) {
-      expEl.addEventListener('input', (e) => {
-        let v = e.target.value.replace(/\D/g, '');
-        
-        if (v.length === 1 && /[2-9]/.test(v)) {
-          v = '0' + v;
-        }
+  }
 
-        if (v.length >= 2) {
-          const mm = parseInt(v.slice(0, 2), 10);
-          if (mm === 0) v = '0'; 
-          else if (mm > 12) v = v.slice(0, 1);
-        }
-        v = v.slice(0, 4);
-        if (v.length >= 3) {
-          v = v.slice(0, 2) + '/' + v.slice(2);
-        }
-        e.target.value = v;
-        updateCardMock();
+  function createSummaryItem(label, value, options = {}) {
+    const row = document.createElement('div');
+    row.className = options.grand ? 'summary-item summary-grand' : 'summary-item';
+
+    const labelEl = document.createElement('span');
+    labelEl.textContent = label;
+
+    const valueEl = document.createElement('strong');
+    valueEl.textContent = value;
+
+    row.append(labelEl, valueEl);
+    return row;
+  }
+
+  function renderOrderSummary() {
+    const rows = $('#summaryRows');
+    const grandEl = $('#sumGrandTotal');
+    const warning = $('#orderWarning');
+
+    if (!rows || !grandEl) return;
+
+    clearNode(rows);
+
+    const order = state.order || buildLocalOrderFromSnapshot();
+    const totals = computeTotals(order);
+    const ticket = order.ticket || {};
+    const combos = Array.isArray(order.combos) ? order.combos : [];
+
+    const comboRows = combos
+      .filter(Boolean)
+      .map((combo) => {
+        const title = normalizeText(combo.title || combo.name || 'Combo');
+        const qty = Number(combo.qty ?? combo.quantity ?? 1) || 1;
+        const lineTotal = Number(combo.lineTotal ?? combo.totalPrice ?? combo.total ?? 0) || 0;
+        const unitPrice = Number(combo.unitPrice ?? combo.price ?? 0) || 0;
+        const amount = lineTotal > 0 ? lineTotal : unitPrice * qty;
+        return createSummaryItem(
+          qty > 1 ? `${title} × ${qty}` : title,
+          toVND(amount)
+        );
       });
+
+    rows.append(
+      createSummaryItem('Tickets subtotal', toVND(totals.ticketAmount)),
+      ...comboRows,
+      createSummaryItem(
+        totals.discountAmount > 0
+          ? `Voucher discount${totals.discountCode ? ` (${totals.discountCode})` : ''}`
+          : 'Voucher discount',
+        totals.discountAmount > 0 ? `-${toVND(totals.discountAmount)}` : '-0đ'
+      )
+    );
+
+    grandEl.textContent = toVND(totals.grandTotal);
+    if (warning) {
+      warning.hidden = !state.order;
+      warning.textContent = state.order ? '' : 'Không tìm thấy đơn hàng. Vui lòng quay lại chọn combo/ghế.';
     }
 
-    const nameEl = $('#cardName');
-    if (nameEl) {
-      let isComposing = false;
-      nameEl.addEventListener('compositionstart', () => { isComposing = true; });
-      nameEl.addEventListener('compositionend', (e) => {
-        isComposing = false;
-        handleNameInput(e.target);
-      });
-      nameEl.addEventListener('input', (e) => {
-        if (isComposing) return;
-        handleNameInput(e.target);
-      });
-
-      function handleNameInput(input) {
-        let v = input.value;
-        v = v.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        v = v.replace(/đ/g, 'd').replace(/Đ/g, 'D');
-        v = v.replace(/[^a-zA-Z\s]/g, '');
-        v = v.toUpperCase();
-        v = v.replace(/\s{2,}/g, ' ');
-
-        input.value = v;
-        updateCardMock();
-      }
-    }
-
-    const cvvEl = $('#cardCvv');
-    if (cvvEl) {
-      cvvEl.addEventListener('input', (e) => {
-        let v = e.target.value.replace(/\D/g, '');
-        v = v.slice(0, 4);
-        e.target.value = v;
-      });
-    }
-
-    const clearBtn = $('#btnClearCard');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        if (numEl) numEl.value = '';
-        if (nameEl) nameEl.value = '';
-        if (expEl) expEl.value = '';
-        if (cvvEl) cvvEl.value = '';
-        updateCardMock();
-      });
-    }
+    setBanner(
+      'ok',
+      'Phiên giữ ghế đang hợp lệ',
+      ticket.seatsText
+        ? `Ghế: ${ticket.seatsText}. Tổng thanh toán: ${toVND(totals.grandTotal)}.`
+        : `Tổng thanh toán: ${toVND(totals.grandTotal)}.`
+    );
   }
 
   async function ensurePromotionsLoaded() {
-    if (state.promotions.loaded) return state.promotions.list;
-    const data = await getJSON('/promotions', '../data/promotions.json');
-    state.promotions.list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
-    state.promotions.loaded = true;
-    return state.promotions.list;
-  }
-
-  function fillVoucherSelect(list) {
-    const select = $('#voucherSelect');
-    if (!select) return;
-    const options = [
-      '<option value="">Chọn từ danh sách</option>',
-      ...list
-        .filter((p) => p && p.code)
-        .map(
-          (p) =>
-            `<option value="${p.code}">${p.code} — ${p.name || p.title || ''}</option>`
-        )
-    ];
-    select.innerHTML = options.join('');
-  }
-
-  function isPromoValidForOrder(promo, totals) {
-    if (!promo || !promo.code) return false;
-    if (promo.isActive === false) return false;
-
-    if (
-      typeof promo.minOrder === 'number' &&
-      totals.subTotal < promo.minOrder
-    ) {
-      return false;
+    if (state.promotionsLoaded) return state.promotions;
+    try {
+      const res = await fetch(buildApiUrl('promotions'), { cache: 'no-store', credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        state.promotions = Array.isArray(data) ? data : (Array.isArray(data?.items) ? data.items : []);
+      }
+    } catch (error) {
+      console.warn('[payment] promotions load failed', error);
+      state.promotions = [];
     }
-
-    const now = new Date();
-
-    if (promo.validFrom) {
-      const from = new Date(promo.validFrom);
-      if (now < from) return false;
-    }
-    if (promo.validTo) {
-      const to = new Date(promo.validTo);
-      if (now > to) return false;
-    }
-
-    return true;
-  }
-
-  function calcDiscountFromPromo(promo, totals) {
-    if (!promo) return 0;
-    const type = promo.discountType || promo.type;
-    const value = Number(promo.discountValue || promo.value || 0);
-    if (!value) return 0;
-
-    const base = totals.subTotal;
-    if (type === 'percent') {
-      return Math.min(base, Math.round((base * value) / 100));
-    }
-    // flat
-    return Math.min(base, value);
+    state.promotionsLoaded = true;
+    return state.promotions;
   }
 
   async function applyVoucher(code) {
-    const msgEl = $('#voucherMessage');
-    if (msgEl) {
-      msgEl.textContent = '';
-      msgEl.classList.remove('ok', 'err');
+    const inputMessage = $('#voucherMessage');
+    const cleanCode = normalizeText(code).toUpperCase();
+    if (inputMessage) {
+      inputMessage.textContent = '';
+      inputMessage.classList.remove('ok', 'err');
     }
 
     if (!state.order) return;
 
-    const trimmed = (code || '').trim().toUpperCase();
-    if (!trimmed) {
-    // Clear message
-    if (msgEl) {
-        msgEl.textContent = '';
-        msgEl.classList.remove('ok', 'err');
-    }
+    try {
+      const res = await fetch(buildApiUrl('checkout/apply-voucher'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code: cleanCode, order: state.order })
+      });
 
-    // Gửi request với code = "" (để BE reset discount)
-    fetch(API + '/checkout/apply-voucher', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: "",
-        order: state.order
-      }),
-      credentials: 'include'
-    }).then(r => r.json()).then(data => {
-        const order = parseOrder(data);
-          if (order) {
-            order.bookingId = state.bookingId;   // ⭐ THÊM DÒNG NÀY
-            state.order = order;
-          renderOrderSummary();
-        }
-    });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    return;
-}
-
-    // BE trước: /checkout/apply-voucher
-    if (state.backend.enabled) {
-      try {
-        const res = await fetch(API + '/checkout/apply-voucher', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code: trimmed,
-            order: state.order
-          }),
-          credentials: 'include'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const order = parseOrder(data);
-          if (order) {
-              if (state.bookingId) {
-        order.bookingId = state.bookingId;
-    }
-    state.order = order;
-            // Chèn discountCode/discountAmount nếu BE trả ở root
-            if (typeof data.discountAmount === 'number') {
-              order.discount = {
-                code: data.discountCode || trimmed,
-                amount: data.discountAmount
-              };
-            }
-            
-            renderOrderSummary();
-            if (msgEl) {
-              const totals = state.order._computedTotals || getTotals(state.order);
-              msgEl.textContent =
-                totals.discountAmount > 0
-                  ? `Đã áp dụng mã ${trimmed}.`
-                  : `Áp dụng mã ${trimmed} thành công.`;
-              msgEl.classList.add('ok');
-            }
-            return;
-          }
-        } else {
-          console.warn(
-            '[payment] /checkout/apply-voucher not ok',
-            res.status
-          );
-          state.backend.enabled = false;
-          state.backend.lastError = 'HTTP ' + res.status;
-        }
-      } catch (err) {
-        console.warn('[payment] /checkout/apply-voucher error', err);
-        state.backend.enabled = false;
-        state.backend.lastError = String(err);
+      const data = await res.json();
+      const parsed = parseBackendOrder(data);
+      if (parsed) {
+        parsed.bookingId = state.bookingId || parsed.bookingId;
+        state.order = parsed;
+      } else {
+        const localOrder = buildLocalOrderFromSnapshot();
+        localOrder.totals.discountCode = cleanCode;
+        state.order = localOrder;
       }
-    }
-    const list = await ensurePromotionsLoaded();
-    const totals =
-      state.order._computedTotals || getTotals(state.order);
-    const promo = list.find(
-      (p) => p && String(p.code || '').toUpperCase() === trimmed
-    );
 
-    if (!promo || !isPromoValidForOrder(promo, totals)) {
-      if (msgEl) {
-        msgEl.textContent =
-          '⚠️ Mã không hợp lệ hoặc đã hết hạn.';
-        msgEl.classList.add('err');
+      renderCheckoutOverview();
+      renderOrderSummary();
+      if (inputMessage) {
+        inputMessage.textContent = cleanCode ? `Đã áp dụng mã ${cleanCode}.` : 'Đã xóa mã ưu đãi.';
+        inputMessage.classList.add('ok');
       }
-      state.order._voucher = { code: '', amount: 0 };
+      return;
+    } catch (error) {
+      console.warn('[payment] apply voucher failed', error);
+    }
+
+    const promotions = await ensurePromotionsLoaded();
+    const orderTotals = computeTotals(state.order);
+    const promo = promotions.find((item) => normalizeText(item?.code).toUpperCase() === cleanCode);
+
+    if (!cleanCode) {
+      state.order.totals.discountAmount = 0;
+      state.order.totals.discountCode = '';
       renderOrderSummary();
       return;
     }
 
-    const discount = calcDiscountFromPromo(promo, totals);
-    state.order._voucher = {
-      code: promo.code,
-      amount: discount,
-      type: promo.discountType || promo.type || 'flat'
-    };
+    if (!promo) {
+      if (inputMessage) {
+        inputMessage.textContent = 'Mã không hợp lệ hoặc đã hết hạn.';
+        inputMessage.classList.add('err');
+      }
+      state.order.totals.discountAmount = 0;
+      state.order.totals.discountCode = '';
+      renderOrderSummary();
+      return;
+    }
 
+    const discountAmount = promo.discountType === 'percent'
+      ? Math.min(orderTotals.subTotal, Math.round((orderTotals.subTotal * Number(promo.discountValue || promo.value || 0)) / 100))
+      : Math.min(orderTotals.subTotal, Number(promo.discountValue || promo.value || 0));
+
+    state.order.totals.discountAmount = discountAmount;
+    state.order.totals.discountCode = promo.code;
+    renderCheckoutOverview();
     renderOrderSummary();
-    if (msgEl) {
-      msgEl.textContent = `Đã áp dụng mã ${promo.code}.`;
-      msgEl.classList.add('ok');
+
+    if (inputMessage) {
+      inputMessage.textContent = `Đã áp dụng mã ${promo.code}.`;
+      inputMessage.classList.add('ok');
     }
   }
 
-function initVoucher() {
-  ensurePromotionsLoaded().then(list => {
-    const select = $('#voucherSelect');
-    if (!select) return;
-    select.innerHTML = [
-      '<option value="">Chọn từ danh sách</option>',
-      ...list
-        .filter(p => p && p.code)
-        .map(p => `<option value="${p.code}">${p.code} — ${p.name || ''}</option>`)
-    ].join('');
-    select.addEventListener('change', (e) => {
-      const code = e.target.value || '';
-      const input = $('#voucherCode');
-      if (input) input.value = code;
-      applyVoucher(code); 
-    });
-  }).catch(() => {});
-  const applyBtn = $('#btnApplyVoucher');
-  if (applyBtn) applyBtn.addEventListener('click', () => {
-    const input = $('#voucherCode');
-    const code = input ? input.value : '';
-    applyVoucher(code);
-  });
-}
+  async function loadOrder() {
+    const localOrder = buildLocalOrderFromSnapshot();
+    state.order = localOrder;
 
-
-  function validatePayment() {
-      const num = $('#cardNumber')?.value.replace(/\s+/g,'')||'';
-      if (num.length < 12) { alert('Vui lòng nhập đầy đủ thông tin thẻ.'); return false; }
-      return true;
-  }
-
-  function buildOrderPayment(method, status) {
-      const ticket = state.order.ticket || {};
-      const totals = state.order.totals || {};
-      const now = new Date();
-      const displayOrderId = state.order.bookingId ? `ORD-${state.order.bookingId}` : ('DCINE' + now.getTime().toString().slice(-8));
-
-      return {
-        orderId: displayOrderId,
-        bookingId: state.order.bookingId,
-        paymentMethod: method,
-        status: status,
-        total: totals.grand || totals.grandTotal || 0,
-        createdAt: now.toISOString(),
-        movieTitle: ticket.movieTitle || 'Phim chưa xác định',
-        theaterName: ticket.theaterName || 'Rạp chưa xác định',
-        showDate: ticket.showDate || ticket.date || '--',
-        showTime: ticket.showTime || ticket.time || '--',
-        endTime: ticket.endTime || '',
-        seats: ticket.seats || [],
-        combos: (state.order.combos || []).map(c => ({ name: c.name || c.title || 'Combo', qty: c.quantity || c.qty || 1 }))
-      };
-  }
-
-  function persistAndGoConfirmation(orderPayment) {
     try {
-      const METHOD_MAP = { 'wallet': 'Ví điện tử', 'bank': 'Chuyển khoản ngân hàng', 'card': 'Thẻ tín dụng / Ghi nợ' };
-      const displayMethod = METHOD_MAP[orderPayment.paymentMethod] || orderPayment.paymentMethod;
-      
-      const confirmed = {
-        orderId: orderPayment.orderId,
-        
-        status: orderPayment.status,
-        total: orderPayment.total,
-        createdAt: orderPayment.createdAt,
-        movieTitle: orderPayment.movieTitle,
-        theaterName: orderPayment.theaterName,
-        showDate: orderPayment.showDate,
-        showTime: orderPayment.showTime,
-        startTime: orderPayment.showTime,
-        endTime: orderPayment.endTime,
-        seatsText: orderPayment.seats || [],
-        combos: orderPayment.combos || [],
+      const res = await fetch(buildApiUrl('checkout/summary'), { cache: 'no-store', credentials: 'include' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-        paymentMethod: displayMethod,
-        showtimeText: orderPayment.showtimeText
-      };
-
-      localStorage.setItem('orderConfirmed', JSON.stringify(confirmed));
-      const allRaw = localStorage.getItem('orders');
-      const all = allRaw ? JSON.parse(allRaw) : [];
-      all.push(confirmed);
-      localStorage.setItem('orders', JSON.stringify(all));
-
-    } catch (err) { console.warn('[payment] persist error', err); }
-    location.href = 'confirmation.html';
-  }
-
-  function showInlineQr(method, qrPayload) {
-    const isWallet = method === 'wallet';
-    const box = isWallet ? $('#walletQrBox') : $('#bankQrBox');
-    const img = isWallet ? $('#walletQrImage') : $('#bankQrImage');
-    const download = isWallet ? $('#walletQrDownload') : $('#bankQrDownload');
-    if (!box || !img || !download) return;
-
-    const imageUrl = (qrPayload && (qrPayload.imageUrl || qrPayload.url || qrPayload.qrImageUrl)) || (isWallet ? '../assets/img/qr-demo-wallet.png' : '../assets/img/qr-demo-bank.png');
-    img.src = imageUrl;
-    download.href = imageUrl;
-    box.hidden = false;
-    state.qr.method = method;
-    state.qr.imageUrl = imageUrl;
-  }
-
-  window.DCINE_MARK_PAYMENT_PAID = function (payload) {
-    let payment = buildOrderPayment(state.paymentMethod, 'paid');
-    
-    if (payload && payload.orderId) {
-        payment.orderId = payload.orderId;
+      const data = await res.json();
+      const parsed = parseBackendOrder(data);
+      if (parsed) {
+        parsed.bookingId = state.bookingId || parsed.bookingId;
+        state.order = {
+          ...localOrder,
+          ...parsed,
+          ticket: { ...localOrder.ticket, ...(parsed.ticket || {}) },
+          combos: Array.isArray(parsed.combos) && parsed.combos.length ? parsed.combos : localOrder.combos,
+          totals: { ...localOrder.totals, ...(parsed.totals || {}) }
+        };
+      }
+    } catch (error) {
+      console.warn('[payment] backend summary unavailable, using snapshot', error);
+      state.backendEnabled = false;
     }
-    payment = enrichPaymentData(payment);
-    
-    persistAndGoConfirmation(payment);
-  };
+
+    state.order.bookingId = state.bookingId || state.order.bookingId;
+
+    const totals = computeTotals(state.order);
+    state.order.totals = { ...state.order.totals, ...totals };
+    state.order.grandTotal = totals.grandTotal;
+  }
+
+  function getActiveBookingId() {
+    const snapshot = readMergedCartSnapshot();
+    const booking = snapshot.booking && typeof snapshot.booking === 'object' ? snapshot.booking : {};
+    const concessions = snapshot.concessions && typeof snapshot.concessions === 'object' ? snapshot.concessions : {};
+
+    return firstPositiveInteger([
+      state.order?.bookingId,
+      state.bookingId,
+      booking.bookingId,
+      booking.id,
+      booking.meta?.bookingId,
+      booking.ticket?.bookingId,
+      concessions.bookingId,
+      concessions.id,
+      concessions.meta?.bookingId,
+      concessions.ticket?.bookingId
+    ]);
+  }
+
+  function showError(message) {
+    const warning = $('#orderWarning');
+    if (warning) {
+      warning.hidden = false;
+      warning.textContent = message;
+    }
+    setBanner('error', 'Checkout không hợp lệ', message);
+    alert(message);
+  }
 
   async function handleConfirmPayment() {
-    if (!state.order) { alert('Không tìm thấy đơn hàng.'); return; }
-    if (state.paymentMethod === 'card' && !validatePayment()) return;
+    const bookingId = getActiveBookingId();
+    if (!bookingId) {
+      showError('Không tìm thấy bookingId hợp lệ để tạo link thanh toán.');
+      return;
+    }
 
-    const method = state.paymentMethod;
-    let backendData = null;
+    const totals = computeTotals(state.order || buildLocalOrderFromSnapshot());
+    if (!totals.grandTotal || totals.grandTotal <= 0) {
+      showError('Tổng thanh toán không hợp lệ. Vui lòng kiểm tra lại phiên đặt vé.');
+      return;
+    }
 
-    if (state.backend.enabled) {
+    const button = $('#btnConfirmPayment');
+    const originalLabel = button ? button.innerHTML : '';
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<span>ĐANG TẠO LIÊN KẾT VNPAY...</span>';
+    }
+
+    try {
+      const res = await fetch(buildApiUrl(`payment/create-url/${bookingId}`), {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      const raw = await res.text();
+      let data = {};
       try {
-        const res = await fetch(API + '/checkout/confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            paymentMethod: state.paymentMethod,
-            order: {
-
-                bookingId : state.order.bookingId,
-                ticket: state.order.ticket,
-                combos: state.order.combos || [],
-                totals: state.order.totals,                 // ⭐ GIỮ FULL TOTALS
-                discountAmount: state.order.totals?.discountAmount ?? 0,  // ⭐ GIỮ DISCOUNT
-                discountCode: state.order.totals?.discountCode ?? "",
-                grandTotal: state.order._computedTotals ? state.order._computedTotals.grand : state.order.grandTotal
-            }
-          }),
-          credentials: 'include'
-        });
-        if (res.ok) backendData = await res.json();
-      } catch (err) { state.backend.enabled = false; }
-    }
-
-    if (method === 'card') {
-      // 🟢 GỌI BACKEND mark-paid TRƯỚC KHI XỬ LÝ
-      if (backendData && backendData.transactionId) {
-          await callMarkPaid(backendData.transactionId);
+        data = raw ? JSON.parse(raw) : {};
+      } catch (error) {
+        console.warn('[payment] create-url response parse failed', error);
       }
-      let payment = buildOrderPayment(method, 'paid');
-        if (backendData && backendData.orderId) payment.orderId = backendData.orderId;
-        payment = enrichPaymentData(payment);
-        persistAndGoConfirmation(payment);
-        return;
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || `Không thể tạo link VNPAY (HTTP ${res.status}).`);
+      }
+
+      const redirectUrl = data.url || data.paymentUrl || data.redirectUrl;
+      if (!redirectUrl) {
+        throw new Error('Backend không trả về đường dẫn VNPAY hợp lệ.');
+      }
+
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error('[payment] VNPAY redirect failed', error);
+      showError(error?.message || 'Không thể chuyển đến cổng thanh toán VNPAY.');
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = originalLabel || '<span>THANH TOÁN QUA CỔNG VNPAY</span>';
+      }
+    }
+  }
+
+  function bindVoucherControls() {
+    const applyBtn = $('#btnApplyVoucher');
+    const voucherInput = $('#voucherCode');
+    const voucherSelect = $('#voucherSelect');
+
+    if (applyBtn && voucherInput) {
+      applyBtn.addEventListener('click', () => applyVoucher(voucherInput.value));
     }
 
-    let pendingPayment = buildOrderPayment(method, 'pending');
-    state.pendingPayment = pendingPayment;
+    if (voucherSelect) {
+      ensurePromotionsLoaded().then((promotions) => {
+        const options = ['<option value="">Chọn từ danh sách</option>']
+          .concat(promotions.filter((promo) => promo && promo.code).map((promo) => `<option value="${promo.code}">${promo.code} — ${promo.name || promo.title || ''}</option>`));
+        voucherSelect.innerHTML = options.join('');
+      });
 
-    let qrUrl = null;
-    if (backendData && (backendData.qr || backendData.qrUrl)) qrUrl = backendData.qr || {imageUrl: backendData.qrUrl};
-    showInlineQr(method, qrUrl);
-    
-    if (window.DCINE_JOIN_PAYMENT_ROOM && backendData && backendData.transactionId) {
-        window.DCINE_JOIN_PAYMENT_ROOM(backendData.transactionId);
+      voucherSelect.addEventListener('change', (event) => {
+        if (voucherInput) voucherInput.value = event.target.value || '';
+        applyVoucher(event.target.value || '');
+      });
     }
-  //     if (backendData && backendData.transactionId) {
-  //     callMarkPaid(backendData.transactionId);
-  // }
+  }
+
+  function bindNavigationControls() {
+    const backButton = $('#btnBackConcessions');
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        const canUseHistoryBack =
+          document.referrer &&
+          /\/concessions\.html(?:\?|$)/i.test(document.referrer) &&
+          window.history.length > 1;
+        if (canUseHistoryBack) {
+          window.history.back();
+          return;
+        }
+        window.location.href = 'concessions.html';
+      });
+    }
   }
 
   async function init() {
-    initTabs(); 
-    initCardForm();
-    initVoucher();
-    state.bookingId = JSON.parse(localStorage.getItem('booking_cart') || "{}").bookingId || null;
-    await loadOrder();
+    const initialSnapshots = readMergedCartSnapshot();
+    console.log('[Debug Booking ID]', initialSnapshots);
+    const b = initialSnapshots.booking || {};
+    state.bookingId = firstPositiveInteger([
+      b.bookingId,
+      b.id,
+      b.meta?.bookingId,
+      b.ticket?.bookingId,
+      initialSnapshots.bookingId,
+      initialSnapshots.concessions?.bookingId,
+      initialSnapshots.concessions?.id,
+      initialSnapshots.concessions?.meta?.bookingId,
+      initialSnapshots.concessions?.ticket?.bookingId
+    ]) || extractBookingIdFromSnapshot(initialSnapshots);
 
-    // ⭐ THÊM DÒNG NÀY
-    if (state.order && state.bookingId) {
-        state.order.bookingId = state.bookingId;
-    }
+    await loadOrder();
+    renderCheckoutOverview();
     renderOrderSummary();
-    const backBtn = $('#btnBackConcessions');
-    if (backBtn) {
-        backBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'concessions.html';
-        });
-    }
-    const btnConfirm = $('#btnConfirmPayment');
-    if (btnConfirm) {
-        btnConfirm.addEventListener('click', handleConfirmPayment);
+    bindVoucherControls();
+    bindNavigationControls();
+
+    const confirmButton = $('#btnConfirmPayment');
+    if (confirmButton) {
+      confirmButton.addEventListener('click', handleConfirmPayment);
     }
   }
 
   if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', async () => {
-          if (window.guardAuth) {
-             const isSafe = await window.guardAuth();
-             if (!isSafe) return;
-          }
-          init();
-      });
-  } else {
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.guardAuth) {
+        const isSafe = await window.guardAuth();
+        if (!isSafe) return;
+      }
       init();
+    });
+  } else {
+    init();
   }
 })();

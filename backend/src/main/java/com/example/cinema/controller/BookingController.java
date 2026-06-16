@@ -22,11 +22,28 @@ public class BookingController {
     }
     @PostMapping("/bookings")
     public ResponseEntity<?> createBooking(@RequestBody BookingRequest request, HttpSession session) { 
-        Long accountId = (Long) session.getAttribute("accountId");
+        Long accountId = resolveAccountId(session);
         if (accountId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Vui lòng đăng nhập để đặt vé"));
         }
         BookingResponse response = bookingService.createBooking(request.getShowtimeId(), accountId, request);
         return ResponseEntity.ok(response);
+    }
+
+    private Long resolveAccountId(HttpSession session) {
+        Object value = session.getAttribute("accountId");
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text) {
+            try {
+                return Long.valueOf(text.trim());
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return null;
     }
 }

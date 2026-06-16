@@ -47,6 +47,7 @@ public class CheckoutService {
     private final BookingSeatRepository bookingSeatRepo;
     private final BookingConcessionRepository bookingConcessionRepo;
     private final ShowTimeRepository showtimeRepo;
+    private final SeatLockService seatLockService;
     private String generateBookingCode(Long bookingId) {
         return "DCINE-" + String.format("%06d", bookingId);
     }
@@ -265,6 +266,7 @@ public class CheckoutService {
                     System.err.println("⚠ Lỗi tạo QR: " + e.getMessage());
                 }
                 bookingRepo.save(booking);
+                seatLockService.markPaidByBookingId(booking.getBookingId());
                 Long accountId = booking.getAccountId();
                 if (accountId != null) {
                     Long trueTotal = bookingRepo.getTotalSpent(accountId);
