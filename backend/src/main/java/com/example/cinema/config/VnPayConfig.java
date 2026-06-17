@@ -1,5 +1,6 @@
 package com.example.cinema.config;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,13 +9,14 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
+@Getter
 @Configuration
 public class VnPayConfig {
 
-    @Value("${vnpay.tmn-code:2QXUI4J4}")
+    @Value("${vnpay.tmn-code}")
     private String tmnCode;
 
-    @Value("${vnpay.hash-secret:SECRETKEYVNPAY}")
+    @Value("${vnpay.hash-secret}")
     private String hashSecret;
 
     @Value("${vnpay.pay-url:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}")
@@ -23,7 +25,7 @@ public class VnPayConfig {
     @Value("${vnpay.return-url:http://localhost:8080/api/payment/vnpay-return}")
     private String returnUrl;
 
-    @Value("${vnpay.result-url:http://localhost:3000/html/payment-result.html}")
+    @Value("${vnpay.result-url}")
     private String resultUrl;
 
     @Value("${vnpay.ipn-url:http://localhost:8080/api/payment/vnpay-ipn}")
@@ -33,60 +35,24 @@ public class VnPayConfig {
     private final String command = "pay";
     private final String currCode = "VND";
     private final String locale = "vn";
-    private final String orderType = "other";
+    // Đồng bộ với mã ngành điện ảnh nếu cần, hoặc để 'other' làm mặc định
+    private final String orderType = "190000"; 
 
-    public String getTmnCode() {
-        return tmnCode;
-    }
-
-    public String getHashSecret() {
-        return hashSecret;
-    }
-
-    public String getPayUrl() {
-        return payUrl;
-    }
-
-    public String getReturnUrl() {
-        return returnUrl;
-    }
-
-    public String getResultUrl() {
-        return resultUrl;
-    }
-
-    public String getIpnUrl() {
-        return ipnUrl;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public String getCurrCode() {
-        return currCode;
-    }
-
-    public String getLocale() {
-        return locale;
-    }
-
-    public String getOrderType() {
-        return orderType;
-    }
-
-    public String hmacSHA512(String key, String data) {
+    public static String hmacSHA512(final String key, final String data) {
         try {
-            Mac mac = Mac.getInstance("HmacSHA512");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
-            mac.init(secretKeySpec);
-            return HexFormat.of().formatHex(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+
+            if (key == null || data == null) {
+                throw new NullPointerException();
+            }
+            final Mac hmac512 = Mac.getInstance("HmacSHA512");
+            byte[] hmacKeyBytes = key.getBytes(StandardCharsets.UTF_8);
+            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
+            hmac512.init(secretKey);
+            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+            byte[] result = hmac512.doFinal(dataBytes);
+            return HexFormat.of().withUpperCase().formatHex(result);
         } catch (Exception ex) {
-            throw new RuntimeException("Cannot hash VNPAY payload", ex);
+            return "";
         }
     }
 }
