@@ -593,7 +593,7 @@
       const data = await res.json();
       const parsed = parseBackendOrder(data);
       if (parsed) {
-        parsed.bookingId = state.bookingId || parsed.bookingId;
+        parsed.bookingId = parsed.bookingId;
         state.order = {
           ...localOrder,
           ...parsed,

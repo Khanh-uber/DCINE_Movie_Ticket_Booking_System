@@ -20,11 +20,8 @@ import com.example.cinema.repository.*;
 // import com.example.cinema.repository.PaymentRepository;
 // import com.example.cinema.repository.ShowTimeRepository;
 // import com.example.cinema.repository.VoucherRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import com.example.cinema.socket.SocketService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +33,13 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class CheckoutService {
-
-    private final PaymentRepository checkoutRepo; 
+    
+    private final PaymentRepository paymentRepo;
     private final BookingRepository bookingRepo;
     private final VoucherRepository voucherRepo;
     private final BookingVoucherRepository bookingVoucherRepo;
     private final SocketService socketService;
     private final AccountService accountService;  
-    private final PaymentRepository paymentRepo;
     private final BookingSeatRepository bookingSeatRepo;
     private final BookingConcessionRepository bookingConcessionRepo;
     private final ShowTimeRepository showtimeRepo;
@@ -54,7 +50,7 @@ public class CheckoutService {
     // Helper an toàn
     private Long safeLong(Object obj) {
         if (obj == null) return 0L;
-        if (obj instanceof Number) return ((Number) obj).longValue();
+        if (obj instanceof Number n) return n.longValue();
         try { return Long.parseLong(obj.toString()); } catch (Exception e) { return 0L; }
     }
 
@@ -76,19 +72,22 @@ public class CheckoutService {
             if (totals == null) throw new RuntimeException("Totals must be computed before confirm");
             order.put("totals", totals);
             long grandTotal = safeLong(totals.get("grandTotal"));
+            Long bookingId = ((Number) order.get("bookingId")).longValue();
 
-            // Lưu DB
+            // Kiểm tra xem đã có payment cho booking này chưa để tránh tạo trùng lặp
+            Payment pm = paymentRepo.findByBookingId(bookingId).orElse(new Payment());
+            
             String transactionId = "trans_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-            Booking booking = bookingRepo.findByBooking(((Number) order.get("bookingId")).longValue());
+            Booking booking = bookingRepo.findByBooking(bookingId);
             if (booking == null) throw new RuntimeException("Booking not found");
-            Payment pm = new Payment();
+
             pm.setBookingId(booking.getBookingId());
-            pm.setTransactionId(transactionId);
+            if (pm.getTransactionId() == null) pm.setTransactionId(transactionId);
             pm.setMethod(paymentMethod); 
             pm.setAmount((double) grandTotal);
             pm.setStatus("PENDING");
             pm.setCreatedAt(LocalDateTime.now());
-            checkoutRepo.save(pm); 
+            paymentRepo.save(pm); 
     
             // Voucher logic
             String voucherCode = safeString(totals.get("discountCode"));
@@ -107,18 +106,18 @@ public class CheckoutService {
             }
             
             // Tạo QR (IP 192.168.1.11)
-            String IP = "10.247.24.116"; 
+            String IP = "10.247.24.116"; // Nên lấy từ config
             String PORT = "8080"; 
-            String deeplink = String.format("http://%s:%s/mobile-pay.html?trans=%s", IP, PORT, transactionId);
+            String deeplink = String.format("http://%s:%s/mobile-pay.html?trans=%s", IP, PORT, pm.getTransactionId());
             String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + URLEncoder.encode(deeplink, StandardCharsets.UTF_8);
 
             Map<String, Object> qrMap = new HashMap<>();
             qrMap.put("imageUrl", qrUrl);
             qrMap.put("deeplink", deeplink);
             
-            order.put("transactionId", transactionId); 
+            order.put("transactionId", pm.getTransactionId()); 
             response.put("status", "pending");
-            response.put("transactionId", transactionId);
+            response.put("transactionId", pm.getTransactionId());
             response.put("order", order);
             response.put("qr", qrMap);
             response.put("orderId", pm.getPaymentId());
@@ -140,10 +139,13 @@ public class CheckoutService {
     // =========================================================================
     public Map<String, Object> getOrderByTransactionId(String transactionId) {
         try {
-            Payment pm = checkoutRepo.findByTransactionId(transactionId)
+            Payment pm = paymentRepo.findByTransactionId(transactionId)
                     .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
             Long bookingId = pm.getBookingId();
+            if (bookingId == null) {
+                throw new RuntimeException("Payment record is missing an associated Booking ID");
+            }
 
             String movieTitle = "Phim chưa xác định";
             String theaterName = "D-Cine";
@@ -152,7 +154,7 @@ public class CheckoutService {
 
             // --- [SỬA LẠI CHỖ NÀY] ---
             // Nhận List thay vì Map để khớp với Repository
-            List<Map<String, Object>> showtimeList = checkoutRepo.findShowtimeInfoByBooking(bookingId);
+            List<Map<String, Object>> showtimeList = paymentRepo.findShowtimeInfoByBooking(bookingId);
             
             // Kiểm tra List có dữ liệu không rồi mới lấy phần tử đầu tiên
             if (showtimeList != null && !showtimeList.isEmpty()) {
@@ -176,7 +178,7 @@ public class CheckoutService {
             }
 
             // Lấy Ghế (Code cũ đã sửa JOIN)
-            List<Map<String, Object>> seatMaps = checkoutRepo.findSeatsByBooking(bookingId);
+            List<Map<String, Object>> seatMaps = paymentRepo.findSeatsByBooking(bookingId);
             List<String> seatsCode = new ArrayList<>();
             long ticketAmount = 0;
             if (seatMaps != null) {
@@ -187,7 +189,7 @@ public class CheckoutService {
             }
 
             // Lấy Combo
-            List<Map<String, Object>> combosRaw = checkoutRepo.findCombosByBooking(bookingId);
+            List<Map<String, Object>> combosRaw = paymentRepo.findCombosByBooking(bookingId);
             List<Map<String, Object>> combos = new ArrayList<>();
             long combosAmount = 0;
             if (combosRaw != null) {
@@ -237,7 +239,7 @@ public class CheckoutService {
     @Transactional
     public Map<String, Object> markPaymentPaid(String transactionId) {
         try {
-            Payment pm = checkoutRepo.findByTransactionId(transactionId)
+            Payment pm = paymentRepo.findByTransactionId(transactionId)
                     .orElseThrow(() -> new RuntimeException("Payment not found"));
 
             if (!"PENDING".equals(pm.getStatus())) {
@@ -248,7 +250,7 @@ public class CheckoutService {
 
             pm.setStatus("PAID");
             pm.setPaidAt(LocalDateTime.now());
-            checkoutRepo.save(pm); 
+            paymentRepo.save(pm); 
 
             Booking booking = bookingRepo.findById(pm.getBookingId()).orElse(null);
             if (booking != null) {
@@ -379,10 +381,11 @@ public class CheckoutService {
     public Map<String, Object> getLastConfirmedBooking(Long accountId) {
         Booking booking = bookingRepo.findLatestPaidBooking(accountId)
                 .orElseThrow(() -> new RuntimeException("Bạn chưa có đơn hàng nào thành công!"));
-        Payment pm = checkoutRepo.findAll().stream()
-                .filter(p -> p.getBookingId().equals(booking.getBookingId()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin thanh toán"));
+        
+        // Sửa lỗi findAll() gây chậm hệ thống
+        Payment pm = paymentRepo.findByBookingId(booking.getBookingId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin thanh toán cho Booking #" + booking.getBookingId()));
+                
         return getOrderByTransactionId(pm.getTransactionId());
     }
 }
