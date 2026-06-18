@@ -1,0 +1,121 @@
+[
+  {
+    "layout_id": 1,
+    "room_type": "2D",
+    "name": "2D-Layout-A",
+    "rows": ["A","B","C","D","E","F","G","H","I","J","K"],
+    "columns": 20,
+    "blocks": [3, 14, 3],
+    "seat_types": {
+      "A,B,C": "Standard",
+      "D,E,F,G,H,I,J": "VIP",
+      "K": "Couple"
+    },
+    "couple_positions": {
+      "K": {
+        "block1": [2,3],
+        "block2": [6,7,8,9,10,11,12,13,14,15],
+        "block3": [18,19]
+      }
+    }
+  },
+
+  {
+    "layout_id": 2,
+    "room_type": "2D",
+    "name": "2D-Layout-B",
+    "rows": ["A","B","C","D","E","F","G","H","I","J"],
+    "columns": 16,
+    "blocks": [4,8,4],
+    "seat_types": {
+      "A,B,C": "Standard",
+      "D,E,F,G,H": "VIP",
+      "I,J": "Couple"
+    }
+  },
+
+  {
+    "layout_id": 3,
+    "room_type": "2D",
+    "name": "2D-Layout-C",
+    "rows": ["A","B","C","D","E","F","G","H","I","J"],
+    "columns": 12,
+    "blocks": [6, 6],
+    "seat_types": {
+      "A,B,C": "Standard",
+      "D,E,F,G,H": "VIP",
+      "I,J": "Couple"
+    },
+    "couple_positions": {
+      "I": {
+        "block1": [1,2,3,4,5,6],
+        "block2": [7,8,9,10,11,12]
+      },
+      "J": {
+        "block1": [3,4,5,6],
+        "block2": [7,8,9,10]
+      }
+    }
+  },
+
+  {
+    "layout_id": 4,
+    "room_type": "4DX",
+    "name": "4DX-Layout-A",
+    "rows": ["A","B","C","D","E","F","G","H"],
+    "columns": 12,
+    "blocks": [4,4,4],
+    "seat_types": {
+      "A,B,C,D,E,F,G,H": "4DX Standard"
+    }
+  },
+
+  {
+    "layout_id": 5,
+    "room_type": "BEDOM",
+    "name": "BEDOM-Layout-A",
+    "rows": ["A","B","C","D","E"],
+    "columns": 6,
+    "blocks": [2,2,2],
+    "seat_types": {
+      "A,B,C,D,E": "Deluxe Bed"
+    }
+  },
+
+  {
+    "layout_id": 6,
+    "room_type": "SUPER CLASS",
+    "name": "SUPERCLASS-Layout-A",
+    "rows": ["A","B","C","D","E","F"],
+    "columns": 8,
+    "blocks": [2,2,2,2],
+    "seat_types": {
+      "A,B,C,D,E,F": "Super Class Standard"
+    }
+  },
+
+  {
+    "layout_id": 7,
+    "room_type": "DEXP",
+    "name": "DEXP-Layout-A",
+    "rows": ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"],
+    "columns": 36,
+    "blocks": [8,20,8],
+    "seat_types": {
+      "A,B,C": "Standard",
+      "D,E,F,G,H,I,J,K,L,M,N": "VIP",
+      "O": "Sweetbox"
+    },
+    "special_rule": {
+        "A,B,C,D,E,F,G": {
+        "active_columns": [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]
+        }
+    },
+    "sweetbox_positions": {
+      "O": {
+        "block1": [4,5,6,7,8,9,10,11,12,13,14,15],
+        "block2": [22,23,24,25,26,27,28,29,30,31,32,33]
+      }
+    }
+  }
+]
