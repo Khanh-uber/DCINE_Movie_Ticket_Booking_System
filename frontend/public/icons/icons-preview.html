@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icons Preview</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --card-bg: #2d2d2d;
+            --card-hover: #3d3d3d;
+            --accent: #4caf50;
+        }
+
+        body.light-mode {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --card-hover: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .controls {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            padding: 20px 0;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #444;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: none;
+            background-color: var(--accent);
+            color: white;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .icon-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .icon-card:hover {
+            transform: translateY(-2px);
+            background-color: var(--card-hover);
+            border: 1px solid var(--accent);
+        }
+
+        .icon-card img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 10px;
+            /* Đảm bảo icon hiển thị tốt nếu nó là svg màu đen/trắng */
+            object-fit: contain; 
+        }
+
+        .icon-name {
+            font-size: 12px;
+            text-align: center;
+            word-break: break-word;
+            opacity: 0.8;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Tìm kiếm icon (ví dụ: user, arrow)...">
+        <button onclick="toggleTheme()">Đổi màu nền</button>
+    </div>
+
+    <div class="grid" id="iconGrid">
+        </div>
+
+    <div class="toast" id="toast">Đã copy tên file!</div>
+
+    <script>
+        // Danh sách tên file lấy từ hình ảnh của bạn
+        // Giả định đuôi file là .svg (phổ biến nhất cho web icon)
+        // Nếu là .png, bạn hãy đổi biến extension bên dưới thành '.png'
+        const extension = '.svg'; 
+        const iconNames = [
+            "ic-arrow-left",
+            "ic-arrow-up",
+            "ic-back-to-head",
+            "ic-bell",
+            "ic-calendar",
+            "ic-cart",
+            "ic-checkmark",
+            "ic-chevron-down",
+            "ic-chevron-right",
+            "ic-clock",
+            "ic-coupon",
+            "ic-drink",
+            "ic-edit",
+            "ic-eye",
+            "ic-eye-slash",
+            "ic-facebook",
+            "ic-filter",
+            "ic-heart",
+            "ic-heart-selected",
+            "ic-info",
+            "ic-insragram", 
+            "ic-location",
+            "ic-member-card",
+            "ic-menu",
+            "ic-minus",
+            "ic-pause",
+            "ic-play",
+            "ic-plus",
+            "ic-popcorn",
+            "ic-qr",
+            "ic-screen",
+            "ic-search",
+            "ic-star",
+            "ic-ticket",
+            "ic-ticket-star",
+            "ic-trash",
+            "ic-user",
+            "ic-volume",
+            "ic-volume-off",
+            "ic-warning-triangle",
+            "ic-youtube"
+        ];
+
+        const grid = document.getElementById('iconGrid');
+        const searchInput = document.getElementById('searchInput');
+        const toast = document.getElementById('toast');
+
+        function renderIcons(filter = "") {
+            grid.innerHTML = "";
+            iconNames.forEach(name => {
+                if (name.toLowerCase().includes(filter.toLowerCase())) {
+                    const fullName = name + extension;
+                    const card = document.createElement('div');
+                    card.className = 'icon-card';
+                    card.onclick = () => copyToClipboard(fullName);
+                    
+                    const img = document.createElement('img');
+                    img.src = "./" + fullName;
+                    img.alt = name;
+                    // Xử lý lỗi nếu ảnh không load được (ví dụ sai đuôi file)
+                    img.onerror = function() { this.style.display='none'; this.parentNode.innerHTML += '<span style="color:red;font-size:10px">Lỗi file</span>' };
+
+                    const span = document.createElement('span');
+                    span.className = 'icon-name';
+                    span.textContent = name;
+
+                    card.appendChild(img);
+                    card.appendChild(span);
+                    grid.appendChild(card);
+                }
+            });
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                toast.textContent = `Đã copy: ${text}`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            renderIcons(e.target.value);
+        });
+
+        // Initial Render
+        renderIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <rect width="400" height="600" fill="#0B0B0D"/>
+  <rect x="1" y="1" width="398" height="598" fill="none" stroke="#2A2A2A" stroke-width="2" rx="12"/>
+  <g transform="translate(200,280)" fill="none" stroke="#E50914" stroke-width="6" stroke-linecap="round">
+    <circle r="46" opacity="0.9"/>
+    <path d="M -14 -20 L 22 0 L -14 20 Z" fill="#E50914" stroke="none"/>
+  </g>
+  <text x="200" y="390" text-anchor="middle" font-family="Inter, sans-serif" font-size="22" fill="#A0A0A0">D-CINE</text>
+</svg>

@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  DCINE design tokens — ported from frontend_2/assets/css/variable.css.
+  The site is dark-cinema by design, so :root carries the dark theme.
+*/
+:root {
+  --background: #050505;
+  --foreground: #ffffff;
+
+  --card: #0b0b0d;
+  --card-foreground: #ffffff;
+  --popover: #0f0f12;
+  --popover-foreground: #ffffff;
+
+  --primary: #e50914;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1a1e;
+  --secondary-foreground: #cfcfcf;
+  --muted: #17171a;
+  --muted-foreground: #a0a0a0;
+  --accent: #1f1f23;
+  --accent-foreground: #ffffff;
+  --destructive: #e50914;
+  --destructive-foreground: #ffffff;
+
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #e50914;
+
+  --radius: 0.75rem;
+
+  --chart-1: #e50914;
+  --chart-2: #f7d24b;
+  --chart-3: #74f9ff;
+  --chart-4: #a2b9ff;
+  --chart-5: #35c28b;
+
+  /* DCINE extras */
+  --brand-dark: #b20710;
+  --success: #35c28b;
+  --warning: #ffec3d;
+  --info: #74f9ff;
+  --gold: #f7d24b;
+  --tier-gold-1: #ffd43b;
+  --tier-gold-2: #e5b200;
+  --tier-plat-1: #a2b9ff;
+  --tier-plat-2: #6f8ceb;
+  --tier-dmnd-1: #74f9ff;
+  --tier-dmnd-2: #35d1e2;
+}
+
+.dark {
+  --background: #050505;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-brand-dark: var(--brand-dark);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-gold: var(--gold);
+  --color-tier-gold-1: var(--tier-gold-1);
+  --color-tier-gold-2: var(--tier-gold-2);
+  --color-tier-plat-1: var(--tier-plat-1);
+  --color-tier-plat-2: var(--tier-plat-2);
+  --color-tier-dmnd-1: var(--tier-dmnd-1);
+  --color-tier-dmnd-2: var(--tier-dmnd-2);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: "Poppins", "Inter", system-ui, sans-serif;
+
+  --shadow-elevated: 0 12px 30px rgba(0, 0, 0, 0.45);
+  --shadow-red: 0 10px 30px rgba(229, 9, 20, 0.25);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  html {
+    color-scheme: dark;
+  }
+}
